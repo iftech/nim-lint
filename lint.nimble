@@ -6,7 +6,7 @@ description   = "Linter for Nim projects."
 license       = "MIT or Apache License 2.0"
 srcDir        = "src"
 binDir        = "bin"
-bin           = @["nim_linter"]
+bin           = @["lint"]
 
 
 # Dependencies
