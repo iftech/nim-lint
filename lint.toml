@@ -1,0 +1,21 @@
+# Mandatory. The *exact* lint version required to run the rules.
+lint_version = "1.0.0"
+
+# Mandatory. List of the rules. See the list of available rules at https://iftech.github.io/nim-lint
+rules = ["typenames", "statuslibs"]
+
+# Optional. This is the configuration for your rules.
+[typenames]
+
+# Optional. How strong you want the issues with this rule reported.
+# Available values: https://github.com/status-im/nim-chronicles/blob/master/chronicles/options.nim#L45.
+# Default: NONE.
+level = "WARN"
+
+# Optional. Some rules have params and this is how you set their values.
+# You can use inline tables (like in this example) or a separate table `[rulename.params]`.
+# If this section is skipped, the rule uses its default values.
+params = { minLength = 5, maxLength = 10 }
+
+[statuslibs]
+level = "INFO"
