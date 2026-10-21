@@ -91,6 +91,10 @@ However, if the rule is bound to some specific values, it is OK to hardcode them
 
 - OK if the rule is specifically called "Enforce Status Libs": "Check that Status's libs are used instead of similarly functioning std libs: chronos instead of asyncdispatch, confutils instead of parsecfg, etc."
 
+It is good practice to have a rule cover a specific isolated area, not too large, not too small:
+- Bad rule: "Check that the variables used in chronicle logs are n+ chars long."
+- Good rule: "A collection of chronicles checks: use n+ length variables, avoid certain characters in the end (default: [!, ?, .]), etc.
+
 ### Rules Execution
 
 A single file check consists of running all enabled rules against it asynchronously and reporting the found issues.
