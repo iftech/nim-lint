@@ -2,6 +2,8 @@ lintVersion = "1.0.0"
 
 rules = ["typeNames", "statusLibs"]
 
+skipPaths = ["tests"]
+
 [typeNames]
 severity = "error"
 [typeNames.settings]
