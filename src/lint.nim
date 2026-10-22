@@ -35,13 +35,13 @@ proc runRules(
       ruleRunner = rules[rulename.stringVal]
       ruleConfig = lintConfig[rulename.stringVal].tableVal
       severity = parseEnum[Severity](ruleConfig["severity"].stringVal)
-      params =
-        if ruleConfig.hasKey("params"):
-          ruleConfig["params"].tableVal
+      settings =
+        if ruleConfig.hasKey("settings"):
+          ruleConfig["settings"].tableVal
         else:
           TableRef[string, TomlValueRef]()
 
-    ruleFutures.add(ruleRunner(queue, filepath, ast, severity, params))
+    ruleFutures.add(ruleRunner(queue, filepath, ast, severity, settings))
 
   await allFutures(ruleFutures)
 

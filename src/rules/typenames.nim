@@ -13,17 +13,17 @@ proc run*(
     filepath: string,
     ast: PNode,
     severity: Severity,
-    params: TomlTableRef,
+    settings: TomlTableRef,
 ) {.async.} =
   let
     minLength =
-      if params.hasKey("minLength"):
-        params["minLength"].intVal
+      if settings.hasKey("minLength"):
+        settings["minLength"].intVal
       else:
         3
     maxLength =
-      if params.hasKey("maxLength"):
-        params["maxLength"].intVal
+      if settings.hasKey("maxLength"):
+        settings["maxLength"].intVal
       else:
         20
 

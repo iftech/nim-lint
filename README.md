@@ -62,7 +62,7 @@ proc run*(
     filepath: string, # the path to the file being checked, for reporting
     ast: PNode, # the module's AST
     severity: Severity, # the severity the findings are reported with
-    params: TomlTableRef, # param values
+    settings: TomlTableRef, # param values
 ) {.async.} =
 ```
 
@@ -82,7 +82,7 @@ type Issue* = object
   msg*: string # the message that the rule wants to communicate to the user
 ```
 
-Since rules are part of the lint package, they must be designed to be universal, i.e. not tailored for a specific project but _tailorable_ for any project via params:
+Since rules are part of the lint package, they must be designed to be universal, i.e. not tailored for a specific project but _tailorable_ for any project via settings:
 
 - Bad rule: "Check that all type names start with 'Foo'." Good rule: "Check that type names have a given prefix, empty by default."
 - Somewhat OK: "Check that all ref type names start with 'Ref'." Better: "Check that all ref type names start with a certain prefix, 'Ref' by default."
@@ -135,9 +135,10 @@ One would refer to a ruleset in their `lint.toml` and override the rules propert
 ```toml
 ruleset = "https://raw.githubusercontent.com/iftech/min-lint-rulesets/master/status.toml"
 
-[typename]
+[typenames]
 severity = "error"
-params = {minLength: 5}
+[typenames.settings]
+minLength = 5
 ```
 
 Reasons why this idea was declined:

@@ -15,7 +15,7 @@ proc run*(
     filepath: string,
     ast: PNode,
     severity: Severity,
-    params: TomlTableRef,
+    settings: TomlTableRef,
 ) {.async.} =
   for node in ast.sons:
     if node.kind == nkImportStmt:
