@@ -1,0 +1,12 @@
+lintVersion = "1.0.0"
+
+rules = ["typeNames", "statusLibs"]
+
+[typeNames]
+severity = "error"
+[typeNames.settings]
+minLength = 5
+maxLength = 10
+
+[statusLibs]
+severity = "hint"

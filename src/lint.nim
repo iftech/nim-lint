@@ -8,13 +8,14 @@ import std/os
 import pkg/confutils
 import pkg/toml_serialization
 
-import ./rules/[typenames, statuslibs]
 import ./types
+import ./rules/typeNames
+import ./rules/statusLibs
 
 const
   version = "1.0.0"
   defaultConfigFile = "lint.toml"
-  rules = {"type_names": typenames.analyze, "status_libs": statuslibs.analyze}.toTable()
+  rules = {"typeNames": typeNames.analyze, "statusLibs": statusLibs.analyze}.toTable()
 
 type Cli = object
   config {.abbr: "c", defaultValue: defaultConfigFile.}: InputFile
@@ -36,7 +37,7 @@ proc runRules(filePath: string, lintConfig: TomlTableRef, ast: PNode): seq[Findi
     result &= ruleRunner(ast, filePath, severity, settings)
 
 proc checkLintVersion(lintConfig: TomlTableRef) =
-  let requiredLintVersion = lintConfig["lint_version"].stringVal
+  let requiredLintVersion = lintConfig["lintVersion"].stringVal
 
   if requiredLintVersion != version:
     echo &"Warning! Lint version mismatch: current version is {version}, the required version is {requiredLintVersion}. Your rules may not behave the way you expect them to."

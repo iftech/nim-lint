@@ -1,11 +1,11 @@
 # Mandatory. The *exact* lint version required to run the rules.
-lint_version = "1.0.0"
+lintVersion = "1.0.0"
 
 # Mandatory. List of the rules. See the list of available rules at https://iftech.github.io/nim-lint
-rules = ["type_names", "status_libs"]
+rules = ["typeNames", "statusLibs"]
 
 # Optional. This is the configuration for your rules.
-[type_names]
+[typeNames]
 
 # Optional. How strong you want the issues with this rule reported.
 # Available values: hint, error
@@ -15,9 +15,9 @@ severity = "error"
 # Optional. Some rules have settings and this is how you set their values.
 # You can use inline tables (`settings = {param: value}`) or a separate table `[rulename.settings]`.
 # If this section is skipped, the rule uses its default values.
-[type_names.settings]
+[typeNames.settings]
 minLength = 5
 maxLength = 10
 
-[status_libs]
+[statusLibs]
 severity = "hint"
