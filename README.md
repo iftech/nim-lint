@@ -58,12 +58,11 @@ Rules are the core of lint. They are functions that accept a module's AST and em
 
 ```nim
 proc run*(
-    queue: AsyncQueue[Issue], # put found issues here
-    filepath: string, # the path to the file being checked, for reporting
     ast: PNode, # the module's AST
+    filepath: string, # the path to the file being checked, for reporting
     severity: Severity, # the severity the findings are reported with
     settings: TomlTableRef, # param values
-) {.async.} =
+): seq[Finding] =
 ```
 
 Because a rule has the entire raw AST to read, it can do all kinds of checks.
@@ -98,9 +97,7 @@ It is good practice to have a rule cover a specific isolated area, not too large
 
 ### Rules Execution
 
-A single file check consists of running all enabled rules against it asynchronously and reporting the found issues.
-
-If multiple files are to be checked, they are checked asynchronously as well (TODO).
+A single file check consists of running all enabled rules against it and reporting the found issues.
 
 # Version Requirement
 

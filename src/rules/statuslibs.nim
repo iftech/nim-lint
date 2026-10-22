@@ -4,19 +4,14 @@ import std/tables
 import std/strformat
 
 import pkg/toml_serialization
-import pkg/chronos
 
 import ../types
 
 const statusAnalogs = {"parsecfg": "confutils", "asyncdispatch": "chronos"}.toTable()
 
-proc run*(
-    queue: AsyncQueue[Finding],
-    filePath: string,
-    ast: PNode,
-    severity: Severity,
-    settings: TomlTableRef,
-) {.async.} =
+proc analyze*(
+    ast: PNode, filePath: string, severity: Severity, settings: TomlTableRef
+): seq[Finding] =
   for node in ast.sons:
     if node.kind == nkImportStmt:
       let importedModule =
@@ -32,4 +27,4 @@ proc run*(
           msg = &"Do not use {importedModule}. Use Status's analog instead: {statusAnalogs[importedModule]}."
           finding = Finding.init(severity, "status_libs", filePath, node.info, msg)
 
-        await queue.put(finding)
+        result.add(finding)

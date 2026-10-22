@@ -6,7 +6,6 @@ import std/strformat
 import std/os
 
 import pkg/confutils
-import pkg/chronos
 import pkg/toml_serialization
 
 import ./rules/[typenames, statuslibs]
@@ -15,21 +14,14 @@ import ./types
 const
   version = "1.0.0"
   defaultConfigFile = "lint.toml"
+  rules = {"type_names": typenames.analyze, "status_libs": statuslibs.analyze}.toTable()
 
 type Cli = object
   config {.abbr: "c", defaultValue: defaultConfigFile.}: InputFile
   file {.argument.}: Opt[InputFile]
   dir {.abbr: "d", defaultValue: ".".}: InputDir
 
-proc runRules(
-    filePath: string, lintConfig: TomlTableRef, ast: PNode
-): Future[seq[Finding]] {.async.} =
-  let
-    rules = {"type_names": typenames.run, "status_libs": statuslibs.run}.toTable()
-    queue = newAsyncQueue[Finding]()
-
-  var ruleFutures = newSeq[Future[void]]()
-
+proc runRules(filePath: string, lintConfig: TomlTableRef, ast: PNode): seq[Finding] =
   for rulename in lintConfig["rules"].arrayVal:
     let
       ruleRunner = rules[rulename.stringVal]
@@ -41,12 +33,7 @@ proc runRules(
         else:
           TableRef[string, TomlValueRef]()
 
-    ruleFutures.add(ruleRunner(queue, filePath, ast, severity, settings))
-
-  await allFutures(ruleFutures)
-
-  for finding in queue:
-    result.add(finding)
+    result &= ruleRunner(ast, filePath, severity, settings)
 
 proc checkLintVersion(lintConfig: TomlTableRef) =
   let requiredLintVersion = lintConfig["lint_version"].stringVal
@@ -54,15 +41,15 @@ proc checkLintVersion(lintConfig: TomlTableRef) =
   if requiredLintVersion != version:
     echo &"Warning! Lint version mismatch: current version is {version}, the required version is {requiredLintVersion}. Your rules may not behave the way you expect them to."
 
-proc checkFile(filepath: string, lintConfig: TomlTableRef): Report =
+proc checkFile(filePath: string, lintConfig: TomlTableRef): Report =
   let
-    src = readFile(filepath)
+    src = readFile(filePath)
     identCache = newIdentCache()
     configRef = newPartialConfigRef()
-    ast = parseString(src, identCache, configRef, filepath)
-    findings = waitFor runRules(filepath, lintConfig, ast)
+    ast = parseString(src, identCache, configRef, filePath)
+    findings = runRules(filePath, lintConfig, ast)
 
-  Report.init(filepath, findings)
+  Report.init(filePath, findings)
 
 proc collectNimFiles(dir = "."): seq[string] =
   for file in walkDirRec(dir):

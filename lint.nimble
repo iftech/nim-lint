@@ -12,6 +12,5 @@ bin           = @["lint"]
 # Dependencies
 
 requires "nim >= 2.2.12"
-requires "chronos >= 4.4.1"
 requires "confutils >= 0.1.1"
 requires "toml_serialization >= 0.2.18"

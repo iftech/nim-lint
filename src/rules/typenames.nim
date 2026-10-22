@@ -4,17 +4,12 @@ import std/tables
 import std/strformat
 
 import pkg/toml_serialization
-import pkg/chronos
 
 import ../types
 
-proc run*(
-    queue: AsyncQueue[Finding],
-    filePath: string,
-    ast: PNode,
-    severity: Severity,
-    settings: TomlTableRef,
-) {.async.} =
+proc analyze*(
+    ast: PNode, filePath: string, severity: Severity, settings: TomlTableRef
+): seq[Finding] =
   let
     minLength =
       if settings.hasKey("minLength"):
@@ -35,13 +30,13 @@ proc run*(
         if len(typeName) < minLength:
           let
             msg = &"Type names must be {minLength} or more chars long, but {typeName} is {len(typeName)} chars long."
-            issue = Finding.init(severity, "type_names", filePath, node.info, msg)
+            finding = Finding.init(severity, "type_names", filePath, node.info, msg)
 
-          await queue.put(issue)
+          result.add(finding)
 
         if len(typeName) > maxLength:
           let
             msg = &"Type names must be {maxLength} or less chars long, but {typeName} is {len(typeName)} chars long."
-            issue = Finding.init(severity, "type_names", filePath, node.info, msg)
+            finding = Finding.init(severity, "type_names", filePath, node.info, msg)
 
-          await queue.put(issue)
+          result.add(finding)
