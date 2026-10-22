@@ -13,9 +13,11 @@ rules = ["typenames", "statuslibs"]
 severity = "error"
 
 # Optional. Some rules have params and this is how you set their values.
-# You can use inline tables (like in this example) or a separate table `[rulename.params]`.
+# You can use inline tables (`params = {param: value}`) or a separate table `[rulename.params]`.
 # If this section is skipped, the rule uses its default values.
-params = { minLength = 5, maxLength = 10 }
+[typenames.params]
+minLength = 5
+maxLength = 10
 
 [statuslibs]
 severity = "hint"
