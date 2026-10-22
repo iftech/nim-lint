@@ -23,7 +23,7 @@ type Cli = object
 
 proc runRules(
     filepath: string, lintConfig: TomlTableRef, ast: PNode
-): Future[seq[Finding]] {.async: (raises: [Exception]).} =
+): Future[seq[Finding]] {.async.} =
   let
     rules = {"typenames": typenames.run, "statuslibs": statuslibs.run}.toTable()
     queue = newAsyncQueue[Finding]()
