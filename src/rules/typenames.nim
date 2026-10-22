@@ -10,7 +10,7 @@ import ../types
 
 proc run*(
     queue: AsyncQueue[Finding],
-    filepath: string,
+    filePath: string,
     ast: PNode,
     severity: Severity,
     settings: TomlTableRef,
@@ -35,13 +35,13 @@ proc run*(
         if len(typeName) < minLength:
           let
             msg = &"Type names must be {minLength} or more chars long, but {typeName} is {len(typeName)} chars long."
-            issue = Finding.init(severity, "typenames", filepath, node.info, msg)
+            issue = Finding.init(severity, "typenames", filePath, node.info, msg)
 
           await queue.put(issue)
 
         if len(typeName) > maxLength:
           let
             msg = &"Type names must be {maxLength} or less chars long, but {typeName} is {len(typeName)} chars long."
-            issue = Finding.init(severity, "typenames", filepath, node.info, msg)
+            issue = Finding.init(severity, "typenames", filePath, node.info, msg)
 
           await queue.put(issue)

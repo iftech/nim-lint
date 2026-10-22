@@ -22,7 +22,7 @@ type Cli = object
   dir {.abbr: "d", defaultValue: ".".}: InputDir
 
 proc runRules(
-    filepath: string, lintConfig: TomlTableRef, ast: PNode
+    filePath: string, lintConfig: TomlTableRef, ast: PNode
 ): Future[seq[Finding]] {.async.} =
   let
     rules = {"typenames": typenames.run, "statuslibs": statuslibs.run}.toTable()
@@ -41,7 +41,7 @@ proc runRules(
         else:
           TableRef[string, TomlValueRef]()
 
-    ruleFutures.add(ruleRunner(queue, filepath, ast, severity, settings))
+    ruleFutures.add(ruleRunner(queue, filePath, ast, severity, settings))
 
   await allFutures(ruleFutures)
 

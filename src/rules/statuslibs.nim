@@ -12,7 +12,7 @@ const statusAnalogs = {"parsecfg": "confutils", "asyncdispatch": "chronos"}.toTa
 
 proc run*(
     queue: AsyncQueue[Finding],
-    filepath: string,
+    filePath: string,
     ast: PNode,
     severity: Severity,
     settings: TomlTableRef,
@@ -30,6 +30,6 @@ proc run*(
       if importedModule in statusAnalogs:
         let
           msg = &"Do not use {importedModule}. Use Status's analog instead: {statusAnalogs[importedModule]}."
-          finding = Finding.init(severity, "statuslibs", filepath, node.info, msg)
+          finding = Finding.init(severity, "statuslibs", filePath, node.info, msg)
 
         await queue.put(finding)
