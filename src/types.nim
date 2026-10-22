@@ -1,6 +1,7 @@
 import compiler/lineinfos
 
 import std/strformat
+import std/sequtils
 
 type
   Severity* = enum
@@ -14,6 +15,10 @@ type
     line*: int # 1-indexed
     col*: int # 0-indexed
     msg*: string
+
+  Report* = object
+    filepath*: string
+    findings*: seq[Finding]
 
 proc init*(
     T: type Finding,
@@ -32,5 +37,21 @@ proc init*(
     msg: msg,
   )
 
-proc `$`*(issue: Finding): string =
-  &"[{issue.rulename}][{issue.severity}][{issue.filepath}:{issue.line}:{issue.col}] {issue.msg}"
+proc init*(T: type Report, filepath: string, findings: seq[Finding]): T =
+  T(filepath: filepath, findings: findings)
+
+proc `$`*(finding: Finding): string =
+  &"[{finding.rulename}][{finding.severity}][{finding.line}:{finding.col}] {finding.msg}"
+
+proc `$`*(report: Report): string =
+  let
+    hintCount = report.findings.countIt(it.severity == Severity.hint)
+    errorCount = report.findings.countIt(it.severity == Severity.error)
+  result.add(&"[{report.filepath}] hints: {hintCount}, errors: {errorCount}\n")
+  for finding in report.findings:
+    result.add(&"\t{finding}\n")
+
+proc hasErrors*(report: Report): bool =
+  for finding in report.findings:
+    if finding.severity == Severity.error:
+      return true
