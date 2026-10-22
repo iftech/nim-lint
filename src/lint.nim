@@ -1,6 +1,7 @@
 import compiler/[ast, parser, idents, options]
 
 import std/tables
+import std/strutils
 import std/strformat
 import std/os
 
@@ -21,65 +22,77 @@ type Cli = object
   dir {.abbr: "d", defaultValue: ".".}: InputDir
 
 proc runRules(
-    filepath: string, lintCfg: string, ast: PNode, rulenames: seq[string]
-) {.async: (raises: [Exception]).} =
+    filepath: string, lintConfig: TomlTableRef, ast: PNode
+): Future[seq[Finding]] {.async: (raises: [Exception]).} =
   let
     rules = {"typenames": typenames.run, "statuslibs": statuslibs.run}.toTable()
     queue = newAsyncQueue[Finding]()
 
   var ruleFutures = newSeq[Future[void]]()
 
-  for rulename in rulenames:
+  for rulename in lintConfig["rules"].arrayVal:
     let
-      severity = Toml.loadFile(lintCfg, Severity, rulename & ".severity")
+      ruleRunner = rules[rulename.stringVal]
+      ruleConfig = lintConfig[rulename.stringVal].tableVal
+      severity = parseEnum[Severity](ruleConfig["severity"].stringVal)
       params =
-        try:
-          Toml.loadFile(lintCfg, TomlValueRef, rulename & ".params")
-        except TomlError:
-          TomlValueRef(kind: TomlKind.Table, tableVal: newTable[string, TomlValueRef]())
+        if ruleConfig.hasKey("params"):
+          ruleConfig["params"].tableVal
+        else:
+          TableRef[string, TomlValueRef]()
 
-    ruleFutures.add(rules[rulename](queue, filepath, ast, severity, params.tableVal))
+    ruleFutures.add(ruleRunner(queue, filepath, ast, severity, params))
 
   await allFutures(ruleFutures)
 
-  for issue in queue:
-    echo &"\t{issue}"
+  for finding in queue:
+    result.add(finding)
 
-proc checkLintVersion(lintCfg: string) =
-  let requiredLintVersion = Toml.loadFile(lintCfg, string, "lint_version")
+proc checkLintVersion(lintConfig: TomlTableRef) =
+  let requiredLintVersion = lintConfig["lint_version"].stringVal
 
   if requiredLintVersion != version:
     echo &"Warning! Lint version mismatch: current version is {version}, the required version is {requiredLintVersion}. Your rules may not behave the way you expect them to."
 
-proc checkFile(filepath: string, lintCfg: string) =
+proc checkFile(filepath: string, lintConfig: TomlTableRef): Report =
   let
-    rulenames = Toml.loadFile(lintCfg, seq[string], "rules")
     src = readFile(filepath)
     identCache = newIdentCache()
     configRef = newPartialConfigRef()
     ast = parseString(src, identCache, configRef, filepath)
+    findings = waitFor runRules(filepath, lintConfig, ast)
 
-  echo &"Checking file {filepath}"
-  waitFor runRules(filepath, lintCfg, ast, rulenames)
-  echo &"Done checking {filepath}."
+  Report.init(filepath, findings)
 
 proc collectNimFiles(dir = "."): seq[string] =
   for file in walkDirRec(dir):
     if splitFile(file).ext == ".nim":
       result.add(file)
 
+proc hasErrors(reports: openArray[Report]): bool =
+  for report in reports:
+    if report.hasErrors:
+      return true
+
 when isMainModule:
   let cli = Cli.load(version = version)
 
   let
-    lintCfg = $cli.config
+    lintConfig = Toml.loadFile($cli.config, TomlValueRef).tableVal
     filepaths =
       if cli.file.isSome:
         @[$cli.file.value]
       else:
         collectNimFiles($cli.dir)
 
-  checkLintVersion(lintCfg)
+  checkLintVersion(lintConfig)
+
+  var reports: seq[Report]
 
   for filepath in filepaths:
-    checkFile(filepath, lintCfg)
+    reports.add(checkFile(filepath, lintConfig))
+
+  for report in reports:
+    echo report
+
+  quit(int(reports.hasErrors))
