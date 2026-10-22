@@ -4,7 +4,6 @@ import std/tables
 import std/strformat
 
 import pkg/toml_serialization
-import pkg/chronicles
 import pkg/chronos
 
 import ../types
@@ -12,10 +11,10 @@ import ../types
 const statusAnalogs = {"parsecfg": "confutils", "asyncdispatch": "chronos"}.toTable()
 
 proc run*(
-    queue: AsyncQueue[Issue],
+    queue: AsyncQueue[Finding],
     filepath: string,
     ast: PNode,
-    level: LogLevel,
+    severity: Severity,
     params: TomlTableRef,
 ) {.async.} =
   for node in ast.sons:
@@ -30,8 +29,7 @@ proc run*(
 
       if importedModule in statusAnalogs:
         let
-          msg =
-            &"Do not use {importedModule}. Use Status's analog instead: {statusAnalogs[importedModule]}."
-          issue = Issue.init(level, "statuslibs", filepath, node.info, msg)
+          msg = &"Do not use {importedModule}. Use Status's analog instead: {statusAnalogs[importedModule]}."
+          finding = Finding.init(severity, "statuslibs", filepath, node.info, msg)
 
-        await queue.put(issue)
+        await queue.put(finding)

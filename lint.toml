@@ -8,9 +8,9 @@ rules = ["typenames", "statuslibs"]
 [typenames]
 
 # Optional. How strong you want the issues with this rule reported.
-# Available values: https://github.com/status-im/nim-chronicles/blob/master/chronicles/options.nim#L45.
-# Default: NONE.
-level = "WARN"
+# Available values: hint, error
+# Default: hint.
+severity = "error"
 
 # Optional. Some rules have params and this is how you set their values.
 # You can use inline tables (like in this example) or a separate table `[rulename.params]`.
@@ -18,4 +18,4 @@ level = "WARN"
 params = { minLength = 5, maxLength = 10 }
 
 [statuslibs]
-level = "INFO"
+severity = "hint"

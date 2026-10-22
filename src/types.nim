@@ -2,26 +2,29 @@ import compiler/lineinfos
 
 import std/strformat
 
-import pkg/chronicles
+type
+  Severity* = enum
+    hint
+    error
 
-type Issue* = object
-  level*: LogLevel
-  rulename*: string
-  filepath*: string
-  line*: int # 1-indexed
-  col*: int # 0-indexed
-  msg*: string
+  Finding* = object
+    severity*: Severity
+    rulename*: string
+    filepath*: string
+    line*: int # 1-indexed
+    col*: int # 0-indexed
+    msg*: string
 
 proc init*(
-    T: type Issue,
-    level: LogLevel,
+    T: type Finding,
+    severity: Severity,
     rulename: string,
     filepath: string,
     lineinfo: TLineInfo,
     msg: string,
 ): T =
   T(
-    level: level,
+    severity: severity,
     rulename: rulename,
     filepath: filepath,
     line: int(lineinfo.line),
@@ -29,5 +32,5 @@ proc init*(
     msg: msg,
   )
 
-proc `$`*(issue: Issue): string =
-  &"[{issue.rulename}][{issue.level}][{issue.filepath}:{issue.line}:{issue.col}] {issue.msg}"
+proc `$`*(issue: Finding): string =
+  &"[{issue.rulename}][{issue.severity}][{issue.filepath}:{issue.line}:{issue.col}] {issue.msg}"

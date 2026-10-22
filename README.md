@@ -25,8 +25,8 @@ Check a single file:
 ```shell
 $ ./bin/lint ./tests/testproject/src/testproject.nim
 Checking file tests/testproject/src/testproject.nim
-        [typenames][WARN][tests/testproject/src/testproject.nim:4:2] Type names must me 10 or less chars long, but OverlyLongTypeName is 18 chars long.
-        [statuslibs][INFO][tests/testproject/src/testproject.nim:1:0] Do not use parsecfg. Use Status's analog instead: confutils.
+        [typenames][error][tests/testproject/src/testproject.nim:4:2] Type names must me 10 or less chars long, but OverlyLongTypeName is 18 chars long.
+        [statuslibs][hint][tests/testproject/src/testproject.nim:1:0] Do not use parsecfg. Use Status's analog instead: confutils.
 Done checking tests/testproject/src/testproject.nim.
 ```
 
@@ -35,12 +35,12 @@ Check all .nim files in a given directory:
 ```shell
 $ ./bin/lint -d:./tests/testproject/
 Checking file tests/testproject/src/testproject.nim
-        [typenames][WARN][tests/testproject/src/testproject.nim:4:2] Type names must me 10 or less chars long, but OverlyLongTypeName is 18 chars long.
-        [statuslibs][INFO][tests/testproject/src/testproject.nim:1:0] Do not use parsecfg. Use Status's analog instead: confutils.
+        [typenames][error][tests/testproject/src/testproject.nim:4:2] Type names must me 10 or less chars long, but OverlyLongTypeName is 18 chars long.
+        [statuslibs][hint][tests/testproject/src/testproject.nim:1:0] Do not use parsecfg. Use Status's analog instead: confutils.
 Done checking tests/testproject/src/testproject.nim.
 Checking file tests/testproject/src/testproject/submodule.nim
-        [typenames][WARN][tests/testproject/src/testproject/submodule.nim:4:2] Type names must me 5 or more chars long, but Foo is 3 chars long.
-        [statuslibs][INFO][tests/testproject/src/testproject/submodule.nim:1:0] Do not use asyncdispatch. Use Status's analog instead: chronos.
+        [typenames][error][tests/testproject/src/testproject/submodule.nim:4:2] Type names must me 5 or more chars long, but Foo is 3 chars long.
+        [statuslibs][hint][tests/testproject/src/testproject/submodule.nim:1:0] Do not use asyncdispatch. Use Status's analog instead: chronos.
 Done checking tests/testproject/src/testproject/submodule.nim.
 ```
 
@@ -61,7 +61,7 @@ proc run*(
     queue: AsyncQueue[Issue], # put found issues here
     filepath: string, # the path to the file being checked, for reporting
     ast: PNode, # the module's AST
-    level: LogLevel, # the level the found issues should be reported with
+    severity: Severity, # the severity the findings are reported with
     params: TomlTableRef, # param values
 ) {.async.} =
 ```
@@ -74,7 +74,7 @@ Each `Issue` contains the complete information about the found problem:
 
 ```nim
 type Issue* = object
-  level*: LogLevel
+  severity*: Severity
   rulename*: string # name of the rule, for reporting
   filepath*: string
   line*: int # 1-indexed
@@ -92,6 +92,7 @@ However, if the rule is bound to some specific values, it is OK to hardcode them
 - OK if the rule is specifically called "Enforce Status Libs": "Check that Status's libs are used instead of similarly functioning std libs: chronos instead of asyncdispatch, confutils instead of parsecfg, etc."
 
 It is good practice to have a rule cover a specific isolated area, not too large, not too small:
+
 - Bad rule: "Check that the variables used in chronicle logs are n+ chars long."
 - Good rule: "A collection of chronicles checks: use n+ length variables, avoid certain characters in the end (default: [!, ?, .]), etc.
 
@@ -100,8 +101,6 @@ It is good practice to have a rule cover a specific isolated area, not too large
 A single file check consists of running all enabled rules against it asynchronously and reporting the found issues.
 
 If multiple files are to be checked, they are checked asynchronously as well (TODO).
-
-Collected issues are reported with `chronicles` (TODO).
 
 # Version Requirement
 
@@ -137,7 +136,7 @@ One would refer to a ruleset in their `lint.toml` and override the rules propert
 ruleset = "https://raw.githubusercontent.com/iftech/min-lint-rulesets/master/status.toml"
 
 [typename]
-level = ERROR
+severity = "error"
 params = {minLength: 5}
 ```
 

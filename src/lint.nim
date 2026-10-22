@@ -5,7 +5,6 @@ import std/strformat
 import std/os
 
 import pkg/confutils
-import pkg/chronicles
 import pkg/chronos
 import pkg/toml_serialization
 
@@ -26,20 +25,20 @@ proc runRules(
 ) {.async: (raises: [Exception]).} =
   let
     rules = {"typenames": typenames.run, "statuslibs": statuslibs.run}.toTable()
-    queue = newAsyncQueue[Issue]()
+    queue = newAsyncQueue[Finding]()
 
   var ruleFutures = newSeq[Future[void]]()
 
   for rulename in rulenames:
     let
-      level = Toml.loadFile(lintCfg, LogLevel, rulename & ".level")
+      severity = Toml.loadFile(lintCfg, Severity, rulename & ".severity")
       params =
         try:
           Toml.loadFile(lintCfg, TomlValueRef, rulename & ".params")
         except TomlError:
           TomlValueRef(kind: TomlKind.Table, tableVal: newTable[string, TomlValueRef]())
 
-    ruleFutures.add(rules[rulename](queue, filepath, ast, level, params.tableVal))
+    ruleFutures.add(rules[rulename](queue, filepath, ast, severity, params.tableVal))
 
   await allFutures(ruleFutures)
 
