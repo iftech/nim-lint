@@ -30,6 +30,6 @@ proc run*(
       if importedModule in statusAnalogs:
         let
           msg = &"Do not use {importedModule}. Use Status's analog instead: {statusAnalogs[importedModule]}."
-          finding = Finding.init(severity, "statuslibs", filePath, node.info, msg)
+          finding = Finding.init(severity, "status_libs", filePath, node.info, msg)
 
         await queue.put(finding)

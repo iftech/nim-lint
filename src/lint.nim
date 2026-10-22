@@ -25,7 +25,7 @@ proc runRules(
     filePath: string, lintConfig: TomlTableRef, ast: PNode
 ): Future[seq[Finding]] {.async.} =
   let
-    rules = {"typenames": typenames.run, "statuslibs": statuslibs.run}.toTable()
+    rules = {"type_names": typenames.run, "status_libs": statuslibs.run}.toTable()
     queue = newAsyncQueue[Finding]()
 
   var ruleFutures = newSeq[Future[void]]()
