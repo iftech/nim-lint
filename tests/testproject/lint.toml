@@ -1,0 +1,12 @@
+rules = ["typeNames", "statusLibs"]
+
+ignoredPatterns = ["./tests/*", "./src/**/foo*.nim"]
+
+[typeNames]
+severity = "error"
+[typeNames.settings]
+minLength = 5
+maxLength = 10
+
+[statusLibs]
+severity = "hint"

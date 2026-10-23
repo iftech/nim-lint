@@ -1,5 +1,87 @@
-# This is just an example to get you started. A typical binary package
-# uses this file as the main entry point of the application.
+import compiler/[ast, parser, idents, options]
+
+import std/tables
+import std/strutils
+import std/os
+
+import pkg/confutils
+import pkg/toml_serialization
+import pkg/glob
+
+import ./types
+import ./rules/typeNames
+import ./rules/statusLibs
+
+const
+  defaultConfigFile = "lint.toml"
+  rules = {"typeNames": typeNames.analyze, "statusLibs": statusLibs.analyze}.toTable()
+
+type Cli = object
+  config {.abbr: "c", defaultValue: defaultConfigFile.}: InputFile
+  file {.argument.}: Opt[InputFile]
+  dir {.abbr: "d", defaultValue: ".".}: InputDir
+
+proc runRules(filePath: string, lintConfig: TomlTableRef, ast: PNode): seq[Finding] =
+  for rulename in lintConfig["rules"].arrayVal:
+    let
+      ruleRunner = rules[rulename.stringVal]
+      ruleConfig = lintConfig[rulename.stringVal].tableVal
+      severity = parseEnum[Severity](ruleConfig["severity"].stringVal)
+      settings =
+        if ruleConfig.hasKey("settings"):
+          ruleConfig["settings"].tableVal
+        else:
+          TableRef[string, TomlValueRef]()
+
+    result &= ruleRunner(ast, filePath, severity, settings)
+
+proc checkFile(filePath: string, lintConfig: TomlTableRef): Report =
+  let
+    src = readFile(filePath)
+    identCache = newIdentCache()
+    configRef = newPartialConfigRef()
+    ast = parseString(src, identCache, configRef, filePath)
+    findings = runRules(filePath, lintConfig, ast)
+
+  Report.init(filePath, findings)
+
+proc isInIgnoredPatterns(filePath: string, ignoredPatterns: seq[TomlValueRef]): bool =
+  for ignoredPattern in ignoredPatterns:
+    if filePath.matches(ignoredPattern.stringVal):
+      return true
+
+proc collectNimFiles(dir: string, ignoredPatterns: seq[TomlValueRef]): seq[string] =
+  for filePath in walkDirRec(dir):
+    if splitFile(filePath).ext == ".nim" and not filePath.isInIgnoredPatterns(ignoredPatterns):
+      result.add(filePath)
+
+proc hasErrors(reports: openArray[Report]): bool =
+  for report in reports:
+    if report.hasErrors:
+      return true
 
 when isMainModule:
-  echo("Hello, World!")
+  let cli = Cli.load()
+
+  let
+    lintConfig = Toml.loadFile($cli.config, TomlValueRef).tableVal
+    ignoredPatterns =
+      if lintConfig.hasKey("ignoredPatterns"):
+        lintConfig["ignoredPatterns"].arrayVal
+      else:
+        @[]
+    filepaths =
+      if cli.file.isSome:
+        @[$cli.file.value]
+      else:
+        collectNimFiles($cli.dir, ignoredPatterns)
+
+  var reports: seq[Report]
+
+  for filepath in filepaths:
+    reports.add(checkFile(filepath, lintConfig))
+
+  for report in reports:
+    echo report
+
+  quit(int(reports.hasErrors))
