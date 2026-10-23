@@ -1,5 +1,3 @@
-lintVersion = "1.0.0"
-
 rules = ["typeNames", "statusLibs"]
 
 ignoredPatterns = ["./tests/*", "./src/**/foo*.nim"]

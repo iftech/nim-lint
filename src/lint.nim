@@ -2,7 +2,6 @@ import compiler/[ast, parser, idents, options]
 
 import std/tables
 import std/strutils
-import std/strformat
 import std/os
 
 import pkg/confutils
@@ -14,7 +13,6 @@ import ./rules/typeNames
 import ./rules/statusLibs
 
 const
-  version = "1.0.0"
   defaultConfigFile = "lint.toml"
   rules = {"typeNames": typeNames.analyze, "statusLibs": statusLibs.analyze}.toTable()
 
@@ -36,12 +34,6 @@ proc runRules(filePath: string, lintConfig: TomlTableRef, ast: PNode): seq[Findi
           TableRef[string, TomlValueRef]()
 
     result &= ruleRunner(ast, filePath, severity, settings)
-
-proc checkLintVersion(lintConfig: TomlTableRef) =
-  let requiredLintVersion = lintConfig["lintVersion"].stringVal
-
-  if requiredLintVersion != version:
-    echo &"Warning! Lint version mismatch: current version is {version}, the required version is {requiredLintVersion}. Your rules may not behave the way you expect them to."
 
 proc checkFile(filePath: string, lintConfig: TomlTableRef): Report =
   let
@@ -69,7 +61,7 @@ proc hasErrors(reports: openArray[Report]): bool =
       return true
 
 when isMainModule:
-  let cli = Cli.load(version = version)
+  let cli = Cli.load()
 
   let
     lintConfig = Toml.loadFile($cli.config, TomlValueRef).tableVal
@@ -83,8 +75,6 @@ when isMainModule:
         @[$cli.file.value]
       else:
         collectNimFiles($cli.dir, ignoredPatterns)
-
-  checkLintVersion(lintConfig)
 
   var reports: seq[Report]
 

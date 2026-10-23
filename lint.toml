@@ -1,6 +1,3 @@
-# Mandatory. The *exact* lint version required to run the rules.
-lintVersion = "1.0.0"
-
 # Mandatory. List of the rules. See the list of available rules at https://iftech.github.io/nim-lint
 rules = ["typeNames", "statusLibs"]
 

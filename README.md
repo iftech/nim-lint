@@ -99,14 +99,6 @@ It is good practice to have a rule cover a specific isolated area, not too large
 
 A single file check consists of running all enabled rules against it and reporting the found issues.
 
-# Version Requirement
-
-Since lint is not only the rule runner but also the rule library, it is possible that with a new lint release existing confings will become outdated.
-
-This is why there is the mandatory `version` key in `lint.toml`. It is the specific lint version this config is designed for. Before running any rules, lint checks that its own version is the same as the required one and print a warning if there's a mismtach.
-
-Note: This is not a semver or any similar check that validates if the current versions _satisfies_ a certain version constraint. Lint checks that its version is _exactly_ the same as the required one. This is because rules do not progress, they just change. Version 2 is not better than 1, it's just a different version. A better term would actually be "edition," but "version" is too well established to denote package releases.
-
 # GitHub Actions Integration (TODO)
 
 When executed as part of CI, lint will comment on the code that contains issues. Because it knows the exact point where an issue occured, it can leave specific comments in specific code locations.
