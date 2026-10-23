@@ -4,7 +4,7 @@ lintVersion = "1.0.0"
 # Mandatory. List of the rules. See the list of available rules at https://iftech.github.io/nim-lint
 rules = ["typeNames", "statusLibs"]
 
-skipPaths = ["tests"]
+ignoredPatterns = ["./tests/*", "./src/**/foo*.nim"]
 
 # Optional. This is the configuration for your rules.
 [typeNames]

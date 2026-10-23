@@ -2,7 +2,7 @@ lintVersion = "1.0.0"
 
 rules = ["typeNames", "statusLibs"]
 
-skipPaths = ["tests"]
+ignoredPatterns = ["./tests/*", "./src/**/foo*.nim"]
 
 [typeNames]
 severity = "error"

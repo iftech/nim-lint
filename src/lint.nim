@@ -7,6 +7,7 @@ import std/os
 
 import pkg/confutils
 import pkg/toml_serialization
+import pkg/glob
 
 import ./types
 import ./rules/typeNames
@@ -52,14 +53,14 @@ proc checkFile(filePath: string, lintConfig: TomlTableRef): Report =
 
   Report.init(filePath, findings)
 
-proc isInSkipPaths(filePath: string, skipPaths: seq[TomlValueRef]): bool =
-  for skipPath in skipPaths:
-    if filePath.isRelativeTo(skipPath.stringVal):
+proc isInIgnoredPatterns(filePath: string, ignoredPatterns: seq[TomlValueRef]): bool =
+  for ignoredPattern in ignoredPatterns:
+    if filePath.matches(ignoredPattern.stringVal):
       return true
 
-proc collectNimFiles(dir: string, skipPaths: seq[TomlValueRef]): seq[string] =
+proc collectNimFiles(dir: string, ignoredPatterns: seq[TomlValueRef]): seq[string] =
   for filePath in walkDirRec(dir):
-    if splitFile(filePath).ext == ".nim" and not filePath.isInSkipPaths(skipPaths):
+    if splitFile(filePath).ext == ".nim" and not filePath.isInIgnoredPatterns(ignoredPatterns):
       result.add(filePath)
 
 proc hasErrors(reports: openArray[Report]): bool =
@@ -72,16 +73,16 @@ when isMainModule:
 
   let
     lintConfig = Toml.loadFile($cli.config, TomlValueRef).tableVal
-    skipPaths =
-      if lintConfig.hasKey("skipPaths"):
-        lintConfig["skipPaths"].arrayVal
+    ignoredPatterns =
+      if lintConfig.hasKey("ignoredPatterns"):
+        lintConfig["ignoredPatterns"].arrayVal
       else:
         @[]
     filepaths =
       if cli.file.isSome:
         @[$cli.file.value]
       else:
-        collectNimFiles($cli.dir, skipPaths)
+        collectNimFiles($cli.dir, ignoredPatterns)
 
   checkLintVersion(lintConfig)
 

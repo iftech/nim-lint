@@ -14,3 +14,4 @@ bin           = @["lint"]
 requires "nim >= 2.2.12"
 requires "confutils >= 0.1.1"
 requires "toml_serialization >= 0.2.18"
+requires "glob"
