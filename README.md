@@ -1,159 +1,126 @@
 # Lint
 
-**Lint** is a linter and a linting rule library for Nim projects. It runs code rules against your code base and reports mismatches.
+## Glossary
 
-# Building from source
+_Lint_ is a library for building linters for Nim projects.
 
-```shell
-$ git clone git@github.com:iftech/nim-lint.git
-$ cd nim-lint
-$ nimble build
-```
+A project uses Lint by writing a _config file_ — a Nim source file that imports Lint and declares the linters to run and the checks to run in them. Compiling this file produces the project's lint executable, whose _CLI_ processes the command-line arguments. Lint itself ships no executable: it ships the library that the config file is compiled against. The config file is the only way to run Lint.
 
-# Usage
+_Config file_ describes a _config_, which defines:
 
-Create [`lint.toml`](./lint.toml). This is the config that defines the rules you wan to run.
+- which paths must be checked (the _sources_)
+- which patterns must be ignored during the run
+- which _steps_ must be run on each source file, in order
+  - one linter can be invoked in many steps
+- for each step, which patterns must be ignored for this step
+- for each step, which _checks_ must be used when this step runs
+- for each check, the _severity_ its _findings_ must be reported with: _error_ or _hint_
+- for each check, the _settings_ it must be run with
 
-Check all .nim files in the current directory and its subdirectories (warning: because the rules are currently not ready, do not expect this to work):
+Source paths, the config file, and ignored patterns are resolved relative to the current working directory (CWD). Ignored patterns declared on a step extend the top-level ones; they do not replace them.
 
-```shell
-$ ./bin/lint
-```
+The config file determines all the run aspects, the generated CLI does not accept any arguments or options. If you need to changes the run params, edit and recompile the config file.
 
-Check a single file:
+_Linter_ is a sub-program that analyzes the abstract syntax tree (AST) of a single Nim file by running a set of _checks_ against its nodes.
 
-```shell
-$ ./bin/lint ./tests/testproject/src/testproject.nim
-Checking file tests/testproject/src/testproject.nim
-        [typenames][error][tests/testproject/src/testproject.nim:4:2] Type names must me 10 or less chars long, but OverlyLongTypeName is 18 chars long.
-        [statuslibs][hint][tests/testproject/src/testproject.nim:1:0] Do not use parsecfg. Use Status's analog instead: confutils.
-Done checking tests/testproject/src/testproject.nim.
-```
+_Check_ is a rule that a node can satisfy or not satisfy. If a node does not satisfy a check, the check returns a _finding_. A check has not side-effects: it reads the AST and its settings and returns findings. It does not know the file it is run against, the linter it belongs to, or the severity its findings are reported with.
 
-Check all .nim files in a given directory:
+_Settings_ are key-value pairs that a check can use during its execution to adjust its behavior. Each check defines its own settings.
 
-```shell
-$ ./bin/lint -d:./tests/testproject/
-Checking file tests/testproject/src/testproject.nim
-        [typenames][error][tests/testproject/src/testproject.nim:4:2] Type names must me 10 or less chars long, but OverlyLongTypeName is 18 chars long.
-        [statuslibs][hint][tests/testproject/src/testproject.nim:1:0] Do not use parsecfg. Use Status's analog instead: confutils.
-Done checking tests/testproject/src/testproject.nim.
-Checking file tests/testproject/src/testproject/submodule.nim
-        [typenames][error][tests/testproject/src/testproject/submodule.nim:4:2] Type names must me 5 or more chars long, but Foo is 3 chars long.
-        [statuslibs][hint][tests/testproject/src/testproject/submodule.nim:1:0] Do not use asyncdispatch. Use Status's analog instead: chronos.
-Done checking tests/testproject/src/testproject/submodule.nim.
-```
+_Step_ is one invocation of a linter with one set of checks and settings. Steps are declared in order in the config file and are run in that order. A linter may be used by more than one step — for example, to run the same checks strictly against the package sources and relaxed against its tests. Each step carries a _label_ that identifies it in the report. A label is for the reader, not an identifier: nothing is looked up by it, and two steps may share one. Steps are independent: each step receives the same AST and does not see other steps' results, so "step" denotes ordering, not a pipeline.
 
-# Architecture
+_Finding_ contains:
 
-## Code Layout
+- the line at which the checked node is in the source file
+- the column at which the checked node is in the source file
+- a message explaining why the node does not satisfy the check
 
-- `lint.nim` is the entrypoint
-- `types.nim` holds the shared types, e.g. `Issue`
-- `rules/` is a directory with rule submodules
+Findings produced by a check carry no severity, no linter label, and no file path. Those are attached by the runner when it collects findings.
 
-## Rules
+_Severity_ is an enum that defines how findings are reported: as a _hint_ or as an _error_. Severity is declared in the config file per check, and is applied by the runner. A check cannot influence the severity of the findings it produces.
 
-Rules are the core of lint. They are functions that accept a module's AST and emit `Issue`s:
+_Hints_ are purely informational; a run with only hints is still considered successful. _Errors_ indicate a failed run; a run with at least one error is considered failed.
 
-```nim
-proc run*(
-    ast: PNode, # the module's AST
-    filepath: string, # the path to the file being checked, for reporting
-    severity: Severity, # the severity the findings are reported with
-    settings: TomlTableRef, # param values
-): seq[Finding] =
-```
+_Step report_ is the outcome of one step run against one file: the findings that step produced for that file, stamped with severity, step label, and file path. A _file report_ collects the step reports of every step run against one file, in step order. A _run report_ collects the file reports of every checked file.
 
-Because a rule has the entire raw AST to read, it can do all kinds of checks.
+Ordering is deterministic: files are processed in ascending path order, and steps run in the order they are declared. Two runs of the same executable against the same sources produce the same run report.
 
-Note: Because files are checked individually, a rule cannot implement project-side logic. I.e., a rule like "If some modules use asyncdispatch and other modules use chronos, tell the user to pick one" cannot exist. However, you can have a rule like "If a module uses asyncdispatch, tell the user to use chronos instead."
+## Execution Flow
 
-Each `Issue` contains the complete information about the found problem:
+1. The config file is compiled into the project's lint executable.
+2. The executable starts. It takes no run parameters: everything the run needs is fixed at compile time.
+3. The runner asks the source manager for the files to check.
+4. The source manager walks the source paths, filters the files by extension and by the ignored patterns, and yields the matching files in ascending path order.
+5. The runner parses each file into an AST exactly once. The AST is reused by every step run against that file.
+6. For each file, the runner runs every step against the AST in the order the steps are declared.
+7. For each step, the checks run in the order they are declared. Each check receives the AST and its settings and returns findings.
+8. The runner stamps each finding with the step's label, the file path, and the severity declared for the check that produced it.
+9. The runner assembles the file report and continues with the next file.
+10. When all files are checked, the runner assembles the run report and presents it.
+
+## Config File Example
+
+The config file is a Nim program. A complete one looks like this:
 
 ```nim
-type Issue* = object
-  severity*: Severity
-  rulename*: string # name of the rule, for reporting
-  filepath*: string
-  line*: int # 1-indexed
-  col*: int # 0-indexed
-  msg*: string # the message that the rule wants to communicate to the user
+import lint
+import lint/linters/[naming, imports]   # or `import lint/linters` for all
+import ./linters/libp2pLinter           # project-specific linters
+
+runLint:
+  sources = [".", "./src"]
+  ignoredPatterns = ["./tests/**/*", "./vendor/**/*"]
+
+  step "Check naming conventions":
+    linter = naming
+    ignoredPatterns = ["./src/submoduleWithUnconventionalNaming/**/*"]
+    check constNames:
+      severity = error
+    check varNames:
+      severity = hint
+      settings:
+        minLength = 5
+
+  step "Check imports":
+    linter = imports
+    check noAsyncdispatch:
+      severity = error
 ```
 
-Since rules are part of the lint package, they must be designed to be universal, i.e. not tailored for a specific project but _tailorable_ for any project via settings:
+Reading it top to bottom: `sources` are the roots to walk, `ignoredPatterns` are the files to skip everywhere. Each `step` names a linter, may add its own ignores, and lists the checks to run. Each `check` states how its findings are reported and, if the check has settings, the values for this run.
 
-- Bad rule: "Check that all type names start with 'Foo'." Good rule: "Check that type names have a given prefix, empty by default."
-- Somewhat OK: "Check that all ref type names start with 'Ref'." Better: "Check that all ref type names start with a certain prefix, 'Ref' by default."
+`key = value` assigns a value; `key:` opens a block. That is why `severity =` and `settings:` differ by one character.
 
-However, if the rule is bound to some specific values, it is OK to hardcode them:
+`settings:` values are checked against the settings type declared by the check, so a misspelled key is a compile error.
 
-- OK if the rule is specifically called "Enforce Status Libs": "Check that Status's libs are used instead of similarly functioning std libs: chronos instead of asyncdispatch, confutils instead of parsecfg, etc."
+## Implementation
 
-It is good practice to have a rule cover a specific isolated area, not too large, not too small:
+The config file is a Nim source file that imports Lint and declares a config. The library exposes the types and templates the config file needs:
 
-- Bad rule: "Check that the variables used in chronicle logs are n+ chars long."
-- Good rule: "A collection of chronicles checks: use n+ length variables, avoid certain characters in the end (default: [!, ?, .]), etc.
+- the `Linter` and `Check` types, and helpers for declaring them
+- the templates for declaring a config: sources, ignored patterns, linter steps, checks with settings and severity
+- the runner
+- the CLI
 
-### Rules Execution
+The library does not expose:
 
-A single file check consists of running all enabled rules against it and reporting the found issues.
+- the report types beyond what a custom presenter needs
+- any way to discover linters at runtime; the set of linters is fixed at compile time by what the config file imports
 
-# GitHub Actions Integration (TODO)
+A check receives the parsed file as a `PNode` from Nim's own compiler AST module (`compiler/ast`). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced. Writing a check therefore means importing `compiler/ast` and matching on node kinds, so a linter module depends on that module directly.
 
-When executed as part of CI, lint will comment on the code that contains issues. Because it knows the exact point where an issue occured, it can leave specific comments in specific code locations.
+Compilation is the config's validation step for everything the type system can express: a misspelled linter or check name and a wrong settings type are compile errors.
 
-# Declined Ideas
+## Exit Modes
 
-## Decentralized Architecture
+The run ends in exactly one of the following outcomes.
 
-Initially, lint was to be designed as a rule runner and the rules were supposed to be independent Nim packages.
+_Clean run_ — every file parsed, every step completed, and no finding carries the _error_ severity. The run report contains only hints, or is empty. The process exits with code 0.
 
-Reasons why this idea was declined:
+_Errors found_ — every file parsed and every step completed, and at least one finding carries the _error_ severity. The process exits with a code that is non-zero and distinct from the codes below.
 
-- With distributed architecture, it's much harder to update the core package without breaking stuff. All rules have to either use the same Nim version as lint so that the lint-parsed AST could be fed to them or parse the AST on their side adding overhead.
-- There is no nice way of shipping rules this way. The options are: compile the rules on the target machine, ship binaries, and ship dynlibs. All three have their own weaknesses.
-- There is no nice way of running the rules this way.
+_Parse error_ — a source file could not be parsed, so no AST exists and no step can be run against it. The file report holds a single finding attributed to the runner (not to a step) describing the parse failure. A parse error always fails the run, regardless of configured severities, because no check was able to evaluate the file. Remaining files are still checked, so one unparseable file does not hide findings in the rest.
 
-## Presets aka Rulesets
+_Config error_ — the config file cannot be compiled, or the run parameters cannot be satisfied (an unknown source path or an unusable ignore pattern). This is reported before any file is read. The process exits with a code that is non-zero and distinct from the codes above.
 
-There was this idea of having a ruleset registry that would hold ready-to-use configs, e.g. Status Style Guide, NEP 1, etc.
-
-One would refer to a ruleset in their `lint.toml` and override the rules properties if necessary:
-
-```toml
-ruleset = "https://raw.githubusercontent.com/iftech/min-lint-rulesets/master/status.toml"
-
-[typenames]
-severity = "error"
-[typenames.settings]
-minLength = 5
-```
-
-Reasons why this idea was declined:
-
-- Rulesets would evolve independently on the core package and would require their own edition management. Although this is doable, this significantly extends the scope of development.
-- A ruleset may require a lint version that is different from the lint version that the user wants locally for their custom rules. It is not obvious how to deal with this situation:
-
-```toml
-list_version = "1.0.0"
-
-# Ruleset has `list version = "2.0.0" in it`
-ruleset = "https://raw.githubusercontent.com/iftech/min-lint-rulesets/master/status.toml"
-```
-
-- The simplest `lint.toml` would look like `ruleset = "https://raw.githubusercontent.com/iftech/min-lint-rulesets/master/status.toml"`. Which kind begs for a question: "Why not simply put `status.toml` in the project root and use it as a config with `lint -c:status.toml`? It's more clear this way, and you can easily customize the rules locally."
-
-Shared rulesets still sounds like a nice thing to have but it's probably much easier to solve by simply shipping your config with the project.
-
-# License
-
-Licensed and distributed under either of
-
-- MIT license: [LICENSE-MIT](./LICENSE-MIT) or http://opensource.org/licenses/MIT
-
-or
-
-- Apache License, Version 2.0, ([LICENSE-APACHEv2](./LICENSE-APACHEv2) or http://www.apache.org/licenses/LICENSE-2.0)
-
-at your option. This file may not be copied, modified, or distributed except according to those terms.
+_Check error_ — a check raised an exception. A check is library code, so an exception is a defect in the tool, not a property of the checked code. The run stops, the exception is reported with the step label, check name, and file path, and the process exits with a code that is non-zero and distinct from the codes above. Continuing past a raising check would report a file as checked when it was not.
