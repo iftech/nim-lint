@@ -28,3 +28,9 @@ nimbledeps
 /config.nims
 
 .monit*yml
+
+# Built test binaries and the example lint binary
+tests/teststructure
+tests/trun
+tests/tconfig_errors
+examples/lint
