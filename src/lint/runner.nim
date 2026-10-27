@@ -1,12 +1,13 @@
 ## The runner: walks sources, parses files, runs steps, assembles reports.
 
-import std/[algorithm, os, sets, strformat]
+import std/[algorithm, os, sets, strformat, tables]
 
 import glob
 
 import compiler/[ast, parser, idents, options]
 import compiler/lineinfos except Severity
 
+import ./typed
 import ./types
 
 
@@ -37,6 +38,7 @@ type
 
   RunReport* = object
     fileReports*: seq[FileReport]
+    skippedTyped*: seq[string] ## Checks skipped because the project did not sem.
 
 proc normalize(path: string): string =
   ## The glob library matches against patterns without a leading `./`.
@@ -88,6 +90,8 @@ proc renderFinding(tag: FindingTag): string =
 
 proc `$`*(report: RunReport): string =
   var hints, errors = 0
+  for skipped in report.skippedTyped:
+    result.add &"skipped (needs typed analysis, project does not sem): {skipped}\n"
   for fileReport in report.fileReports:
     for stepReport in fileReport.stepReports:
       for tag in stepReport.findings:
@@ -105,6 +109,52 @@ proc exitMode*(report: RunReport): ExitMode =
           return emErrorsFound
   emClean
 
+proc needsTyped(config: Config): bool =
+  ## True when at least one configured check reads types from the tree.
+  for step in config.steps:
+    for check in step.checks:
+      if check.requiresTyped:
+        return true
+
+proc projectFile(config: Config): string =
+  ## The entry point handed to the compiler: the first source that is a file,
+  ## or the `main`/`<name>` module of the first source directory.
+  if config.sources.len == 0:
+    return ""
+  let first = config.sources[0]
+  if fileExists(first):
+    return first
+  # Prefer a conventional entry point, then any module, so the result is
+  # deterministic.
+  for candidate in ["main.nim", "nimbus.nim"]:
+    if fileExists(first / candidate):
+      return first / candidate
+  var found: seq[string]
+  for path in walkDirRec(first):
+    if splitFile(path).ext == ".nim":
+      found.add path
+  found.sort()
+  if found.len > 0: found[0] else: ""
+
+proc typedTrees(config: Config): seq[ModuleTree] =
+  ## Sems the project once and returns its typed trees. Empty when the project
+  ## cannot be sem'd; the caller falls back to parse-only analysis.
+  let entry = projectFile(config)
+  if entry.len == 0:
+    return
+  var searchPaths: seq[string]
+  for source in config.sources:
+    searchPaths.add source
+  try:
+    let project = compileTypedProject(
+      TypedConfig(projectFile: entry, searchPaths: searchPaths)
+    )
+    if project.errorCount > 0:
+      stderr.writeLine &"warning: project has {project.errorCount} semantic errors; typed checks may be incomplete"
+    result = project.modules
+  except TypedUnavailable as e:
+    stderr.writeLine "warning: cannot run typed checks: " & e.msg
+
 proc run*(config: Config) =
   ## Runs the config and exits with the code for the resulting exit mode.
   var exitCode = ExitMode.emClean
@@ -118,12 +168,33 @@ proc run*(config: Config) =
 
   var report = RunReport()
 
+  # Typed analysis is run once for the whole project, and only when a
+  # configured check needs it. It is a fallback-able step: if the project does
+  # not sem, typed checks are skipped and reported, and the syntax-only checks
+  # still run.
+  var typedByPath: Table[string, PNode]
+  if config.needsTyped:
+    for m in typedTrees(config):
+      typedByPath[m.path] = m.tree
+    if typedByPath.len == 0:
+      for step in config.steps:
+        for check in step.checks:
+          if check.requiresTyped:
+            report.skippedTyped.add step.label & "/" & check.name
+
   for file in files:
     var fileReport = FileReport(file: file)
     var ast: PNode
     var parseFailed = false
+    let typedAst = block:
+      let key = absolutePath(file)
+      if typedByPath.hasKey(key): typedByPath[key] else: nil
     try:
-      ast = parseFile(file)
+      # A typed tree is strictly more informative, so prefer it when present.
+      if typedAst != nil:
+        ast = typedAst
+      else:
+        ast = parseFile(file)
     except CatchableError as e:
       parseFailed = true
       fileReport.stepReports.add StepReport(
@@ -148,6 +219,8 @@ proc run*(config: Config) =
           continue
         var stepReport = StepReport(label: step.label, linter: step.linter)
         for check in step.checks:
+          if check.requiresTyped and typedAst == nil:
+            continue
           var findings: seq[Finding]
           try:
             findings = check.run(ast)

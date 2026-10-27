@@ -19,6 +19,7 @@ type
     name*: string
     run*: proc(ast: PNode, settings: S): seq[Finding]
     defaults*: S ## Used when a config declares the check without settings.
+    requiresTyped*: bool ## Whether the check needs `nkSym` nodes with types.
 
   Linter* = object
     ## A group of checks. A linter module exports one `Linter` value.
@@ -30,6 +31,7 @@ type
     name*: string
     severity*: Severity
     run*: proc(ast: PNode): seq[Finding]
+    requiresTyped*: bool
 
   Step* = object
     ## One declared `step` block.
@@ -51,10 +53,15 @@ proc check*[S](
     name: string,
     run: proc(ast: PNode, settings: S): seq[Finding],
     defaults: S = default(S),
+    requiresTyped: bool = false,
 ): Check[S] =
   ## Used by linter modules to declare one check, its settings type, and the
   ## settings to use when a config does not provide any.
-  Check[S](name: name, run: run, defaults: defaults)
+  ##
+  ## Set `requiresTyped` for checks that read types from the tree. Such a check
+  ## cannot run when the project does not sem; the runner reports it as skipped
+  ## instead of running it against a parse-only tree.
+  Check[S](name: name, run: run, defaults: defaults, requiresTyped: requiresTyped)
 
 proc finding*(node: PNode, msg: string): Finding =
   ## Builds a finding located at a node.

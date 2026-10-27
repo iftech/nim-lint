@@ -65,12 +65,15 @@ macro mkStepCheck(
   # from an enclosing scope: a captured local is reconstructed from the syntax
   # tree inside the closure's scope, which loses `seq` fields (they come back
   # nil at run time).
+  let typedFlag = newTree(nnkDotExpr, check, ident"requiresTyped")
+
   result = quote do:
     StepSetting(
       name: `name`,
       severity: `severity`,
       run: proc(`astId`: PNode): seq[Finding] =
         `runId`.run(`astId`, `ctor`),
+      requiresTyped: `typedFlag`,
     )
 
 proc parseCheck(stmt: NimNode): NimNode =

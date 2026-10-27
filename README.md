@@ -111,6 +111,38 @@ A check receives the parsed file as a `PNode` from Nim's own compiler AST module
 
 Compilation is the config's validation step for everything the type system can express: a misspelled linter or check name and a wrong settings type are compile errors.
 
+## Typed Checks
+
+By default a check reads a parse-only tree, where every variable is an identifier with no type. A check that needs to know a value's type must be declared with `requiresTyped = true`:
+
+```nim
+let typePrefix* = typedChecks.check(
+  "typePrefix", runTypePrefix, TypePrefixSettings(prefix: ""), requiresTyped = true
+)
+```
+
+When at least one configured check requires types, the runner semantically checks the project once — the way nimsuggest does — and hands checks the typed tree, where identifiers are `nkSym` nodes carrying `.sym` and `.sym.typ`. The project's own modules and everything they import are all available, so a typed check sees resolved types across module boundaries, not just within one file.
+
+This costs far more than parsing. Measured on this machine with `command = "check"` (sem only, no codegen):
+
+| Project | Parse-only | Typed | Typed peak RSS |
+| --- | --- | --- | --- |
+| 121 modules, 10k LOC | 4.7 ms | 195 ms | ~39 MB |
+| nimbus-eth1, full binary | 0.22 s | ~2.5 min | 7.0 GB |
+| nimbus-eth1, execution client only | — | 1m15s | 4.0 GB |
+
+The fixed cost dominates small projects: roughly 130 ms plus 6 ms per 1000 LOC, almost all of it `system` and the standard library. Typed analysis is therefore opt-in per check, not a global mode, and it is only paid for when some check needs it.
+
+If the project cannot be semantically checked, that is not a failed run. Typed checks are skipped and the run report says so:
+
+```
+skipped (needs typed analysis, project does not sem): Typed check/typePrefix
+```
+
+Syntax-only checks still run. A project with semantic errors may still produce partial typed trees, in which case typed checks run over what the compiler resolved and a warning reports the error count.
+
+The compiler API used here (`registerPass`, `semPass`, `compileProject`) is what nimsuggest uses, but it is not a stability contract. It is confined to `src/lint/typed.nim`.
+
 ## Exit Modes
 
 The run ends in exactly one of the following outcomes.

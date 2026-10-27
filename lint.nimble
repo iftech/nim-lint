@@ -7,7 +7,7 @@ license       = "MIT"
 srcDir        = "src"
 
 
-const testBinaries = "tests/teststructure tests/trun tests/tconfig_errors examples/lint"
+const testBinaries = "tests/teststructure tests/trun tests/tconfig_errors tests/typedconfig examples/lint"
 
 
 # Dependencies
