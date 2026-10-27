@@ -35,16 +35,24 @@ macro mkStepCheck(
     error("`" & nameLit & "` is not a check", check)
 
   let settingsType = typ[1]
-  var ctor = newTree(nnkObjConstr, settingsType)
-  for stmt in settings:
-    if stmt.kind != nnkAsgn or stmt[0].kind != nnkIdent:
-      error("settings entries must look like `name = value`", stmt)
-    var value = copyNimTree(stmt[1])
-    # Nim does not convert an array literal to `seq` inside an object
-    # constructor, so wrap list values in `@`.
-    if value.kind == nnkBracket:
-      value = newTree(nnkPrefix, ident("@"), value)
-    ctor.add newTree(nnkExprColonExpr, stmt[0], value)
+
+  # With no `settings:` block, the check's own declared defaults apply.
+  var ctor: NimNode
+  if settings.len == 0:
+    ctor = newTree(nnkDotExpr, check, ident"defaults")
+  else:
+    ctor = newTree(nnkObjConstr, settingsType)
+    for stmt in settings:
+      if stmt.kind != nnkAsgn or stmt[0].kind != nnkIdent:
+        error("settings entries must look like `name = value`", stmt)
+      var value = copyNimTree(stmt[1])
+      # Nim does not convert an array literal to `seq` inside an object
+      # constructor, so wrap list values in `@`. The operator must be bound to
+      # `system.@`; a bare `ident("@")` does not resolve and produces a broken
+      # value for the field.
+      if value.kind == nnkBracket:
+        value = newTree(nnkPrefix, bindSym"@", value)
+      ctor.add newTree(nnkExprColonExpr, stmt[0], value)
 
   let
     runId = check
@@ -53,15 +61,17 @@ macro mkStepCheck(
     name = newLit(nameLit)
     severity = newLit(sev)
 
+  # The settings value is baked into the generated proc rather than captured
+  # from an enclosing scope: a captured local is reconstructed from the syntax
+  # tree inside the closure's scope, which loses `seq` fields (they come back
+  # nil at run time).
   result = quote do:
-    block:
-      let `settingsId` = `ctor`
-      StepSetting(
-        name: `name`,
-        severity: `severity`,
-        run: proc(`astId`: PNode): seq[Finding] =
-          `runId`.run(`astId`, `settingsId`),
-      )
+    StepSetting(
+      name: `name`,
+      severity: `severity`,
+      run: proc(`astId`: PNode): seq[Finding] =
+        `runId`.run(`astId`, `ctor`),
+    )
 
 proc parseCheck(stmt: NimNode): NimNode =
   if stmt.len != 3 or stmt[0].strVal != "check":

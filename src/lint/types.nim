@@ -18,6 +18,7 @@ type
     ## One check declared by a linter, bound to its settings type.
     name*: string
     run*: proc(ast: PNode, settings: S): seq[Finding]
+    defaults*: S ## Used when a config declares the check without settings.
 
   Linter* = object
     ## A group of checks. A linter module exports one `Linter` value.
@@ -46,10 +47,14 @@ proc newLinter*(name: string): Linter =
   Linter(name: name)
 
 proc check*[S](
-    linter: Linter, name: string, run: proc(ast: PNode, settings: S): seq[Finding]
+    linter: Linter,
+    name: string,
+    run: proc(ast: PNode, settings: S): seq[Finding],
+    defaults: S = default(S),
 ): Check[S] =
-  ## Used by linter modules to declare one check and its settings type.
-  Check[S](name: name, run: run)
+  ## Used by linter modules to declare one check, its settings type, and the
+  ## settings to use when a config does not provide any.
+  Check[S](name: name, run: run, defaults: defaults)
 
 proc finding*(node: PNode, msg: string): Finding =
   ## Builds a finding located at a node.

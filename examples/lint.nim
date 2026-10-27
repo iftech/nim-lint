@@ -26,6 +26,7 @@ runLint:
 
   step "Check imports":
     linter = imports
+    ignoredPatterns = ["./tests/testproject/src/skip/*"]
     check noDeniedImports:
       severity = error
       settings:
