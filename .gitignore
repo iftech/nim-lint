@@ -34,3 +34,6 @@ tests/teststructure
 tests/trun
 tests/tconfig_errors
 examples/lint
+
+# Typed-mode fixtures build outputs
+tests/typedconfig
