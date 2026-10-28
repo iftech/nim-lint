@@ -53,7 +53,7 @@ task cleanBins, "Remove built test and example binaries":
 
 
 task lintExample, "Build and run the example config":
-  run "nim c --hints:off examples/lint.nim"
+  run "nim c --hints:off examples/linter.nim"
   # The example project has lint errors on purpose, so a non-zero exit is
   # expected and is not a task failure.
   echo "  examples/lint"

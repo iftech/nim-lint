@@ -1,7 +1,7 @@
 ## The `runLint` macro: turns the config block into a typed `Config` value,
 ## then runs it.
 
-import std/[macros]
+import std/[macros, os]
 
 import compiler/ast
 
@@ -189,4 +189,5 @@ macro runLint*(body: untyped): untyped =
       let `configId` = Config(
         sources: `sourcesId`, ignoredPatterns: `ignoredId`, steps: `stepsId`
       )
-      run(`configId`)
+      let options = parseOptions(commandLineParams())
+      run(`configId`, options.targets, options.format)

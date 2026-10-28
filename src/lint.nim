@@ -4,6 +4,6 @@
 ## with a config block. Compiling that file produces the project's lint
 ## executable.
 
-import ./lint/[types, config, runner]
+import ./lint/[types, cli, config, runner]
 
-export types, config, runner
+export types, cli, config, runner

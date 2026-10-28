@@ -19,7 +19,7 @@ _Config file_ describes a _config_, which defines:
 
 Source paths, the config file, and ignored patterns are resolved relative to the current working directory (CWD). Ignored patterns declared on a step extend the top-level ones; they do not replace them.
 
-The config file determines all the run aspects, the generated CLI does not accept any arguments or options. If you need to changes the run params, edit and recompile the config file.
+The config file determines the run. The executable accepts optional positional arguments that override `sources` and every `ignoredPatterns`, including step-level ones, for that run; each argument is a file path, a glob pattern, or a file path followed by `:line` or `:start-end` ranges. With no arguments, the config's sources are used.
 
 _Linter_ is a sub-program that analyzes the abstract syntax tree (AST) of a single Nim file by running a set of _checks_ against its nodes.
 
@@ -110,6 +110,45 @@ The library does not expose:
 A check receives the parsed file as a `PNode` from Nim's own compiler AST module (`compiler/ast`). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced. Writing a check therefore means importing `compiler/ast` and matching on node kinds, so a linter module depends on that module directly.
 
 Compilation is the config's validation step for everything the type system can express: a misspelled linter or check name and a wrong settings type are compile errors.
+
+## Command Line
+
+With no arguments, the executable lints the config's `sources`:
+
+```shell
+./linter
+```
+
+Arguments override `sources` and every `ignoredPatterns`, including step-level ones, so an explicit argument is a request to lint exactly that:
+
+```shell
+./linter src/foo.nim                 # one file
+./linter 'src/module/*'              # a glob pattern
+./linter src/foo.nim:10-12,40        # one file, only these lines
+./linter src/a.nim src/b.nim         # several files
+```
+
+`--format=github` emits GitHub Actions workflow commands instead of the human-readable report, so findings appear as inline annotations on a pull request:
+
+```shell
+./linter --format=github src/foo.nim
+```
+
+## GitHub Action
+
+The repository ships an action that lints only the files a pull request changes. It builds the config, caches the binary, and annotates the diff:
+
+```yaml
+- uses: iftech/nim-lint@v1
+  with:
+    config: linter.nim
+```
+
+The action runs `git diff` against the base commit — the pull request's base on a PR, the previous commit on a push — and passes the changed files to the executable, so the tool itself knows nothing about git.
+
+The action installs the lint version that matches its own ref, so `uses: iftech/nim-lint@v1` pins both the action and the library. The project does not need `lint` in its own `.nimble`.
+
+The compiled binary is cached under a key derived from the config file, the project's dependency manifests, and the Nim version. The project's sources are deliberately not part of the key: they are read at run time, so changing them must not force a rebuild. If your config imports linters from outside the action's checkout, add their paths to the key.
 
 ## Exit Modes
 

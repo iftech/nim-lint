@@ -1,12 +1,13 @@
 ## The runner: walks sources, parses files, runs steps, assembles reports.
 
-import std/[algorithm, os, sets, strformat]
+import std/[algorithm, os, sets, strformat, tables]
 
 import glob
 
 import compiler/[ast, parser, idents, options]
 import compiler/lineinfos except Severity
 
+import ./cli
 import ./types
 
 
@@ -50,9 +51,33 @@ proc isIgnored(file: string, patterns: seq[string]): bool =
     if f.matches(normalize(p)):
       return true
 
-proc collectFiles(config: Config): seq[string] =
-  ## Walks the sources and returns matching files in ascending path order.
+proc collectFiles(config: Config; targets: seq[Target]): seq[string] =
+  ## Returns the files to lint in ascending path order.
+  ##
+  ## With `targets`, they replace the config's sources and ignored patterns
+  ## entirely: an explicit argument is a request to lint exactly that.
   var seen = initHashSet[string]()
+  if targets.len > 0:
+    for target in targets:
+      if fileExists(target.path):
+        if not seen.contains(target.path):
+          seen.incl target.path
+          result.add target.path
+      elif dirExists(target.path):
+        for path in walkDirRec(target.path):
+          if splitFile(path).ext == ".nim" and not seen.contains(path):
+            seen.incl path
+            result.add path
+      else:
+        # A glob pattern, expanded here so it works on any shell.
+        for path in walkDirRec("."):
+          if splitFile(path).ext == ".nim" and path.matches(target.path) and
+              not seen.contains(path):
+            seen.incl path
+            result.add path
+    result.sort()
+    return
+
   for source in config.sources:
     if not dirExists(source) and not fileExists(source):
       raise newException(IOError, "source path does not exist: " & source)
@@ -86,7 +111,14 @@ proc parseFile(path: string): PNode =
 proc renderFinding(tag: FindingTag): string =
   result = &"[{tag.stepLabel}][{tag.checkName}][{tag.severity}][{tag.file}:{tag.finding.line}:{tag.finding.col}] {tag.finding.msg}"
 
-proc `$`*(report: RunReport): string =
+proc renderGithub(tag: FindingTag): string =
+  ## A GitHub Actions workflow command, which the runner turns into an inline
+  ## annotation on the pull request.
+  let kind = if tag.severity == Severity.error: "error" else: "warning"
+  let title = tag.stepLabel & "/" & tag.checkName
+  result = &"::{kind} file={tag.file},line={tag.finding.line},col={tag.finding.col},title={title}::{tag.finding.msg}"
+
+proc `$`*(report: RunReport; format: string = "text"): string =
   var hints, errors = 0
   for fileReport in report.fileReports:
     for stepReport in fileReport.stepReports:
@@ -94,8 +126,12 @@ proc `$`*(report: RunReport): string =
         case tag.severity
         of Severity.hint: inc hints
         of Severity.error: inc errors
-        result.add renderFinding(tag) & "\n"
-  result.add &"hints: {hints}, errors: {errors}\n"
+        if format == "github":
+          result.add renderGithub(tag) & "\n"
+        else:
+          result.add renderFinding(tag) & "\n"
+  if format != "github":
+    result.add &"hints: {hints}, errors: {errors}\n"
 
 proc exitMode*(report: RunReport): ExitMode =
   for fileReport in report.fileReports:
@@ -105,18 +141,26 @@ proc exitMode*(report: RunReport): ExitMode =
           return emErrorsFound
   emClean
 
-proc run*(config: Config) =
+proc run*(config: Config; targets: seq[Target] = @[]; format: string = "text") =
   ## Runs the config and exits with the code for the resulting exit mode.
+  ##
+  ## `targets` come from the command line and override the config's sources.
   var exitCode = ExitMode.emClean
 
   var files: seq[string]
   try:
-    files = collectFiles(config)
+    files = collectFiles(config, targets)
   except IOError as e:
     stderr.writeLine "config error: " & e.msg
     quit(ord(ExitMode.emConfigError))
 
   var report = RunReport()
+
+  # Line ranges requested on the command line, keyed by path.
+  var rangesByPath: Table[string, seq[tuple[first, last: int]]]
+  for target in targets:
+    if target.lines.len > 0:
+      rangesByPath[target.path] = target.lines
 
   for file in files:
     var fileReport = FileReport(file: file)
@@ -144,7 +188,9 @@ proc run*(config: Config) =
 
     if not parseFailed:
       for step in config.steps:
-        if isIgnored(file, step.ignoredPatterns):
+        # Explicit targets override every ignore, including step-level ones: a
+        # named file is a request to lint it.
+        if targets.len == 0 and isIgnored(file, step.ignoredPatterns):
           continue
         var stepReport = StepReport(label: step.label, linter: step.linter)
         for check in step.checks:
@@ -155,6 +201,9 @@ proc run*(config: Config) =
             stderr.writeLine &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
             quit(ord(ExitMode.emCheckError))
           for f in findings:
+            if rangesByPath.hasKey(file) and
+                not inRanges(f.line, rangesByPath[file]):
+              continue
             stepReport.findings.add FindingTag(
               severity: check.severity,
               stepLabel: step.label,
@@ -165,7 +214,7 @@ proc run*(config: Config) =
         fileReport.stepReports.add stepReport
     report.fileReports.add fileReport
 
-  stdout.write $report
+  stdout.write report.`$`(format)
   let mode = report.exitMode
   if exitCode != ExitMode.emParseError:
     exitCode = mode

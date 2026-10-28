@@ -1,0 +1,71 @@
+name: "lint"
+description: "Run lint on the files changed by a commit or pull request."
+author: "Constantine Molchanov"
+
+inputs:
+  config:
+    description: "Path to the lint config file."
+    required: false
+    default: "linter.nim"
+  nim-version:
+    description: "Nim version used to build the config."
+    required: false
+    default: "2.2.12"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Nim
+      uses: jiro4989/setup-nim-action@v2
+      with:
+        nim-version: ${{ inputs.nim-version }}
+
+    - name: Install lint
+      shell: bash
+      # The action's own checkout is the lint version that matches the action
+      # ref, so the version is fixed by `uses:` and nothing else.
+      working-directory: ${{ github.action_path }}
+      run: nimble install -y
+
+    - name: Cache the compiled linter
+      uses: actions/cache@v4
+      with:
+        path: .lint-cache
+        # The binary contains the config and the lint library. It does not
+        # contain the project being linted: those files are read at run time,
+        # so changing them must not invalidate the cache.
+        key: lint-${{ runner.os }}-${{ inputs.nim-version }}-${{ hashFiles(inputs.config, '**/*.nimble', 'nimble.lock') }}
+
+    - name: Build the linter
+      shell: bash
+      env:
+        LINT_SRC: ${{ github.action_path }}/src
+      run: |
+        if [ ! -x .lint-cache/linter ]; then
+          mkdir -p .lint-cache
+          nim c -d:release --hints:off --path:"$LINT_SRC" --out:.lint-cache/linter "${{ inputs.config }}"
+        fi
+
+    - name: Lint changed files
+      shell: bash
+      env:
+        # On a pull request, compare against the base commit. Otherwise compare
+        # against the previous commit, so pushes are linted too.
+        BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        HEAD: ${{ github.sha }}
+      run: |
+        if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+          echo "No base commit to compare against, nothing to do."
+          exit 0
+        fi
+
+        files=$(git diff --name-only --diff-filter=ACMR "$BASE...$HEAD" -- '*.nim')
+        if [ -z "$files" ]; then
+          echo "No Nim files changed."
+          exit 0
+        fi
+
+        echo "Linting:"
+        echo "$files"
+        # shellcheck disable=SC2086
+        .lint-cache/linter --format=github $files

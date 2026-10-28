@@ -1,0 +1,19 @@
+name: lint
+
+on:
+  pull_request:
+  push:
+    branches: [develop, master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The action diffs against the base commit, so the history has to be
+          # there.
+          fetch-depth: 0
+      - uses: iftech/nim-lint@develop
+        with:
+          config: examples/linter.nim

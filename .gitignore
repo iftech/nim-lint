@@ -33,4 +33,7 @@ nimbledeps
 tests/teststructure
 tests/trun
 tests/tconfig_errors
-examples/lint
+examples/linter
+
+# Action build cache
+.lint-cache/

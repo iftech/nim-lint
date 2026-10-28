@@ -2,7 +2,7 @@
 ##
 ## Build and run it with:
 ##
-##   nim c -r examples/lint.nim
+##   nim c -r examples/linter.nim
 
 import ../src/lint
 import ../src/lint/linters/[naming, imports]

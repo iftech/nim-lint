@@ -23,6 +23,8 @@ proc runConstNames(ast: PNode, settings: ConstNamesSettings): seq[Finding] =
   for node in ast.sons:
     if node.kind == nkConstSection:
       for def in node.sons:
+        if def[0].kind != nkIdent:
+          continue
         let name = def[0].ident.s
         if not name.startsWith(settings.prefix):
           result.add finding(node, "constant `" & name & "` should start with `" &
