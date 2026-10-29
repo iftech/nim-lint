@@ -59,4 +59,11 @@ let gh = execCmdEx(quoteShell(bin) & " --format=github tests/testproject/src/mai
 doAssert "::error file=tests/testproject/src/main.nim,line=4" in gh.output
 doAssert "hints:" notin gh.output
 
+# A `#nolint` comment on the finding's line suppresses it.
+let suppressed = execCmdEx(quoteShell(bin) & " tests/testproject/src/suppressed.nim")
+doAssert "variable `ok`" notin suppressed.output,
+  "`ok` carries #nolint and must not be reported"
+doAssert "variable `x`" in suppressed.output, "`x` has no marker and is reported"
+doAssert "variable `y`" in suppressed.output, "`y` has no marker and is reported"
+
 echo "trun: ok"

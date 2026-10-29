@@ -7,7 +7,7 @@ license       = "MIT"
 srcDir        = "src"
 
 
-const testBinaries = "tests/teststructure tests/trun tests/tconfig_errors examples/lint"
+const testBinaries = "tests/teststructure tests/tcli tests/tsuppress tests/trun tests/tconfig_errors tests/typedconfig examples/linter"
 
 
 # Dependencies
@@ -37,6 +37,8 @@ proc mustNotCompile(src: string) =
 
 task test, "Run the test suite and verify config mistakes fail to compile":
   run "nim c -r --hints:off tests/teststructure.nim"
+  run "nim c -r --hints:off tests/tcli.nim"
+  run "nim c -r --hints:off tests/tsuppress.nim"
   run "nim c -r --hints:off tests/trun.nim"
   mustNotCompile "tests/tconfig_errors.nim"
   echo "all tests passed"

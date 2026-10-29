@@ -1,6 +1,6 @@
 ## The runner: walks sources, parses files, runs steps, assembles reports.
 
-import std/[algorithm, os, sets, strformat, tables]
+import std/[algorithm, os, sets, strformat, strutils, tables]
 
 import glob
 
@@ -8,6 +8,7 @@ import compiler/[ast, parser, idents, options]
 import compiler/lineinfos except Severity
 
 import ./cli
+import ./suppress
 import ./types
 
 
@@ -101,12 +102,13 @@ proc raiseParseError(conf: ConfigRef; info: TLineInfo; msg: TMsgKind; arg: strin
   ## run on one bad file. Raise instead so the runner can report it.
   raise newException(ParseFailure, "(" & $info.line & ", " & $info.col & ") " & arg)
 
-proc parseFile(path: string): PNode =
+proc parseFile(path: string): tuple[ast: PNode, lines: seq[string]] =
   let
     src = readFile(path)
     cache = newIdentCache()
     conf = newPartialConfigRef()
-  result = parseString(src, cache, conf, path, errorHandler = raiseParseError)
+  result.ast = parseString(src, cache, conf, path, errorHandler = raiseParseError)
+  result.lines = src.splitLines()
 
 proc renderFinding(tag: FindingTag): string =
   result = &"[{tag.stepLabel}][{tag.checkName}][{tag.severity}][{tag.file}:{tag.finding.line}:{tag.finding.col}] {tag.finding.msg}"
@@ -165,9 +167,10 @@ proc run*(config: Config; targets: seq[Target] = @[]; format: string = "text") =
   for file in files:
     var fileReport = FileReport(file: file)
     var ast: PNode
+    var sourceLines: seq[string]
     var parseFailed = false
     try:
-      ast = parseFile(file)
+      (ast, sourceLines) = parseFile(file)
     except CatchableError as e:
       parseFailed = true
       fileReport.stepReports.add StepReport(
@@ -203,6 +206,8 @@ proc run*(config: Config; targets: seq[Target] = @[]; format: string = "text") =
           for f in findings:
             if rangesByPath.hasKey(file) and
                 not inRanges(f.line, rangesByPath[file]):
+              continue
+            if isSuppressed(sourceLines, f.line):
               continue
             stepReport.findings.add FindingTag(
               severity: check.severity,

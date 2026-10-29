@@ -31,6 +31,8 @@ nimbledeps
 
 # Built test binaries and the example lint binary
 tests/teststructure
+tests/tcli
+tests/tsuppress
 tests/trun
 tests/tconfig_errors
 examples/linter

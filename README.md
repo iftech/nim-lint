@@ -150,6 +150,24 @@ The action installs the lint version that matches its own ref, so `uses: iftech/
 
 The compiled binary is cached under a key derived from the config file, the project's dependency manifests, and the Nim version. The project's sources are deliberately not part of the key: they are read at run time, so changing them must not force a rebuild. If your config imports linters from outside the action's checkout, add their paths to the key.
 
+## Suppressing Findings
+
+A finding is suppressed when the line it points at carries a `#nolint` comment:
+
+```nim
+var ok = 1  #nolint
+```
+
+The comment applies to that line only, and to every finding on it, regardless of which check produced it. Comments are not part of the AST, so the runner looks for the marker in the source text of the reported line. The marker must be at the end of the line, which also means `echo "#nolint"` suppresses nothing.
+
+Because findings point at the declaration rather than at the enclosing section, the marker goes on the line that actually contains the offending name:
+
+```nim
+var
+  ok = 1  #nolint   # suppresses the finding for `ok`
+  x = 2             # still reported
+```
+
 ## Exit Modes
 
 The run ends in exactly one of the following outcomes.
