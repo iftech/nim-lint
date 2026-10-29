@@ -1,9 +1,9 @@
 name: lint
 
 on:
+  # Only pull requests. A push to a PR branch fires both events, which would
+  # run the job twice and post every annotation twice.
   pull_request:
-  push:
-    branches: [develop, master]
 
 jobs:
   lint:
@@ -16,4 +16,4 @@ jobs:
           fetch-depth: 0
       - uses: iftech/nim-lint@develop
         with:
-          config: examples/linter.nim
+          config: linter.nim
