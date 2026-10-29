@@ -27,8 +27,10 @@ proc runConstNames(ast: PNode, settings: ConstNamesSettings): seq[Finding] =
           continue
         let name = def[0].ident.s
         if not name.startsWith(settings.prefix):
-          result.add finding(node, "constant `" & name & "` should start with `" &
-            settings.prefix & "`")
+          result.add finding(
+            def[0], "constant `" & name & "` should start with `" &
+              settings.prefix & "`"
+          )
 
 proc runVarNames(ast: PNode, settings: VarNamesSettings): seq[Finding] =
   for node in ast.sons:
@@ -39,13 +41,13 @@ proc runVarNames(ast: PNode, settings: VarNamesSettings): seq[Finding] =
         let name = def[0].ident.s
         if settings.minLength > 0 and name.len < settings.minLength:
           result.add finding(
-            node,
+            def[0],
             "variable `" & name & "` is shorter than " & $settings.minLength &
               " characters",
           )
         if settings.maxLength > 0 and name.len > settings.maxLength:
           result.add finding(
-            node,
+            def[0],
             "variable `" & name & "` is longer than " & $settings.maxLength &
               " characters",
           )

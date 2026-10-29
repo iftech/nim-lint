@@ -40,20 +40,23 @@ let stepIgnored = execCmdEx(quoteShell(bin) & " tests/testproject/src/skip/skipp
 doAssert "skipped.nim" in stepIgnored.output,
   "an explicit file must be linted even though a step ignores it"
 
-# Line ranges filter findings by position.
-let ranged = execCmdEx(quoteShell(bin) & " tests/testproject/src/main.nim:6")
+# Findings point at the declaration, not at the enclosing section: `ok` is on
+# line 7 and `x` on line 8, not on the `var` keyword's line 6.
+let ranged = execCmdEx(quoteShell(bin) & " tests/testproject/src/main.nim:7")
 doAssert "variable `ok`" in ranged.output
+doAssert "variable `x`" notin ranged.output,
+  "`x` is on line 8, outside the requested range"
 doAssert "constant `answer`" notin ranged.output,
   "findings outside the requested range must be dropped"
 
 # Several ranges in one argument.
-let multi = execCmdEx(quoteShell(bin) & " tests/testproject/src/main.nim:1-2,6")
-doAssert "variable `ok`" in multi.output, "line 6 is in the second range"
-doAssert "constant `answer`" notin multi.output, "line 3 is in no range"
+let multi = execCmdEx(quoteShell(bin) & " tests/testproject/src/main.nim:1-2,7")
+doAssert "variable `ok`" in multi.output, "line 7 is in the second range"
+doAssert "constant `answer`" notin multi.output, "line 4 is in no range"
 
 # GitHub format emits workflow commands and no summary line.
 let gh = execCmdEx(quoteShell(bin) & " --format=github tests/testproject/src/main.nim")
-doAssert "::error file=tests/testproject/src/main.nim,line=3" in gh.output
+doAssert "::error file=tests/testproject/src/main.nim,line=4" in gh.output
 doAssert "hints:" notin gh.output
 
 echo "trun: ok"

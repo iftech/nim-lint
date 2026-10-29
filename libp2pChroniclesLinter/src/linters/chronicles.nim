@@ -157,7 +157,7 @@ proc runFieldNameLength(ast: PNode, s: FieldNameSettings): seq[Finding] =
       if field.name.len < s.minLength and field.name notin s.exceptions:
         let kind = if field.named: "field" else: "bare field"
         result.add finding(
-          call,
+          field.value,
           kind & " '" & field.name & "' is too short (needs to be at least " &
             $s.minLength & " characters long)",
         )
@@ -167,7 +167,8 @@ proc runErrForException(ast: PNode, s: ExceptionSettings): seq[Finding] =
     for f in logFields(call):
       if f.name in s.aliases and isExceptionText(f.value):
         result.add finding(
-          call, "use `" & s.field & "` for exception text instead of `" & f.name & "`"
+          f.value,
+          "use `" & s.field & "` for exception text instead of `" & f.name & "`",
         )
 
 proc runNoPayloadWhenElevated(ast: PNode, s: PayloadSettings): seq[Finding] =
@@ -177,7 +178,7 @@ proc runNoPayloadWhenElevated(ast: PNode, s: PayloadSettings): seq[Finding] =
     for f in logFields(call):
       if f.name in s.fields:
         result.add finding(
-          call,
+          f.value,
           "elevated log contains payload field `" & f.name & "`",
         )
 
