@@ -24,9 +24,6 @@ runs:
       uses: actions/cache@v4
       with:
         path: .lint-cache
-        # The binary contains the config and the lint library. It does not
-        # contain the project being linted: those files are read at run time,
-        # so changing them must not invalidate the cache.
         key: lint-${{ runner.os }}-${{ inputs.nim-version }}-${{ hashFiles(inputs.config, '**/*.nimble', 'nimble.lock') }}
 
     - name: Build the linter
