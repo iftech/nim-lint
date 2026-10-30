@@ -20,13 +20,13 @@ runs:
       with:
         nim-version: ${{ inputs.nim-version }}
 
-    - name: Cache the compiled linter
+    - name: Restore the compiled linter from cache
       uses: actions/cache@v4
       with:
         path: .lint-cache
         key: lint-${{ runner.os }}-${{ inputs.nim-version }}-${{ hashFiles(inputs.config, '**/*.nimble', 'nimble.lock') }}
 
-    - name: Build the linter
+    - name: Build the linter if it was not cached
       shell: bash
       env:
         LINT_SRC: ${{ github.action_path }}/src
