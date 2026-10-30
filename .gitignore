@@ -3,6 +3,7 @@
 *.sublime-workspace
 .idea
 dprint.json
+.sandbox
 
 bin/
 
