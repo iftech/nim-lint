@@ -1,0 +1,69 @@
+import std/[os, osproc, strutils]
+
+# Runs the example config against the fixture project and checks the report and
+# the exit code, since `runLint` exits the process itself.
+
+const
+  nilmp = "nim"
+  example = "examples/linter.nim"
+
+proc build(outFile: string, src: string) =
+  let cmd = quoteShellCommand(["nim", "c", "--hints:off", "--nimcache:" & outFile & "_cache", "-o:" & outFile, src])
+  doAssert execCmd(cmd) == 0, "failed to build " & src
+
+let tmp = getTempDir() / "lint_trun"
+removeDir(tmp)
+createDir(tmp)
+
+let bin = tmp / "example"
+build(bin, example)
+
+let output = execCmdEx(quoteShell(bin))
+echo output.output
+doAssert output.exitCode == 1, "errors found should exit with 1, got " & $output.exitCode
+doAssert "constant `answer` should start with `k`" in output.output
+doAssert "src/main.nim" in output.output
+# global ignores
+doAssert "ttest.nim" notin output.output
+# step ignores
+doAssert "skipped.nim" notin output.output
+
+# Command-line arguments override the config's sources and top-level ignores.
+let explicit = execCmdEx(quoteShell(bin) & " tests/testproject/tests/ttest.nim")
+doAssert explicit.exitCode == 0, "hints only should exit 0"
+doAssert "ttest.nim" in explicit.output,
+  "an explicit file must be linted even though the config ignores it"
+
+# An explicit target overrides step-level ignores too: naming a file is a
+# request to lint it.
+let stepIgnored = execCmdEx(quoteShell(bin) & " tests/testproject/src/skip/skipped.nim")
+doAssert "skipped.nim" in stepIgnored.output,
+  "an explicit file must be linted even though a step ignores it"
+
+# Findings point at the declaration, not at the enclosing section: `ok` is on
+# line 7 and `x` on line 8, not on the `var` keyword's line 6.
+let ranged = execCmdEx(quoteShell(bin) & " tests/testproject/src/main.nim:7")
+doAssert "variable `ok`" in ranged.output
+doAssert "variable `x`" notin ranged.output,
+  "`x` is on line 8, outside the requested range"
+doAssert "constant `answer`" notin ranged.output,
+  "findings outside the requested range must be dropped"
+
+# Several ranges in one argument.
+let multi = execCmdEx(quoteShell(bin) & " tests/testproject/src/main.nim:1-2,7")
+doAssert "variable `ok`" in multi.output, "line 7 is in the second range"
+doAssert "constant `answer`" notin multi.output, "line 4 is in no range"
+
+# GitHub format emits workflow commands and no summary line.
+let gh = execCmdEx(quoteShell(bin) & " --format=github tests/testproject/src/main.nim")
+doAssert "::error file=tests/testproject/src/main.nim,line=4" in gh.output
+doAssert "hints:" notin gh.output
+
+# A `#nolint` comment on the finding's line suppresses it.
+let suppressed = execCmdEx(quoteShell(bin) & " tests/testproject/src/suppressed.nim")
+doAssert "variable `ok`" notin suppressed.output,
+  "`ok` carries #nolint and must not be reported"
+doAssert "variable `x`" in suppressed.output, "`x` has no marker and is reported"
+doAssert "variable `y`" in suppressed.output, "`y` has no marker and is reported"
+
+echo "trun: ok"

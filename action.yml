@@ -1,0 +1,87 @@
+name: "lint"
+description: "Run lint on the files changed by a commit or pull request."
+author: "Constantine Molchanov"
+
+inputs:
+  config:
+    description: "Path to the lint config file."
+    required: false
+    default: "linter.nim"
+  nim-version:
+    description: "Nim version used to build the config."
+    required: false
+    default: "2.2.12"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Nim
+      uses: jiro4989/setup-nim-action@v2
+      with:
+        nim-version: ${{ inputs.nim-version }}
+
+    - name: Restore the compiled linter from cache
+      uses: actions/cache@v4
+      with:
+        path: .lint-cache
+        key: lint-${{ runner.os }}-${{ inputs.nim-version }}-${{ hashFiles(inputs.config, '**/*.nimble', 'nimble.lock') }}
+
+    - name: Build the linter if it was not cached
+      shell: bash
+      env:
+        LINT_SRC: ${{ github.action_path }}/src
+      run: |
+        # if we have a cached executable, use it
+        if [ -x .lint-cache/linter ]; then
+          echo "Using the cached linter."
+          exit 0
+        fi
+
+        # install lint from the source
+        (cd "${{ github.action_path }}" && nimble install -y)
+
+        # lint uses `import compiler/...` so the compiler sources
+        # must be accessible
+        nim_root=$(dirname "$(dirname "$(command -v nim)")")
+        compiler_path=""
+        for candidate in "$nim_root" "$nim_root/lib"; do
+          if [ -d "$candidate/compiler" ]; then
+            compiler_path="$candidate"
+            break
+          fi
+        done
+        if [ -z "$compiler_path" ]; then
+          echo "Cannot find the Nim compiler sources next to $(command -v nim)"
+          exit 1
+        fi
+
+        # build the executable and cache it
+        mkdir -p .lint-cache
+        nim c -d:release --hints:off \
+          --path:"$compiler_path" \
+          --path:"$LINT_SRC" \
+          --out:.lint-cache/linter "${{ inputs.config }}"
+
+    - name: Lint changed files
+      shell: bash
+      env:
+        # On a pull request, compare against the base commit. Otherwise compare
+        # against the previous commit, so pushes are linted too.
+        BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        HEAD: ${{ github.sha }}
+      run: |
+        if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+          echo "No base commit to compare against, nothing to do."
+          exit 0
+        fi
+
+        files=$(git diff --name-only --diff-filter=ACMR "$BASE...$HEAD" -- '*.nim')
+        if [ -z "$files" ]; then
+          echo "No Nim files changed."
+          exit 0
+        fi
+
+        echo "Linting:"
+        echo "$files"
+        # shellcheck disable=SC2086
+        .lint-cache/linter --format=github $files

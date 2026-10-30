@@ -1,11 +1,183 @@
-## License
+# Lint
 
-Licensed and distributed under either of
+## Glossary
 
-- MIT license: [LICENSE-MIT](./LICENSE-MIT) or http://opensource.org/licenses/MIT
+_Lint_ is a library for building linters for Nim projects.
 
-or
+A project uses Lint by writing a _config file_ — a Nim source file that imports Lint and declares the linters to run and the checks to run in them. Compiling this file produces the project's lint executable, whose _CLI_ processes the command-line arguments. Lint itself ships no executable: it ships the library that the config file is compiled against. The config file is the only way to run Lint.
 
-- Apache License, Version 2.0, ([LICENSE-APACHEv2](./LICENSE-APACHEv2) or http://www.apache.org/licenses/LICENSE-2.0)
+_Config file_ describes a _config_, which defines:
 
-at your option. This file may not be copied, modified, or distributed except according to those terms.
+- which paths must be checked (the _sources_)
+- which patterns must be ignored during the run
+- which _steps_ must be run on each source file, in order
+  - one linter can be invoked in many steps
+- for each step, which patterns must be ignored for this step
+- for each step, which _checks_ must be used when this step runs
+- for each check, the _severity_ its _findings_ must be reported with: _error_ or _hint_
+- for each check, the _settings_ it must be run with
+
+Source paths, the config file, and ignored patterns are resolved relative to the current working directory (CWD). Ignored patterns declared on a step extend the top-level ones; they do not replace them.
+
+The config file determines the run. The executable accepts optional positional arguments that override `sources` and every `ignoredPatterns`, including step-level ones, for that run; each argument is a file path, a glob pattern, or a file path followed by `:line` or `:start-end` ranges. With no arguments, the config's sources are used.
+
+_Linter_ is a sub-program that analyzes the abstract syntax tree (AST) of a single Nim file by running a set of _checks_ against its nodes.
+
+_Check_ is a rule that a node can satisfy or not satisfy. If a node does not satisfy a check, the check returns a _finding_. A check has not side-effects: it reads the AST and its settings and returns findings. It does not know the file it is run against, the linter it belongs to, or the severity its findings are reported with.
+
+_Settings_ are key-value pairs that a check can use during its execution to adjust its behavior. Each check defines its own settings.
+
+_Step_ is one invocation of a linter with one set of checks and settings. Steps are declared in order in the config file and are run in that order. A linter may be used by more than one step — for example, to run the same checks strictly against the package sources and relaxed against its tests. Each step carries a _label_ that identifies it in the report. A label is for the reader, not an identifier: nothing is looked up by it, and two steps may share one. Steps are independent: each step receives the same AST and does not see other steps' results, so "step" denotes ordering, not a pipeline.
+
+_Finding_ contains:
+
+- the line at which the checked node is in the source file
+- the column at which the checked node is in the source file
+- a message explaining why the node does not satisfy the check
+
+Findings produced by a check carry no severity, no linter label, and no file path. Those are attached by the runner when it collects findings.
+
+_Severity_ is an enum that defines how findings are reported: as a _hint_ or as an _error_. Severity is declared in the config file per check, and is applied by the runner. A check cannot influence the severity of the findings it produces.
+
+_Hints_ are purely informational; a run with only hints is still considered successful. _Errors_ indicate a failed run; a run with at least one error is considered failed.
+
+_Step report_ is the outcome of one step run against one file: the findings that step produced for that file, stamped with severity, step label, and file path. A _file report_ collects the step reports of every step run against one file, in step order. A _run report_ collects the file reports of every checked file.
+
+Ordering is deterministic: files are processed in ascending path order, and steps run in the order they are declared. Two runs of the same executable against the same sources produce the same run report.
+
+## Execution Flow
+
+1. The config file is compiled into the project's lint executable.
+2. The executable starts. It takes no run parameters: everything the run needs is fixed at compile time.
+3. The runner asks the source manager for the files to check.
+4. The source manager walks the source paths, filters the files by extension and by the ignored patterns, and yields the matching files in ascending path order.
+5. The runner parses each file into an AST exactly once. The AST is reused by every step run against that file.
+6. For each file, the runner runs every step against the AST in the order the steps are declared.
+7. For each step, the checks run in the order they are declared. Each check receives the AST and its settings and returns findings.
+8. The runner stamps each finding with the step's label, the file path, and the severity declared for the check that produced it.
+9. The runner assembles the file report and continues with the next file.
+10. When all files are checked, the runner assembles the run report and presents it.
+
+## Config File Example
+
+The config file is a Nim program. A complete one looks like this:
+
+```nim
+import lint
+import lint/linters/[naming, imports]   # or `import lint/linters` for all
+import ./linters/libp2pLinter           # project-specific linters
+
+runLint:
+  sources = [".", "./src"]
+  ignoredPatterns = ["./tests/**/*", "./vendor/**/*"]
+
+  step "Check naming conventions":
+    linter = naming
+    ignoredPatterns = ["./src/submoduleWithUnconventionalNaming/**/*"]
+    check constNames:
+      severity = error
+    check varNames:
+      severity = hint
+      settings:
+        minLength = 5
+
+  step "Check imports":
+    linter = imports
+    check noAsyncdispatch:
+      severity = error
+```
+
+Reading it top to bottom: `sources` are the roots to walk, `ignoredPatterns` are the files to skip everywhere. Each `step` names a linter, may add its own ignores, and lists the checks to run. Each `check` states how its findings are reported and, if the check has settings, the values for this run.
+
+`key = value` assigns a value; `key:` opens a block. That is why `severity =` and `settings:` differ by one character.
+
+`settings:` values are checked against the settings type declared by the check, so a misspelled key is a compile error.
+
+## Implementation
+
+The config file is a Nim source file that imports Lint and declares a config. The library exposes the types and templates the config file needs:
+
+- the `Linter` and `Check` types, and helpers for declaring them
+- the templates for declaring a config: sources, ignored patterns, linter steps, checks with settings and severity
+- the runner
+- the CLI
+
+The library does not expose:
+
+- the report types beyond what a custom presenter needs
+- any way to discover linters at runtime; the set of linters is fixed at compile time by what the config file imports
+
+A check receives the parsed file as a `PNode` from Nim's own compiler AST module (`compiler/ast`). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced. Writing a check therefore means importing `compiler/ast` and matching on node kinds, so a linter module depends on that module directly.
+
+Compilation is the config's validation step for everything the type system can express: a misspelled linter or check name and a wrong settings type are compile errors.
+
+## Command Line
+
+With no arguments, the executable lints the config's `sources`:
+
+```shell
+./linter
+```
+
+Arguments override `sources` and every `ignoredPatterns`, including step-level ones, so an explicit argument is a request to lint exactly that:
+
+```shell
+./linter src/foo.nim                 # one file
+./linter 'src/module/*'              # a glob pattern
+./linter src/foo.nim:10-12,40        # one file, only these lines
+./linter src/a.nim src/b.nim         # several files
+```
+
+`--format=github` emits GitHub Actions workflow commands instead of the human-readable report, so findings appear as inline annotations on a pull request:
+
+```shell
+./linter --format=github src/foo.nim
+```
+
+## GitHub Action
+
+The repository ships an action that lints only the files a pull request changes. It builds the config, caches the binary, and annotates the diff:
+
+```yaml
+- uses: iftech/nim-lint@v1
+  with:
+    config: linter.nim
+```
+
+The action runs `git diff` against the base commit — the pull request's base on a PR, the previous commit on a push — and passes the changed files to the executable, so the tool itself knows nothing about git.
+
+The action installs the lint version that matches its own ref, so `uses: iftech/nim-lint@v1` pins both the action and the library. The project does not need `lint` in its own `.nimble`.
+
+The compiled binary is cached under a key derived from the config file, the project's dependency manifests, and the Nim version. The project's sources are deliberately not part of the key: they are read at run time, so changing them must not force a rebuild. If your config imports linters from outside the action's checkout, add their paths to the key.
+
+## Suppressing Findings
+
+A finding is suppressed when the line it points at carries a `#nolint` comment:
+
+```nim
+var ok = 1  #nolint
+```
+
+The comment applies to that line only, and to every finding on it, regardless of which check produced it. Comments are not part of the AST, so the runner looks for the marker in the source text of the reported line. The marker must be at the end of the line, which also means `echo "#nolint"` suppresses nothing.
+
+Because findings point at the declaration rather than at the enclosing section, the marker goes on the line that actually contains the offending name:
+
+```nim
+var
+  ok = 1  #nolint   # suppresses the finding for `ok`
+  x = 2             # still reported
+```
+
+## Exit Modes
+
+The run ends in exactly one of the following outcomes.
+
+_Clean run_ — every file parsed, every step completed, and no finding carries the _error_ severity. The run report contains only hints, or is empty. The process exits with code 0.
+
+_Errors found_ — every file parsed and every step completed, and at least one finding carries the _error_ severity. The process exits with a code that is non-zero and distinct from the codes below.
+
+_Parse error_ — a source file could not be parsed, so no AST exists and no step can be run against it. The file report holds a single finding attributed to the runner (not to a step) describing the parse failure. A parse error always fails the run, regardless of configured severities, because no check was able to evaluate the file. Remaining files are still checked, so one unparseable file does not hide findings in the rest.
+
+_Config error_ — the config file cannot be compiled, or the run parameters cannot be satisfied (an unknown source path or an unusable ignore pattern). This is reported before any file is read. The process exits with a code that is non-zero and distinct from the codes above.
+
+_Check error_ — a check raised an exception. A check is library code, so an exception is a defect in the tool, not a property of the checked code. The run stops, the exception is reported with the step label, check name, and file path, and the process exits with a code that is non-zero and distinct from the codes above. Continuing past a raising check would report a file as checked when it was not.

@@ -1,0 +1,19 @@
+name: lint
+
+on:
+  # Only pull requests. A push to a PR branch fires both events, which would
+  # run the job twice and post every annotation twice.
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The action diffs against the base commit, so the history has to be
+          # there.
+          fetch-depth: 0
+      - uses: iftech/nim-lint@develop
+        with:
+          config: linter.nim

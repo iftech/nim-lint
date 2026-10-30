@@ -3,6 +3,7 @@
 *.sublime-workspace
 .idea
 dprint.json
+.sandbox
 
 bin/
 
@@ -28,3 +29,14 @@ nimbledeps
 /config.nims
 
 .monit*yml
+
+# Built test binaries and the example lint binary
+tests/teststructure
+tests/tcli
+tests/tsuppress
+tests/trun
+tests/tconfig_errors
+examples/linter
+
+# Action build cache
+.lint-cache/
