@@ -65,9 +65,10 @@ runs:
     - name: Lint changed files
       shell: bash
       env:
-        # On a pull request, compare against the base commit. Otherwise compare
-        # against the previous commit, so pushes are linted too.
-        BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        # The commit to diff against, per event: a pull request's base, a merge
+        # queue's base, or the previous commit on a push. Without the merge
+        # queue case the diff is empty and the job passes without linting.
+        BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
         HEAD: ${{ github.sha }}
       run: |
         if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
