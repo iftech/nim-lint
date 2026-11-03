@@ -12,7 +12,7 @@ const testBinaries = "tests/teststructure tests/tcli tests/tsuppress tests/trun 
 
 # Dependencies
 
-requires "nim >= 2.2.12"
+requires "nim >= 2.2.0"
 requires "glob >= 0.11.3"
 
 

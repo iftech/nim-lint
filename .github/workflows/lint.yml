@@ -16,4 +16,5 @@ jobs:
           fetch-depth: 0
       - uses: iftech/nim-lint@develop
         with:
+          nim-version: "2.2.0"
           config: linter.nim
