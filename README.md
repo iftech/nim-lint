@@ -64,8 +64,19 @@ The config file is a Nim program. A complete one looks like this:
 
 ```nim
 import lint
-import lint/linters/[naming, imports]   # or `import lint/linters` for all
-import ./linters/libp2pLinter           # project-specific linters
+
+# The config may import linters that live in this repository, and those
+# are compiled into the binary, so they belong in the cache key.
+#
+# Simple imports in the form `import a` and `import a/b/c`
+# are detected by the lint GitHub Action:
+# if an imported module file changes, the action forces the linter
+# executable be rebuilt.
+# Relative imports (`import ./a`,
+# `import ../a`), bracket groups (`import a/[b, c]`), `from x import y`,
+# and `include` are not handled. Write such imports as plain
+# `import a/b` lines to have them picked up.
+import linters/libp2pLinter
 
 runLint:
   sources = [".", "./src"]
