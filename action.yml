@@ -20,11 +20,35 @@ runs:
       with:
         nim-version: ${{ inputs.nim-version }}
 
+    - name: Find local linters
+      id: local-linters
+      shell: bash
+      env:
+        CONFIG: ${{ inputs.config }}
+      run: |
+        # The config may import linters that live in this repository, and those
+        # are compiled into the binary, so they belong in the cache key.
+        #
+        # Only `import a/b/c` is detected: a module path made of letters,
+        # digits, underscores, and slashes. Relative imports (`import ./a`,
+        # `import ../a`), bracket groups (`import a/[b, c]`), `from x import y`,
+        # and `include` are not handled. Write such imports as plain
+        # `import a/b` lines to have them picked up.
+        dir=$(dirname "$CONFIG")
+        paths=""
+        for mod in $(grep -oE '^import [a-zA-Z0-9_/]+' "$CONFIG" | sed 's/^import //'); do
+          path="${mod%.nim}.nim"
+          if [ -f "$dir/$path" ]; then
+            paths="$paths,$(realpath --relative-to=. "$dir/$path")"
+          fi
+        done
+        echo "paths=${paths#,}" >> "$GITHUB_OUTPUT"
+
     - name: Restore the compiled linter from cache
       uses: actions/cache@v4
       with:
         path: .lint-cache
-        key: lint-${{ runner.os }}-${{ inputs.nim-version }}-${{ hashFiles(inputs.config, '**/*.nimble', 'nimble.lock') }}
+        key: lint-${{ runner.os }}-${{ inputs.nim-version }}-${{ hashFiles(inputs.config, '**/*.nimble', 'nimble.lock', steps.local-linters.outputs.paths) }}
 
     - name: Build the linter if it was not cached
       shell: bash
