@@ -101,7 +101,7 @@ suite "Lint tests":
       ]
       summary = "hints: 2, errors: 0"
 
-    let (output, exitCode) = runLinter("src/skip/")
+    let (output, exitCode) = runLinter("src/skip")
 
     check exitCode == 0
 
