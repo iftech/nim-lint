@@ -2,7 +2,7 @@ import std/[unittest, os, osproc, strutils]
 
 const
   config = "linter.nim"
-  linterExecutable = "linter"
+  linterExecutable = config.splitFile().name
   testsDir = currentSourcePath().parentDir
 
 proc compileLinter() =
@@ -13,7 +13,7 @@ proc compileLinter() =
     quit(exitCode)
 
 proc runLinter(args = ""): tuple[output: string, exitCode: int] =
-  let command = "$# $#" % [linterExecutable, args]
+  let command = "$# $#" % [findExe(testsDir / linterExecutable), args]
   execCmdEx(command, workingDir = testsDir)
 
 suite "Lint tests":
