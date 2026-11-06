@@ -15,6 +15,7 @@ Quickstart
 1. Install lint with nimble:
 
   .. code::
+
     $ nimble install lint
 
 2. Write a linter config (see an example in `tests/linter.nim <tests/linter.nim>`_.
@@ -30,6 +31,7 @@ Quickstart
 3. Compile and run your linter:
 
   .. code::
+
     $ nim c -d:release linter.nim
     $ ./linter                # lint entire project
     $ ./linter myfile.nim     # or a single file
