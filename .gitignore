@@ -4,6 +4,7 @@
 .idea
 dprint.json
 .sandbox
+opencode.json
 
 bin/
 
