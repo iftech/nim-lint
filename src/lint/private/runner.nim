@@ -52,6 +52,16 @@ proc isIgnored(file: string, patterns: seq[string]): bool =
     if f.matches(normalize(p)):
       return true
 
+proc nimFiles(pattern: string): seq[string] =
+  ## Expands a glob pattern to the `.nim` files it matches.
+  ##
+  ## `walkGlob` is used rather than `walkDirRec` plus `matches` because it
+  ## builds the pattern for the host platform: on Windows a `/` in the pattern
+  ## becomes `\`, which is what the paths it yields contain.
+  for path in walkGlob(pattern, options = defaultGlobOptions + {Hidden}):
+    if splitFile(path).ext == ".nim":
+      result.add normalize(path)
+
 proc collectFiles(config: Config; targets: seq[Target]): seq[string] =
   ## Returns the files to lint in ascending path order.
   ##
@@ -65,21 +75,16 @@ proc collectFiles(config: Config; targets: seq[Target]): seq[string] =
           seen.incl target.path
           result.add target.path
       elif dirExists(target.path):
-        for path in walkDirRec(target.path):
-          if splitFile(path).ext == ".nim" and not seen.contains(path):
+        for path in nimFiles(target.path / "**"):
+          if not seen.contains(path):
             seen.incl path
             result.add path
       else:
-        # A glob pattern, expanded here so it works on any shell. Both sides
-        # are normalized: `walkDirRec` yields `./src/foo.nim`, while the
-        # pattern usually has no `./` prefix.
-        for path in walkDirRec("."):
-          let normalized = normalize(path)
-          if splitFile(normalized).ext == ".nim" and
-              normalized.matches(normalize(target.path)) and
-              not seen.contains(normalized):
-            seen.incl normalized
-            result.add normalized
+        # A glob pattern, expanded here so it works on any shell.
+        for path in nimFiles(target.path):
+          if not seen.contains(path):
+            seen.incl path
+            result.add path
     result.sort()
     return
 
@@ -91,12 +96,10 @@ proc collectFiles(config: Config; targets: seq[Target]): seq[string] =
         seen.incl(source)
         result.add(source)
       continue
-    for path in walkDirRec(source):
-      if splitFile(path).ext == ".nim" and
-          not isIgnored(path, config.ignoredPatterns):
-        if not seen.contains(path):
-          seen.incl(path)
-          result.add(path)
+    for path in nimFiles(source / "**"):
+      if not isIgnored(path, config.ignoredPatterns) and not seen.contains(path):
+        seen.incl(path)
+        result.add(path)
   result.sort()
 
 type ParseFailure* = object of CatchableError
