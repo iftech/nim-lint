@@ -1,0 +1,14 @@
+name: Build Docs
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+jobs:
+  docs:
+    uses: status-im/nimbus-common-workflow/.github/workflows/docs.yml@main
+    with:
+      nim-version: "2.4.0"
+      publish-dir: "./htmldocs"
