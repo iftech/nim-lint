@@ -7,7 +7,7 @@ const
 
 proc compileLinter() =
   let (output, exitCode) =
-    execCmdEx("nim c -d:release --hints:off $#" % config, workingDir = testsDir)
+    execCmdEx("nim c -d:release $#" % config, workingDir = testsDir)
   if exitCode != 0:
     echo output
     quit(exitCode)
