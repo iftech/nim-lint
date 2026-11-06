@@ -5,7 +5,9 @@ import std/[macros, os]
 
 import compiler/ast
 
-import ./types
+import ./private/cli
+import ./private/types
+import ./private/runner
 
 proc toSeverity(node: NimNode): Severity =
   case node.strVal
@@ -57,7 +59,6 @@ macro mkStepCheck(
   let
     runId = check
     astId = genSym(nskParam, "ast")
-    settingsId = genSym(nskLet, "settings")
     name = newLit(nameLit)
     severity = newLit(sev)
 

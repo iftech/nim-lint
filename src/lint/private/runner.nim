@@ -70,12 +70,16 @@ proc collectFiles(config: Config; targets: seq[Target]): seq[string] =
             seen.incl path
             result.add path
       else:
-        # A glob pattern, expanded here so it works on any shell.
+        # A glob pattern, expanded here so it works on any shell. Both sides
+        # are normalized: `walkDirRec` yields `./src/foo.nim`, while the
+        # pattern usually has no `./` prefix.
         for path in walkDirRec("."):
-          if splitFile(path).ext == ".nim" and path.matches(target.path) and
-              not seen.contains(path):
-            seen.incl path
-            result.add path
+          let normalized = normalize(path)
+          if splitFile(normalized).ext == ".nim" and
+              normalized.matches(normalize(target.path)) and
+              not seen.contains(normalized):
+            seen.incl normalized
+            result.add normalized
     result.sort()
     return
 

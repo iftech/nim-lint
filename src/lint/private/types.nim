@@ -1,4 +1,7 @@
 ## Core types shared by the library, the linters, and the config file.
+##
+## The types a linter author needs are re-exported by `lint`. The rest are
+## internal to the runner and the config macro.
 
 import compiler/ast
 
