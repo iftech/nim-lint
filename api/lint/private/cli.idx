@@ -1,0 +1,6 @@
+nimTitle	cli	lint/private/cli.html	module src/lint/private/cli		0
+nim	Target	lint/private/cli.html#Target	object Target		15
+nim	Options	lint/private/cli.html#Options	object Options		19
+nim	parseTarget	lint/private/cli.html#parseTarget,string	proc parseTarget(arg: string): Target		41
+nim	parseOptions	lint/private/cli.html#parseOptions,seq[string]	proc parseOptions(args: seq[string]): Options		53
+nim	inRanges	lint/private/cli.html#inRanges,int,seq[tuple[int,int]]	proc inRanges(line: int; ranges: seq[tuple[first, last: int]]): bool		71
