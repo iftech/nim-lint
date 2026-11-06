@@ -13,7 +13,7 @@ proc compileLinter() =
     quit(exitCode)
 
 proc runLinter(args = ""): tuple[output: string, exitCode: int] =
-  let command = "./$# $#" % [linterExecutable, args]
+  let command = "$# $#" % [linterExecutable, args]
   execCmdEx(command, workingDir = testsDir)
 
 suite "Lint tests":
