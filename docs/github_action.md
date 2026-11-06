@@ -1,7 +1,5 @@
 .. title:: GitHub Action
 
-# GitHub Action
-
 The repository ships a GitHub Action that lints only the files a pull request changes. Findings appear as inline annotations on the diff, so review focuses on new code rather than on everything that was already wrong.
 
 ## Setup

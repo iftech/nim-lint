@@ -1,7 +1,5 @@
 .. title:: Command Line
 
-# Command Line
-
 With no arguments, the executable lints the config's `sources`:
 
 ```shell

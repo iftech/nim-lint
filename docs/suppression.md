@@ -1,7 +1,5 @@
 .. title:: Suppressing Findings
 
-# Suppressing Findings
-
 Sometimes a finding is correct but you do not want to act on it. Add a `#nolint` comment at the end of the line the finding points at:
 
 ```nim

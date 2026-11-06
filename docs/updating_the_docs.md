@@ -1,7 +1,5 @@
 .. title:: Updating the Docs
 
-# Nim-Flavored Markdown
-
 The docs are written in [Nim-flavored Markdown](https://nim-lang.org/docs/markdown_rst.html).
 
 To add code references, use `.. importdoc::` syntax to import the API docs and `[symbolName]` to add a reference. To disambuguate between identically named symbols, add a qualifier (e.g. `proc`) and signature. Read more in the [Nim DocGen Docs](https://nim-lang.org/docs/docgen.html#simple-documentation-links).

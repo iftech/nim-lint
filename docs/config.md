@@ -1,7 +1,5 @@
 .. title:: Config File
 
-# Config File
-
 The config file is a Nim program. It imports Lint, imports the linters you want, and calls `runLint` with a block describing the run.
 
 .. include:: ../tests/linter.nim

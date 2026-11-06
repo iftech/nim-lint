@@ -1,7 +1,5 @@
 .. title:: Writing a Linter
 
-# Writing a Linter
-
 A linter is a Nim module that declares one or more checks and exports a linter value. It lives in your repository, next to the config that uses it.
 
 ## A minimal linter

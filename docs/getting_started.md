@@ -1,7 +1,5 @@
 .. title:: Getting Started
 
-# Getting Started
-
 ## Install
 
 Lint is a Nimble package:
