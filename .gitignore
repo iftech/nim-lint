@@ -16,6 +16,8 @@ htmldocs/
 nimcache/
 testresults/
 tests/nimcache/
+tests/linter
+tests/tlint
 tests/testresults/
 outputGotten.txt
 
@@ -25,9 +27,6 @@ nimbledeps
 /config.nims
 
 .monit*yml
-
-# Built test binaries and the example lint binary
-tests/tlint
 
 # Action build cache
 .lint-cache/

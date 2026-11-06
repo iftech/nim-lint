@@ -1,14 +1,22 @@
-import std/[unittest, osproc, strutils]
+import std/[unittest, os, osproc, strutils]
 
 const
   config = "linter.nim"
-  testsDir = "tests"
+  linterExecutable = "linter"
+  testsDir = currentSourcePath().parentDir
+
+proc compileLinter() =
+  let (_, exitCode) =
+    execCmdEx("nim c -d:release --hints:off $#" % config, workingDir = testsDir)
+  doAssert exitCode == 0
 
 proc runLinter(args = ""): tuple[output: string, exitCode: int] =
-  let command = "nim r $# $#" % [config, args]
+  let command = "./$# $#" % [linterExecutable, args]
   execCmdEx(command, workingDir = testsDir)
 
 suite "Lint tests":
+  compileLinter()
+
   test "Lint a project using the config":
     const
       expectedOutput =
@@ -72,4 +80,6 @@ hints: 2, errors: 0"""
       check:
         exitCode == expectedExitCode
         expectedOutput in output
+
+  removeFile(testsDir / linterExecutable)
 
