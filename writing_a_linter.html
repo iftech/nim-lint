@@ -53,13 +53,12 @@
 
     
     <ul class="simple simple-toc" id="toc-list">
-  <li><a class="reference" id="writing-a-linter_toc" href="#writing-a-linter">Writing a Linter</a></li>
-<ul class="simple"><li><a class="reference" id="writing-a-linter-a-minimal-linter_toc" href="#writing-a-linter-a-minimal-linter">A minimal linter</a></li>
-<li><a class="reference" id="writing-a-linter-the-ast_toc" href="#writing-a-linter-the-ast">The AST</a></li>
-<li><a class="reference" id="writing-a-linter-the-compiler-sources-on-the-search-path_toc" href="#writing-a-linter-the-compiler-sources-on-the-search-path">The compiler sources on the search path</a></li>
-<li><a class="reference" id="writing-a-linter-findings_toc" href="#writing-a-linter-findings">Findings</a></li>
-<li><a class="reference" id="writing-a-linter-settings_toc" href="#writing-a-linter-settings">Settings</a></li>
-<li><a class="reference" id="writing-a-linter-using-the-linter_toc" href="#writing-a-linter-using-the-linter">Using the linter</a></li>
+  <ul class="simple"><li><a class="reference" id="a-minimal-linter_toc" href="#a-minimal-linter">A minimal linter</a></li>
+<li><a class="reference" id="the-ast_toc" href="#the-ast">The AST</a></li>
+<li><a class="reference" id="the-compiler-sources-on-the-search-path_toc" href="#the-compiler-sources-on-the-search-path">The compiler sources on the search path</a></li>
+<li><a class="reference" id="findings_toc" href="#findings">Findings</a></li>
+<li><a class="reference" id="settings_toc" href="#settings">Settings</a></li>
+<li><a class="reference" id="using-the-linter_toc" href="#using-the-linter">Using the linter</a></li>
 </ul>
 </ul>
 
@@ -70,10 +69,9 @@
 
     <div id="tocRoot"></div>
     
-    <p class="module-desc">
-<h1><a class="toc-backref" id="writing-a-linter" href="#writing-a-linter">Writing a Linter</a></h1><p>A linter is a Nim module that declares one or more checks and exports a linter value. It lives in your repository, next to the config that uses it.</p>
+    <p class="module-desc"><p>A linter is a Nim module that declares one or more checks and exports a linter value. It lives in your repository, next to the config that uses it.</p>
 
-<h2><a class="toc-backref" id="writing-a-linter-a-minimal-linter" href="#writing-a-linter-a-minimal-linter">A minimal linter</a></h2><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">std</span><span class="Operator">/</span><span class="Identifier">strutils</span>
+<h2><a class="toc-backref" id="a-minimal-linter" href="#a-minimal-linter">A minimal linter</a></h2><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">std</span><span class="Operator">/</span><span class="Identifier">strutils</span>
 
 <span class="Keyword">import</span> <span class="Identifier">compiler</span><span class="Operator">/</span><span class="Identifier">ast</span>
 
@@ -130,10 +128,10 @@
 <li>a <tt class="docutils literal"><span class="pre">Linter</span></tt> value and one <tt class="docutils literal"><span class="pre">Check</span></tt> per rule, created with <tt class="docutils literal"><span class="pre">check</span></tt></li>
 </ul>
 
-<h2><a class="toc-backref" id="writing-a-linter-the-ast" href="#writing-a-linter-the-ast">The AST</a></h2><p>Checks receive the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced.</p>
+<h2><a class="toc-backref" id="the-ast" href="#the-ast">The AST</a></h2><p>Checks receive the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced.</p>
 <p>Writing a check therefore means importing <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> and matching on node kinds. A check must not modify the tree: the same AST is shared by every step that runs against the file.</p>
 
-<h2><a class="toc-backref" id="writing-a-linter-the-compiler-sources-on-the-search-path" href="#writing-a-linter-the-compiler-sources-on-the-search-path">The compiler sources on the search path</a></h2><p><tt class="docutils literal"><span class="pre">compiler/ast</span></tt> ships with the Nim distribution rather than with Lint, so the compiler sources have to be on the search path. This affects <strong>both</strong> files you write:</p>
+<h2><a class="toc-backref" id="the-compiler-sources-on-the-search-path" href="#the-compiler-sources-on-the-search-path">The compiler sources on the search path</a></h2><p><tt class="docutils literal"><span class="pre">compiler/ast</span></tt> ships with the Nim distribution rather than with Lint, so the compiler sources have to be on the search path. This affects <strong>both</strong> files you write:</p>
 <ul class="simple"><li>the <strong>linter</strong>, because it imports <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> to walk the tree</li>
 <li>the <strong>config</strong>, because it imports <tt class="docutils literal"><span class="pre">lint</span></tt>, which imports <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> in turn</li>
 </ul>
@@ -147,7 +145,7 @@
 <tr><td>Your config <tt class="docutils literal"><span class="pre">linter.nim</span></tt></td><td><tt class="docutils literal"><span class="pre">linter.nims</span></tt>, next to it</td></tr>
 </table><p>Lint's own <tt class="docutils literal"><span class="pre">src/lint.nims</span></tt> contains the same line, which is why the library compiles when you install it.</p>
 
-<h2><a class="toc-backref" id="writing-a-linter-findings" href="#writing-a-linter-findings">Findings</a></h2><p>A finding carries a position and a message, and nothing else:</p>
+<h2><a class="toc-backref" id="findings" href="#findings">Findings</a></h2><p>A finding carries a position and a message, and nothing else:</p>
 <p><pre class="listing"><span class="Keyword">type</span> <span class="Identifier">Finding</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
   <span class="Identifier">line</span><span class="Operator">*:</span> <span class="Identifier">int</span>
   <span class="Identifier">col</span><span class="Operator">*:</span> <span class="Identifier">int</span>
@@ -155,14 +153,14 @@
 <p>A check does not know the file it runs against, the linter it belongs to, or the severity its findings are reported with. The runner attaches all of that when it collects findings, which is what lets the same check run at different severities in different steps.</p>
 <p>Use <tt class="docutils literal"><span class="pre">finding(node, msg)</span></tt> to build one from an AST node; it takes the position from the node.</p>
 
-<h2><a class="toc-backref" id="writing-a-linter-settings" href="#writing-a-linter-settings">Settings</a></h2><p>Settings are a plain object. Give each field a default in the type definition, and a config that omits the <tt class="docutils literal"><span class="pre">settings:</span></tt> block gets those defaults:</p>
+<h2><a class="toc-backref" id="settings" href="#settings">Settings</a></h2><p>Settings are a plain object. Give each field a default in the type definition, and a config that omits the <tt class="docutils literal"><span class="pre">settings:</span></tt> block gets those defaults:</p>
 <p><pre class="listing"><span class="Keyword">type</span>
   <span class="Identifier">NoTodoSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
     <span class="Identifier">marker</span><span class="Operator">*:</span> <span class="Identifier">string</span> <span class="Operator">=</span> <span class="StringLit">&quot;TODO&quot;</span>
     <span class="Identifier">ignoreCase</span><span class="Operator">*:</span> <span class="Identifier">bool</span> <span class="Operator">=</span> <span class="Identifier">false</span></pre></p>
 <p>A config that does provide settings has its keys checked against this type, so a misspelled key is a compile error.</p>
 
-<h2><a class="toc-backref" id="writing-a-linter-using-the-linter" href="#writing-a-linter-using-the-linter">Using the linter</a></h2><p>Import it from the config and refer to the checks by name:</p>
+<h2><a class="toc-backref" id="using-the-linter" href="#using-the-linter">Using the linter</a></h2><p>Import it from the config and refer to the checks by name:</p>
 <p><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">lint</span>
 <span class="Keyword">import</span> <span class="Identifier">tools</span><span class="Operator">/</span><span class="Identifier">comments_linter</span>
 
@@ -184,7 +182,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:33:47 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:37:21 UTC</small>
       </div>
     </div>
   </div>

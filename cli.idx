@@ -1,5 +1,4 @@
 markupTitle	Command Line	cli.html	Command Line		0
-heading	Command Line	cli.html#command-line	 Command Line		0
-heading	Linting a subset	cli.html#command-line-linting-a-subset	  Linting a subset		0
-heading	Linting specific lines	cli.html#command-line-linting-specific-lines	  Linting specific lines		0
-heading	GitHub Actions output	cli.html#command-line-github-actions-output	  GitHub Actions output		0
+heading	Linting a subset	cli.html#linting-a-subset	  Linting a subset		0
+heading	Linting specific lines	cli.html#linting-specific-lines	  Linting specific lines		0
+heading	GitHub Actions output	cli.html#github-actions-output	  GitHub Actions output		0

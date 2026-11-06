@@ -53,10 +53,9 @@
 
     
     <ul class="simple simple-toc" id="toc-list">
-  <li><a class="reference" id="suppressing-findings_toc" href="#suppressing-findings">Suppressing Findings</a></li>
-<ul class="simple"><li><a class="reference" id="suppressing-findings-where-to-put-it_toc" href="#suppressing-findings-where-to-put-it">Where to put it</a></li>
-<li><a class="reference" id="suppressing-findings-rules_toc" href="#suppressing-findings-rules">Rules</a></li>
-<li><a class="reference" id="suppressing-findings-when-not-to-use-it_toc" href="#suppressing-findings-when-not-to-use-it">When not to use it</a></li>
+  <ul class="simple"><li><a class="reference" id="where-to-put-it_toc" href="#where-to-put-it">Where to put it</a></li>
+<li><a class="reference" id="rules_toc" href="#rules">Rules</a></li>
+<li><a class="reference" id="when-not-to-use-it_toc" href="#when-not-to-use-it">When not to use it</a></li>
 </ul>
 </ul>
 
@@ -67,23 +66,22 @@
 
     <div id="tocRoot"></div>
     
-    <p class="module-desc">
-<h1><a class="toc-backref" id="suppressing-findings" href="#suppressing-findings">Suppressing Findings</a></h1><p>Sometimes a finding is correct but you do not want to act on it. Add a <tt class="docutils literal"><span class="pre">#nolint</span></tt> comment at the end of the line the finding points at:</p>
+    <p class="module-desc"><p>Sometimes a finding is correct but you do not want to act on it. Add a <tt class="docutils literal"><span class="pre">#nolint</span></tt> comment at the end of the line the finding points at:</p>
 <p><pre class="listing"><span class="Keyword">var</span> <span class="Identifier">ok</span> <span class="Operator">=</span> <span class="DecNumber">1</span>  <span class="Comment">#nolint</span></pre></p>
 <p>The comment applies to that line only, and to every finding on it, regardless of which check produced it.</p>
 
-<h2><a class="toc-backref" id="suppressing-findings-where-to-put-it" href="#suppressing-findings-where-to-put-it">Where to put it</a></h2><p>Findings point at the declaration, not at the enclosing section. Put the marker on the line that actually contains the offending name:</p>
+<h2><a class="toc-backref" id="where-to-put-it" href="#where-to-put-it">Where to put it</a></h2><p>Findings point at the declaration, not at the enclosing section. Put the marker on the line that actually contains the offending name:</p>
 <p><pre class="listing"><span class="Keyword">var</span>
   <span class="Identifier">ok</span> <span class="Operator">=</span> <span class="DecNumber">1</span>  <span class="Comment">#nolint   # suppresses the finding for `ok`</span>
   <span class="Identifier">x</span> <span class="Operator">=</span> <span class="DecNumber">2</span>             <span class="Comment"># still reported</span></pre></p>
 
-<h2><a class="toc-backref" id="suppressing-findings-rules" href="#suppressing-findings-rules">Rules</a></h2><p>The marker must be at the <strong>end</strong> of the line. Trailing whitespace is fine; anything after the marker is not.</p>
+<h2><a class="toc-backref" id="rules" href="#rules">Rules</a></h2><p>The marker must be at the <strong>end</strong> of the line. Trailing whitespace is fine; anything after the marker is not.</p>
 <p><pre class="listing"><span class="Keyword">var</span> <span class="Identifier">ok</span> <span class="Operator">=</span> <span class="DecNumber">1</span>  <span class="Comment">#nolint          # suppressed</span>
 <span class="Keyword">var</span> <span class="Identifier">ok</span> <span class="Operator">=</span> <span class="DecNumber">1</span>  <span class="Comment">#nolint because  # not suppressed</span></pre></p>
 <p>Because the marker has to be at the end of the line, a <tt class="docutils literal"><span class="pre">#nolint</span></tt> inside a string literal never suppresses anything:</p>
 <p><pre class="listing"><span class="Identifier">echo</span> <span class="StringLit">&quot;#nolint&quot;</span>   <span class="Comment"># reported as usual</span></pre></p>
 
-<h2><a class="toc-backref" id="suppressing-findings-when-not-to-use-it" href="#suppressing-findings-when-not-to-use-it">When not to use it</a></h2><p>Suppression is for the occasional exception. If you find yourself adding <tt class="docutils literal"><span class="pre">#nolint</span></tt> to many lines, the rule is probably wrong for your project: change the check's settings, or exclude the directory in the config instead. </p>
+<h2><a class="toc-backref" id="when-not-to-use-it" href="#when-not-to-use-it">When not to use it</a></h2><p>Suppression is for the occasional exception. If you find yourself adding <tt class="docutils literal"><span class="pre">#nolint</span></tt> to many lines, the rule is probably wrong for your project: change the check's settings, or exclude the directory in the config instead. </p>
 </p>
     
   </div>
@@ -92,7 +90,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:33:47 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:37:21 UTC</small>
       </div>
     </div>
   </div>

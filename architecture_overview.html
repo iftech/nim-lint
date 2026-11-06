@@ -53,8 +53,7 @@
 
     
     <ul class="simple simple-toc" id="toc-list">
-  <li><a class="reference" id="architecture-overview_toc" href="#architecture-overview">Architecture Overview</a></li>
-<ul class="simple"><li><a class="reference" id="architecture-overview-concepts_toc" href="#architecture-overview-concepts">Concepts</a></li>
+  <ul class="simple"><li><a class="reference" id="concepts_toc" href="#concepts">Concepts</a></li>
 <ul class="simple"><li><a class="reference" id="concepts-lint_toc" href="#concepts-lint">Lint</a></li>
 <li><a class="reference" id="concepts-config-file_toc" href="#concepts-config-file">Config file</a></li>
 <li><a class="reference" id="concepts-linter_toc" href="#concepts-linter">Linter</a></li>
@@ -64,9 +63,9 @@
 <li><a class="reference" id="concepts-finding_toc" href="#concepts-finding">Finding</a></li>
 <li><a class="reference" id="concepts-severity_toc" href="#concepts-severity">Severity</a></li>
 <li><a class="reference" id="concepts-reports_toc" href="#concepts-reports">Reports</a></li>
-</ul><li><a class="reference" id="architecture-overview-execution-flow_toc" href="#architecture-overview-execution-flow">Execution Flow</a></li>
-<li><a class="reference" id="architecture-overview-library-surface_toc" href="#architecture-overview-library-surface">Library Surface</a></li>
-<li><a class="reference" id="architecture-overview-exit-modes_toc" href="#architecture-overview-exit-modes">Exit Modes</a></li>
+</ul><li><a class="reference" id="execution-flow_toc" href="#execution-flow">Execution Flow</a></li>
+<li><a class="reference" id="library-surface_toc" href="#library-surface">Library Surface</a></li>
+<li><a class="reference" id="exit-modes_toc" href="#exit-modes">Exit Modes</a></li>
 </ul>
 </ul>
 
@@ -77,10 +76,9 @@
 
     <div id="tocRoot"></div>
     
-    <p class="module-desc">
-<h1><a class="toc-backref" id="architecture-overview" href="#architecture-overview">Architecture Overview</a></h1><p>This page describes the concepts Lint is built from and how a run proceeds. It is meant for anyone writing a linter or working on Lint itself; if you only want to use Lint, <a class="reference external" href="./getting_started.html">Getting Started</a> is the place to begin.</p>
+    <p class="module-desc"><p>This page describes the concepts Lint is built from and how a run proceeds. It is meant for anyone writing a linter or working on Lint itself; if you only want to use Lint, <a class="reference external" href="./getting_started.html">Getting Started</a> is the place to begin.</p>
 
-<h2><a class="toc-backref" id="architecture-overview-concepts" href="#architecture-overview-concepts">Concepts</a></h2>
+<h2><a class="toc-backref" id="concepts" href="#concepts">Concepts</a></h2>
 <h3><a class="toc-backref" id="concepts-lint" href="#concepts-lint">Lint</a></h3><p><em>Lint</em> is a library for building linters for Nim projects.</p>
 <p>A project uses Lint by writing a <em>config file</em> — a Nim source file that imports Lint and declares the linters to run and the checks to run in them. Compiling this file produces the project's lint executable, whose <em>CLI</em> processes the command-line arguments. Lint itself ships no executable: it ships the library that the config file is compiled against. The config file is the only way to run Lint.</p>
 
@@ -119,7 +117,7 @@
 <h3><a class="toc-backref" id="concepts-reports" href="#concepts-reports">Reports</a></h3><p><em>Step report</em> is the outcome of one step run against one file: the findings that step produced for that file, stamped with severity, step label, and file path. A <em>file report</em> collects the step reports of every step run against one file, in step order. A <em>run report</em> collects the file reports of every checked file.</p>
 <p>Ordering is deterministic: files are processed in ascending path order, and steps run in the order they are declared. Two runs of the same executable against the same sources produce the same run report.</p>
 
-<h2><a class="toc-backref" id="architecture-overview-execution-flow" href="#architecture-overview-execution-flow">Execution Flow</a></h2><ol class="simple"><li>The config file is compiled into the project's lint executable.</li>
+<h2><a class="toc-backref" id="execution-flow" href="#execution-flow">Execution Flow</a></h2><ol class="simple"><li>The config file is compiled into the project's lint executable.</li>
 <li>The executable starts. It takes no run parameters: everything the run needs is fixed at compile time.</li>
 <li>The runner asks the source manager for the files to check.</li>
 <li>The source manager walks the source paths, filters the files by extension and by the ignored patterns, and yields the matching files in ascending path order.</li>
@@ -131,7 +129,7 @@
 <li>When all files are checked, the runner assembles the run report and presents it.</li>
 </ol>
 
-<h2><a class="toc-backref" id="architecture-overview-library-surface" href="#architecture-overview-library-surface">Library Surface</a></h2><p>The config file is a Nim source file that imports Lint and declares a config. The library exposes the types and templates the config file needs:</p>
+<h2><a class="toc-backref" id="library-surface" href="#library-surface">Library Surface</a></h2><p>The config file is a Nim source file that imports Lint and declares a config. The library exposes the types and templates the config file needs:</p>
 <ul class="simple"><li>the <tt class="docutils literal"><span class="pre">Linter</span></tt> and <tt class="docutils literal"><span class="pre">Check</span></tt> types, and helpers for declaring them</li>
 <li>the templates for declaring a config: sources, ignored patterns, linter steps, checks with settings and severity</li>
 <li>the runner</li>
@@ -142,10 +140,10 @@
 <li>any way to discover linters at runtime; the set of linters is fixed at compile time by what the config file imports</li>
 </ul>
 <p>A check receives the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced. Writing a check therefore means importing <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> and matching on node kinds, so a linter module depends on that module directly.</p>
-<p>Because of that dependency, the compiler sources must be on the search path for anything that imports <tt class="docutils literal"><span class="pre">lint</span></tt> — the library itself, every linter, and every config. Each of them needs a <tt class="docutils literal"><span class="pre">.nims</span></tt> file containing <tt class="docutils literal"><span class="pre">--path:&quot;$nim/&quot;</span></tt>; see <a class="reference external" href="./writing_a_linter.html#writing-a-linter-the-compiler-sources-on-the-search-path">Writing a Linter</a>.</p>
+<p>Because of that dependency, the compiler sources must be on the search path for anything that imports <tt class="docutils literal"><span class="pre">lint</span></tt> — the library itself, every linter, and every config. Each of them needs a <tt class="docutils literal"><span class="pre">.nims</span></tt> file containing <tt class="docutils literal"><span class="pre">--path:&quot;$nim/&quot;</span></tt>; see <a class="reference external" href="./writing_a_linter.html#the-compiler-sources-on-the-search-path">Writing a Linter</a>.</p>
 <p>Compilation is the config's validation step for everything the type system can express: a misspelled linter or check name and a wrong settings type are compile errors.</p>
 
-<h2><a class="toc-backref" id="architecture-overview-exit-modes" href="#architecture-overview-exit-modes">Exit Modes</a></h2><p>The run ends in exactly one of the following outcomes.</p>
+<h2><a class="toc-backref" id="exit-modes" href="#exit-modes">Exit Modes</a></h2><p>The run ends in exactly one of the following outcomes.</p>
 <p><em>Clean run</em> — every file parsed, every step completed, and no finding carries the <em>error</em> severity. The run report contains only hints, or is empty. The process exits with code 0.</p>
 <p><em>Errors found</em> — every file parsed and every step completed, and at least one finding carries the <em>error</em> severity. The process exits with code 1.</p>
 <p><em>Parse error</em> — a source file could not be parsed, so no AST exists and no step can be run against it. The file report holds a single finding attributed to the runner (not to a step) describing the parse failure. A parse error always fails the run, regardless of configured severities, because no check was able to evaluate the file. Remaining files are still checked, so one unparseable file does not hide findings in the rest. The process exits with code 2.</p>
@@ -159,7 +157,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:33:47 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:37:21 UTC</small>
       </div>
     </div>
   </div>
