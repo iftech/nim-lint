@@ -6,9 +6,11 @@ const
   testsDir = currentSourcePath().parentDir
 
 proc compileLinter() =
-  let (_, exitCode) =
+  let (output, exitCode) =
     execCmdEx("nim c -d:release --hints:off $#" % config, workingDir = testsDir)
-  doAssert exitCode == 0
+  if exitCode != 0:
+    echo output
+    quit(exitCode)
 
 proc runLinter(args = ""): tuple[output: string, exitCode: int] =
   let command = "./$# $#" % [linterExecutable, args]
