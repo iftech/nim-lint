@@ -48,7 +48,7 @@ suite "Lint tests":
     check finding in output
     check summary in output
 
-  test "Lint multiple files":
+  test "Lint specific lines":
     const
       finding = "variable `y` is shorter than 3 characters"
       summaryFinding = "hints: 1, errors: 0"
@@ -73,6 +73,23 @@ suite "Lint tests":
       check finding notin output
       check summaryNoFinding in output
 
+  test "Lint multiple files":
+    const
+      findings = [
+        "variable `y` is shorter than 3 characters",
+        "variable `z` is shorter than 3 characters",
+      ]
+      summary = "hints: 2, errors: 0"
+
+    let (output, exitCode) = runLinter("src/skip/skipped.nim src/skip/skipped2.nim")
+
+    check exitCode == 0
+
+    for finding in findings:
+      check finding in output
+
+    check summary in output
+
   test "Lint files specified with a glob pattern":
     const
       findings = [
@@ -81,53 +98,14 @@ suite "Lint tests":
       ]
       summary = "hints: 2, errors: 0"
 
-    block unquoted:
-      let (output, exitCode) = runLinter("src/skip/*")
+    let (output, exitCode) = runLinter("src/skip/*")
 
-      check exitCode == 0
+    check exitCode == 0
 
-      for finding in findings:
-        check finding in output
+    for finding in findings:
+      check finding in output
 
-      check summary in output
-
-    block quoted:
-      let (output, exitCode) = runLinter("'src/skip/*'")
-
-      check exitCode == 0
-
-      for finding in findings:
-        check finding in output
-
-      check summary in output
-
-  test "Lint specific lines":
-    const
-      findings = [
-        "variable `y` is shorter than 3 characters",
-        "variable `z` is shorter than 3 characters",
-      ]
-      summary = "hints: 2, errors: 0"
-
-    block unquoted:
-      let (output, exitCode) = runLinter("src/skip/*")
-
-      check exitCode == 0
-
-      for finding in findings:
-        check finding in output
-
-      check summary in output
-
-    block quoted:
-      let (output, exitCode) = runLinter("'src/skip/*'")
-
-      check exitCode == 0
-
-      for finding in findings:
-        check finding in output
-
-      check summary in output
+    check summary in output
 
   removeFile findExe(testsDir / linterExecutable)
 
