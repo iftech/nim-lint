@@ -1,1 +1,2 @@
-switch("path", "$projectDir/../src")
+--"path":"$projectDir/../src"
+--path:"$nim/"
