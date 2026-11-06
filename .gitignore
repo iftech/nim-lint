@@ -11,17 +11,12 @@ bin/
 *.html
 *.idx
 *.log
-htmldocs
-docs/
-book/book/
-nbook/
+htmldocs/
 
 nimcache/
-
-tests/tintops
-
-results.csv
-results.json
+tests/nimcache/
+tests/testresults/
+outputGotten.txt
 
 nimble.develop
 nimble.paths
