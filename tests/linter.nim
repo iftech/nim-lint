@@ -6,7 +6,7 @@ runLint:
   ignoredPatterns = ["./src/skip/skipped.nim"]
 
   step "Check naming":
-    linter = nameLinter 
+    linter = nameLinter
     ignoredPatterns = ["./src/skip/skipped2.nim"]
     check varNames:
       severity = hint
@@ -17,3 +17,4 @@ runLint:
       severity = error
       settings:
         prefix = "k"
+
