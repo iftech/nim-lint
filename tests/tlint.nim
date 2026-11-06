@@ -50,20 +50,28 @@ suite "Lint tests":
 
   test "Lint multiple files":
     const
-      findings = [
-        "variable `y` is shorter than 3 characters",
-        "variable `z` is shorter than 3 characters",
-      ]
-      summary = "hints: 2, errors: 0"
+      finding = "variable `y` is shorter than 3 characters"
+      summaryFinding = "hints: 1, errors: 0"
+      summaryNoFinding = "hints: 0, errors: 0"
 
-    let (output, exitCode) = runLinter("src/skip/skipped.nim src/skip/skipped2.nim")
-
-    check exitCode == 0
-
-    for finding in findings:
+    block withFindingOnLine:
+      let (output, exitCode) = runLinter("src/skip/skipped.nim src/skip/skipped.nim:3")
+      check exitCode == 0
       check finding in output
+      check summaryFinding in output
 
-    check summary in output
+    block withFindingInRange:
+      let (output, exitCode) =
+        runLinter("src/skip/skipped.nim src/skip/skipped.nim:2-3")
+      check exitCode == 0
+      check finding in output
+      check summaryFinding in output
+
+    block noFinding:
+      let (output, exitCode) = runLinter("src/skip/skipped.nim src/skip/skipped.nim:2")
+      check exitCode == 0
+      check finding notin output
+      check summaryNoFinding in output
 
   test "Lint files specified with a glob pattern":
     const
@@ -73,16 +81,15 @@ suite "Lint tests":
       ]
       summary = "hints: 2, errors: 0"
 
-    when defined(posix):
-      block unquoted:
-        let (output, exitCode) = runLinter("src/skip/*")
+    block unquoted:
+      let (output, exitCode) = runLinter("src/skip/*")
 
-        check exitCode == 0
+      check exitCode == 0
 
-        for finding in findings:
-          check finding in output
+      for finding in findings:
+        check finding in output
 
-        check summary in output
+      check summary in output
 
     block quoted:
       let (output, exitCode) = runLinter("'src/skip/*'")
@@ -94,5 +101,33 @@ suite "Lint tests":
 
       check summary in output
 
-  removeFile(testsDir / linterExecutable)
+  test "Lint specific lines":
+    const
+      findings = [
+        "variable `y` is shorter than 3 characters",
+        "variable `z` is shorter than 3 characters",
+      ]
+      summary = "hints: 2, errors: 0"
+
+    block unquoted:
+      let (output, exitCode) = runLinter("src/skip/*")
+
+      check exitCode == 0
+
+      for finding in findings:
+        check finding in output
+
+      check summary in output
+
+    block quoted:
+      let (output, exitCode) = runLinter("'src/skip/*'")
+
+      check exitCode == 0
+
+      for finding in findings:
+        check finding in output
+
+      check summary in output
+
+  removeFile findExe(testsDir / linterExecutable)
 
