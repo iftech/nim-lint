@@ -16,6 +16,9 @@ proc runLinter(args = ""): tuple[output: string, exitCode: int] =
   let command = "$# $#" % [findExe(testsDir / linterExecutable), args]
   execCmdEx(command, workingDir = testsDir)
 
+proc removeLinterExecutable() =
+  removeFile findExe(testsDir / linterExecutable)
+
 suite "Lint tests":
   compileLinter()
 
@@ -107,5 +110,5 @@ suite "Lint tests":
 
     check summary in output
 
-  removeFile findExe(testsDir / linterExecutable)
+  removeLinterExecutable()
 
