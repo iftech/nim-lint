@@ -58,7 +58,7 @@ proc nimFiles(pattern: string): seq[string] =
   ## `walkGlob` is used rather than `walkDirRec` plus `matches` because it
   ## builds the pattern for the host platform: on Windows a `/` in the pattern
   ## becomes `\`, which is what the paths it yields contain.
-  for path in walkGlob(pattern, options = defaultGlobOptions + {Hidden}):
+  for path in walkGlob(pattern, options = {Files, FileLinks, DirLinks, Hidden}):
     if splitFile(path).ext == ".nim":
       result.add normalize(path)
 
