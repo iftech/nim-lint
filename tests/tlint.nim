@@ -73,15 +73,16 @@ suite "Lint tests":
       ]
       summary = "hints: 2, errors: 0"
 
-    block unquoted:
-      let (output, exitCode) = runLinter("src/skip/*")
+    when defined(posix):
+      block unquoted:
+        let (output, exitCode) = runLinter("src/skip/*")
 
-      check exitCode == 0
+        check exitCode == 0
 
-      for finding in findings:
-        check finding in output
-  
-      check summary in output
+        for finding in findings:
+          check finding in output
+
+        check summary in output
 
     block quoted:
       let (output, exitCode) = runLinter("'src/skip/*'")
