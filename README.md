@@ -1,37 +1,46 @@
 # Lint
 
-**Lint** checks Nim source code against a set of rules and reports what it finds.
+**Lint** is a tool that runs linting checks on Nim modules. It checks a module's abstract syntax tree against rules expressed with Nim code and reports what it finds.
 
-You configure it with a Nim file: you describe the rules you want, compile that file, and run the resulting executable. The config is Nim, so a misspelled rule name or a wrong setting type is a compile error rather than a silent no-op, and your editor completes and validates it as you type.
+Thanks to its modular architecture, Lint allows you to *BYOL—bring your own linter*:
+- you can write a standalone Nim module with your linting checks and ship it as part of your project
+- or you can publish it as a Nimble package so that anyone could use in in their projects
 
-```nim
-import lint
-import namelinter
+Lint ships with an accompanying [GitHub action](./action.yml) to make it easy to include linting in the CI process.
 
-runLint:
-  sources = ["./src"]
-  ignoredPatterns = ["./src/skip/skipped.nim"]
+## Quickstart
 
-  step "Check naming":
-    linter = nameLinter
-    ignoredPatterns = ["./src/skip/skipped2.nim"]
-    check varNames:
-      severity = hint
-      settings:
-        minLength = 3
-        maxLength = 12
-    check constNames:
-      severity = error
-      settings:
-        prefix = "k"
-```
+1. Install lint with nimble:
 
-```shell
-nimble install lint
-nim r linter.nim
-```
+  ```shell
+  $ nimble install lint
+  ```
 
-Read the docs at <https://iftech.github.io/nim-lint/>.
+2. Write a linter config (see an example in [tests/linter.nim](tests/linter.nim):
+
+.. include:: ./tests/linter.nim
+  :code:
+
+.. note::
+
+  Lint config is a compiled Nim file. This is a bit unorthodox as you usually see configs written in YAML, TOML, or JSON. However, using Nim for configuration allows Lint to employ user-provided linters: the compiled binary has all your checks baked in.
+
+  Also, because it's regular Nim, you never get an incorrect config due to a typo and you can enjoy autocompletions while you edit it.
+
+3. Compile and run your linter:
+
+  ```shell
+  $ nim c -d:release linter.nim
+  $ ./linter                # lint entire project
+  $ ./linter myfile.nim     # or a single file
+  $ ./linter dir            # or a directory
+  $ ./linter dir/s*.nim     # or a glob pattern
+  ```
+
+.. image:: https://asciinema.org/a/1271467.svg
+  :target: https://asciinema.org/a/1271467
+
+Full docs are at [iftech.github.io/nim-lint](https://iftech.github.io/nim-lint/).
 
 ## License
 

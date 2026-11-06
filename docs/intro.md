@@ -1,3 +1,3 @@
-.. title:: Welcome to lint!
+.. title:: Welcome to Lint!
 
 .. include:: ../README.md
