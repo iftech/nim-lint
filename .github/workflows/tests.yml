@@ -16,12 +16,11 @@ jobs:
         nim:
           - '2.2.x'
           - 'stable'
-          - 'devel'
         os:
           - ubuntu-latest
           - windows-latest
           - macOS-latest
-    name: Nim ${{ matrix.nim }}
+    name: Nim ${{ matrix.nim }} on ${{ matrix.os}}
     steps:
       - uses: actions/checkout@v4
       - name: Setup nim
