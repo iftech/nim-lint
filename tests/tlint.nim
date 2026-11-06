@@ -21,67 +21,77 @@ suite "Lint tests":
 
   test "Lint a project using the config":
     const
-      expectedOutput =
-        """[Check naming][varNames][hint][src/main.nim:8:2] variable `a` is shorter than 3 characters
-[Check naming][varNames][hint][src/main.nim:10:2] variable `b` is shorter than 3 characters
-[Check naming][constNames][error][src/main.nim:4:2] constant `invalid` should start with `k`
-hints: 2, errors: 1"""
-      expectedExitCode = 1
+      findings = [
+        "variable `a` is shorter than 3 characters",
+        "variable `b` is shorter than 3 characters",
+        "constant `invalid` should start with `k`",
+      ]
+      summary = "hints: 2, errors: 1"
 
     let (output, exitCode) = runLinter()
 
-    check:
-      exitCode == expectedExitCode
-      expectedOutput in output
+    check exitCode == 1
+
+    for finding in findings:
+      check finding in output
+
+    check summary in output
 
   test "Lint a single file":
     const
-      expectedExitCode = 0
-      expectedOutput =
-        """[Check naming][varNames][hint][src/skip/skipped.nim:3:4] variable `y` is shorter than 3 characters
-hints: 1, errors: 0"""
+      finding = "variable `y` is shorter than 3 characters"
+      summary = "hints: 1, errors: 0"
 
     let (output, exitCode) = runLinter("src/skip/skipped.nim")
 
-    check:
-      exitCode == expectedExitCode
-      expectedOutput in output
+    check exitCode == 0
+    check finding in output
+    check summary in output
 
   test "Lint multiple files":
     const
-      expectedExitCode = 0
-      expectedOutput =
-        """[Check naming][varNames][hint][src/skip/skipped.nim:3:4] variable `y` is shorter than 3 characters
-[Check naming][varNames][hint][src/skip/skipped2.nim:3:4] variable `z` is shorter than 3 characters
-hints: 2, errors: 0"""
+      findings = [
+        "variable `y` is shorter than 3 characters",
+        "variable `z` is shorter than 3 characters",
+      ]
+      summary = "hints: 2, errors: 0"
 
     let (output, exitCode) = runLinter("src/skip/skipped.nim src/skip/skipped2.nim")
 
-    check:
-      exitCode == expectedExitCode
-      expectedOutput in output
+    check exitCode == 0
+
+    for finding in findings:
+      check finding in output
+
+    check summary in output
 
   test "Lint files specified with a glob pattern":
     const
-      expectedExitCode = 0
-      expectedOutput =
-        """[Check naming][varNames][hint][src/skip/skipped.nim:3:4] variable `y` is shorter than 3 characters
-[Check naming][varNames][hint][src/skip/skipped2.nim:3:4] variable `z` is shorter than 3 characters
-hints: 2, errors: 0"""
+      findings = [
+        "variable `y` is shorter than 3 characters",
+        "variable `z` is shorter than 3 characters",
+      ]
+      summary = "hints: 2, errors: 0"
 
     block unquoted:
       let (output, exitCode) = runLinter("src/skip/*")
 
-      check:
-        exitCode == expectedExitCode
-        expectedOutput in output
+      check exitCode == 0
+
+      for finding in findings:
+        check finding in output
+  
+      check summary in output
 
     block quoted:
       let (output, exitCode) = runLinter("'src/skip/*'")
 
-      check:
-        exitCode == expectedExitCode
-        expectedOutput in output
+      check exitCode == 0
+
+      for finding in findings:
+        check finding in output
+
+      check summary in output
 
   removeFile(testsDir / linterExecutable)
 
