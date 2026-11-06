@@ -4,6 +4,12 @@
 ## with a config block. Compiling that file produces the project's lint
 ## executable.
 
-import ./lint/[types, cli, config, runner]
+import ./lint/private/types
+import ./lint/config
 
-export types, cli, config, runner
+# What a linter author needs: the types and helpers for declaring checks.
+export types.Linter, types.Check, types.Finding
+export types.newLinter, types.check, types.finding
+
+# What a config file needs: `runLint`.
+export config
