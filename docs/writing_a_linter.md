@@ -21,13 +21,32 @@ Checks receive the parsed file as a `PNode` from Nim's own compiler AST module (
 
 Writing a check therefore means importing `compiler/ast` and matching on node kinds. A check must not modify the tree: the same AST is shared by every step that runs against the file.
 
-Because `compiler/ast` ships with the Nim distribution rather than with Lint, the compiler sources have to be on the search path. Add a `.nims` file next to your linter:
+## The compiler sources on the search path
+
+`compiler/ast` ships with the Nim distribution rather than with Lint, so the compiler sources have to be on the search path. This affects **both** files you write:
+
+- the **linter**, because it imports `compiler/ast` to walk the tree
+- the **config**, because it imports `lint`, which imports `compiler/ast` in turn
+
+Without it, neither compiles:
+
+```
+Error: cannot open file: compiler/ast
+```
+
+The fix is a one-line `.nims` file next to each of them:
 
 ```nim
 --path:"$nim/"
 ```
 
-For a single-module linter called `foo.nim`, that file is `foo.nims`. For a linter packaged as a Nimble package, put the same line in `config.nims` in the package root.
+| What you have | Where the file goes |
+| --- | --- |
+| A single-module linter `foo.nim` | `foo.nims`, next to it |
+| A linter packaged as a Nimble package | `config.nims` in the package root |
+| Your config `linter.nim` | `linter.nims`, next to it |
+
+Lint's own `src/lint.nims` contains the same line, which is why the library compiles when you install it.
 
 ## Findings
 

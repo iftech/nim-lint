@@ -96,6 +96,8 @@ The library does not expose:
 
 A check receives the parsed file as a `PNode` from Nim's own compiler AST module (`compiler/ast`). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced. Writing a check therefore means importing `compiler/ast` and matching on node kinds, so a linter module depends on that module directly.
 
+Because of that dependency, the compiler sources must be on the search path for anything that imports `lint` — the library itself, every linter, and every config. Each of them needs a `.nims` file containing `--path:"$nim/"`; see [Writing a Linter](./writing_a_linter.html#writing-a-linter-the-compiler-sources-on-the-search-path).
+
 Compilation is the config's validation step for everything the type system can express: a misspelled linter or check name and a wrong settings type are compile errors.
 
 ## Exit Modes
