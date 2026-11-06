@@ -10,6 +10,23 @@ on:
 
 jobs:
   tests:
-    uses: status-im/nimbus-common-workflow/.github/workflows/common.yml@main
-    with:
-      nim-versions: '["version-2-2", "version-2-4", "devel"]'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        nim:
+          - '2.2.x'
+          - 'stable'
+          - 'devel'
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+    name: Nim ${{ matrix.nim }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup nim
+        uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: ${{ matrix.nim }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nimble test
