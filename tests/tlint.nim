@@ -93,6 +93,23 @@ suite "Lint tests":
 
     check summary in output
 
+  test "Lint a directory":
+    const
+      findings = [
+        "variable `y` is shorter than 3 characters",
+        "variable `z` is shorter than 3 characters",
+      ]
+      summary = "hints: 2, errors: 0"
+
+    let (output, exitCode) = runLinter("src/skip/")
+
+    check exitCode == 0
+
+    for finding in findings:
+      check finding in output
+
+    check summary in output
+
   test "Lint files specified with a glob pattern":
     const
       findings = [
