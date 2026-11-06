@@ -38,7 +38,7 @@ Quickstart
     $ ./linter dir            # or a directory
     $ ./linter dir/s*.nim     # or a glob pattern
 
-Full docs are at [iftech.github.io/nim-lint](https://iftech.github.io/nim-lint/).
+Full docs are at `iftech.github.io/nim-lint <https://iftech.github.io/nim-lint/>`_.
 
 License
 -------
