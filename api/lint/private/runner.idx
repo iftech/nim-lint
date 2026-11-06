@@ -9,7 +9,7 @@ nim	FindingTag	lint/private/runner.html#FindingTag	object FindingTag		23
 nim	StepReport	lint/private/runner.html#StepReport	object StepReport		31
 nim	FileReport	lint/private/runner.html#FileReport	object FileReport		36
 nim	RunReport	lint/private/runner.html#RunReport	object RunReport		40
-nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		102
-nim	`$`	lint/private/runner.html#$,RunReport,string	proc `$`(report: RunReport; format: string = "text"): string		127
-nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		142
-nim	run	lint/private/runner.html#run,Config,seq[Target],string	proc run(config: Config; targets: seq[Target] = @[]; format: string = "text")		150
+nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		105
+nim	`$`	lint/private/runner.html#$,RunReport,string	proc `$`(report: RunReport; format: string = "text"): string		130
+nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		145
+nim	run	lint/private/runner.html#run,Config,seq[Target],string	proc run(config: Config; targets: seq[Target] = @[]; format: string = "text")		153
