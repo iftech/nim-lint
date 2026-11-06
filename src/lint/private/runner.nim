@@ -1,6 +1,6 @@
 ## The runner: walks sources, parses files, runs steps, assembles reports.
 
-import std/[algorithm, os, sets, strformat, strutils, tables]
+import std/[algorithm, os, strformat, strutils, tables, sequtils]
 
 import glob
 
@@ -11,7 +11,6 @@ import ./cli
 import ./suppress
 import ./types
 
-
 type
   ExitMode* = enum
     emClean = 0
@@ -20,8 +19,7 @@ type
     emConfigError = 3
     emCheckError = 4
 
-  FindingTag* = object
-    ## A finding with everything the runner knows attached.
+  FindingTag* = object ## A finding with everything the runner knows attached.
     severity*: Severity
     stepLabel*: string
     checkName*: string
@@ -62,49 +60,36 @@ proc nimFiles(pattern: string): seq[string] =
     if splitFile(path).ext == ".nim":
       result.add normalize(path)
 
-proc collectFiles(config: Config; targets: seq[Target]): seq[string] =
+proc collectFiles(config: Config, targets: seq[Target]): seq[string] =
   ## Returns the files to lint in ascending path order.
   ##
   ## With `targets`, they replace the config's sources and ignored patterns
   ## entirely: an explicit argument is a request to lint exactly that.
-  var seen = initHashSet[string]()
-  if targets.len > 0:
-    for target in targets:
-      if fileExists(target.path):
-        if not seen.contains(target.path):
-          seen.incl target.path
-          result.add target.path
-      elif dirExists(target.path):
-        for path in nimFiles(target.path / "**"):
-          if not seen.contains(path):
-            seen.incl path
-            result.add path
-      else:
-        # A glob pattern, expanded here so it works on any shell.
-        for path in nimFiles(target.path):
-          if not seen.contains(path):
-            seen.incl path
-            result.add path
-    result.sort()
-    return
 
-  for source in config.sources:
-    if not dirExists(source) and not fileExists(source):
-      raise newException(IOError, "source path does not exist: " & source)
-    if fileExists(source):
-      if not seen.contains(source):
-        seen.incl(source)
-        result.add(source)
-      continue
-    for path in nimFiles(source / "**"):
-      if not isIgnored(path, config.ignoredPatterns) and not seen.contains(path):
-        seen.incl(path)
-        result.add(path)
+  let paths =
+    if len(targets) == 0:
+      config.sources
+    else:
+      targets.mapIt(it.path)
+
+  for path in paths:
+    if fileExists(path):
+      result.addUnique(path)
+    elif dirExists(path):
+      for file in nimFiles("$#/**" % path):
+        result.addUnique(file)
+    else:
+      for file in nimFiles(path):
+        result.addUnique(file)
+
+  if len(targets) == 0:
+    result.keepItIf(not it.isIgnored(config.ignoredPatterns))
+
   result.sort()
 
 type ParseFailure* = object of CatchableError
 
-proc raiseParseError(conf: ConfigRef; info: TLineInfo; msg: TMsgKind; arg: string) =
+proc raiseParseError(conf: ConfigRef, info: TLineInfo, msg: TMsgKind, arg: string) =
   ## The default parser error handler calls `quit`, which would kill the whole
   ## run on one bad file. Raise instead so the runner can report it.
   raise newException(ParseFailure, "(" & $info.line & ", " & $info.col & ") " & arg)
@@ -127,14 +112,16 @@ proc renderGithub(tag: FindingTag): string =
   let title = tag.stepLabel & "/" & tag.checkName
   result = &"::{kind} file={tag.file},line={tag.finding.line},col={tag.finding.col},title={title}::{tag.finding.msg}"
 
-proc `$`*(report: RunReport; format: string = "text"): string =
+proc `$`*(report: RunReport, format: string = "text"): string =
   var hints, errors = 0
   for fileReport in report.fileReports:
     for stepReport in fileReport.stepReports:
       for tag in stepReport.findings:
         case tag.severity
-        of Severity.hint: inc hints
-        of Severity.error: inc errors
+        of Severity.hint:
+          inc hints
+        of Severity.error:
+          inc errors
         if format == "github":
           result.add renderGithub(tag) & "\n"
         else:
@@ -150,10 +137,11 @@ proc exitMode*(report: RunReport): ExitMode =
           return emErrorsFound
   emClean
 
-proc run*(config: Config; targets: seq[Target] = @[]; format: string = "text") =
+proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
   ## Runs the config and exits with the code for the resulting exit mode.
   ##
   ## `targets` come from the command line and override the config's sources.
+
   var exitCode = ExitMode.emClean
 
   var files: seq[string]
@@ -183,16 +171,15 @@ proc run*(config: Config; targets: seq[Target] = @[]; format: string = "text") =
       fileReport.stepReports.add StepReport(
         label: "runner",
         linter: "",
-        findings:
-          @[
-            FindingTag(
-              severity: Severity.error,
-              stepLabel: "runner",
-              checkName: "",
-              file: file,
-              finding: Finding(line: 0, col: 0, msg: "parse error: " & e.msg),
-            )
-          ],
+        findings: @[
+          FindingTag(
+            severity: Severity.error,
+            stepLabel: "runner",
+            checkName: "",
+            file: file,
+            finding: Finding(line: 0, col: 0, msg: "parse error: " & e.msg),
+          )
+        ],
       )
       exitCode = ExitMode.emParseError
 
@@ -211,8 +198,7 @@ proc run*(config: Config; targets: seq[Target] = @[]; format: string = "text") =
             stderr.writeLine &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
             quit(ord(ExitMode.emCheckError))
           for f in findings:
-            if rangesByPath.hasKey(file) and
-                not inRanges(f.line, rangesByPath[file]):
+            if rangesByPath.hasKey(file) and not inRanges(f.line, rangesByPath[file]):
               continue
             if isSuppressed(sourceLines, f.line):
               continue
@@ -231,3 +217,4 @@ proc run*(config: Config; targets: seq[Target] = @[]; format: string = "text") =
   if exitCode != ExitMode.emParseError:
     exitCode = mode
   quit(ord(exitCode))
+
