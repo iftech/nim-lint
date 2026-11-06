@@ -83,7 +83,7 @@
   <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped.nim&quot;</span><span class="Punctuation">]</span>
 
   <span class="Identifier">step</span> <span class="StringLit">&quot;Check naming&quot;</span><span class="Punctuation">:</span>
-    <span class="Identifier">linter</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span> 
+    <span class="Identifier">linter</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span>
     <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped2.nim&quot;</span><span class="Punctuation">]</span>
     <span class="Identifier">check</span> <span class="Identifier">varNames</span><span class="Punctuation">:</span>
       <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">hint</span>
@@ -94,6 +94,7 @@
       <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">error</span>
       <span class="Identifier">settings</span><span class="Punctuation">:</span>
         <span class="Identifier">prefix</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
+
 </pre><p>Reading it top to bottom: <tt class="docutils literal"><span class="pre">sources</span></tt> are the directories to walk, <tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt> are the files to skip everywhere. Each <tt class="docutils literal"><span class="pre">step</span></tt> names a linter and lists the checks to run. Each <tt class="docutils literal"><span class="pre">check</span></tt> says how its findings are reported and, if the check takes settings, the values for this run.</p>
 <p>Two conventions worth knowing, because they are Nim rather than Lint:</p>
 <ul class="simple"><li><tt class="docutils literal"><span class="pre">key = value</span></tt> assigns a value; <tt class="docutils literal"><span class="pre">key:</span></tt> opens a block. That is why <tt class="docutils literal"><span class="pre">severity =</span></tt> and <tt class="docutils literal"><span class="pre">settings:</span></tt> differ by one character.</li>
@@ -127,7 +128,7 @@ hints: 1, errors: 1</pre></p>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 11:17:36 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 11:50:25 UTC</small>
       </div>
     </div>
   </div>
