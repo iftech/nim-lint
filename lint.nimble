@@ -13,9 +13,6 @@ const testBinaries = "tests/tfile tests/tproject"
 requires "nim >= 2.2.0"
 requires "glob >= 0.11.3"
 
-task test, "Run the test suite":
-  exec "testament --directory:tests pattern t*.nim"
-
 task apidocs, "Generate the API docs":
   exec "nim doc --outdir:htmldocs/api --project src/lint.nim"
 
