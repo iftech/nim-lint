@@ -38,9 +38,6 @@ Quickstart
     $ ./linter dir            # or a directory
     $ ./linter dir/s*.nim     # or a glob pattern
 
-.. image:: https://asciinema.org/a/1271467.svg
-  :target: https://asciinema.org/a/1271467
-
 Full docs are at [iftech.github.io/nim-lint](https://iftech.github.io/nim-lint/).
 
 License
