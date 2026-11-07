@@ -5,7 +5,7 @@
 ## executable.
 
 import ./lint/private/types
-import ./lint/config
+import ./lint/private/config
 
 # What a linter author needs: the types and helpers for declaring checks.
 export types.Linter, types.Check, types.Finding

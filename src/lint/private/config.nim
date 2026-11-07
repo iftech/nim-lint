@@ -5,9 +5,9 @@ import std/[macros, os]
 
 import compiler/ast
 
-import ./private/cli
-import ./private/types
-import ./private/runner
+import ./cli
+import ./types
+import ./runner
 
 proc toSeverity(node: NimNode): Severity =
   case node.strVal
