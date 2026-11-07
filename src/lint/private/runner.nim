@@ -16,7 +16,7 @@ type
     emClean = 0
     emErrorsFound = 1
     emParseError = 2
-    emConfigError = 3
+    emNoSources = 3
     emCheckError = 4
 
   FindingTag* = object ## A finding with everything the runner knows attached.
@@ -144,12 +144,10 @@ proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
 
   var exitCode = ExitMode.emClean
 
-  var files: seq[string]
-  try:
-    files = collectFiles(config, targets)
-  except IOError as e:
-    stderr.writeLine "config error: " & e.msg
-    quit(ord(ExitMode.emConfigError))
+  let files = collectFiles(config, targets)
+  if files.len == 0:
+    stderr.writeLine "no sources to lint"
+    quit(ord(ExitMode.emNoSources))
 
   var report = RunReport()
 
