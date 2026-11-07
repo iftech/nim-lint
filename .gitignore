@@ -18,9 +18,11 @@ nimcache/
 testresults/
 tests/nimcache/
 tests/linter
-tests/tlint
 tests/testresults/
 outputGotten.txt
+
+tests/trun
+tests/texitcodes
 
 nimble.develop
 nimble.paths
