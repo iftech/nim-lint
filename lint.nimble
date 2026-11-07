@@ -2,11 +2,9 @@
 
 version = "0.1.0"
 author = "Constantine Molchanov"
-description = "Library for creating a linter for your Nim project."
+description = "Linting toolkit for Nim projects."
 license = "MIT"
 srcDir = "src"
-
-const testBinaries = "tests/tfile tests/tproject"
 
 # Dependencies
 
@@ -22,6 +20,8 @@ task bookIndex, "Generate the book index":
 task book, "Generate the book":
   exec "nim book docs"
   cpFile("htmldocs/intro.html", "htmldocs/index.html")
+  cpFile("LICENSE-APACHEv2", "htmldocs/LICENSE-APACHEv2")
+  cpFile("LICENSE-MIT", "htmldocs/LICENSE-MIT")
 
 task docs, "Generate the documentation":
   rmDir "htmldocs"
