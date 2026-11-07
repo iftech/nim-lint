@@ -12,17 +12,17 @@ proc compileLinter() =
     echo output
     quit(exitCode)
 
-proc runLinter(args = ""): tuple[output: string, exitCode: int] =
-  let command = "$# $#" % [findExe(testsDir / linterExecutable), args]
+proc runLinter(targets = ""): tuple[output: string, exitCode: int] =
+  let command = "$# $#" % [findExe(testsDir / linterExecutable), targets]
   execCmdEx(command, workingDir = testsDir)
 
 proc removeLinterExecutable() =
   removeFile findExe(testsDir / linterExecutable)
 
-suite "Lint tests":
+suite "Run options":
   compileLinter()
 
-  test "Lint a project using the config":
+  test "Project using the config":
     const
       findings = [
         "variable `a` is shorter than 3 characters",
@@ -40,7 +40,7 @@ suite "Lint tests":
 
     check summary in output
 
-  test "Lint a single file":
+  test "Single file":
     const
       finding = "variable `y` is shorter than 3 characters"
       summary = "hints: 1, errors: 0"
@@ -51,7 +51,7 @@ suite "Lint tests":
     check finding in output
     check summary in output
 
-  test "Lint specific lines":
+  test "Specific lines":
     const
       finding = "variable `y` is shorter than 3 characters"
       summaryFinding = "hints: 1, errors: 0"
@@ -76,7 +76,7 @@ suite "Lint tests":
       check finding notin output
       check summaryNoFinding in output
 
-  test "Lint multiple files":
+  test "Multiple files":
     const
       findings = [
         "variable `y` is shorter than 3 characters",
@@ -93,7 +93,7 @@ suite "Lint tests":
 
     check summary in output
 
-  test "Lint a directory":
+  test "Directory":
     const
       findings = [
         "variable `y` is shorter than 3 characters",
@@ -110,7 +110,7 @@ suite "Lint tests":
 
     check summary in output
 
-  test "Lint files specified with a glob pattern":
+  test "Glob pattern":
     const
       findings = [
         "variable `y` is shorter than 3 characters",
