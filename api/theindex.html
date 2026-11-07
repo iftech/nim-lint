@@ -33,17 +33,17 @@
 <li><a class="reference external"
           data-doc-search-tag="runner: proc `$`(report: RunReport; format: string = &quot;text&quot;): string" href="lint/private/runner.html#%24%2CRunReport%2Cstring">runner: proc `$`(report: RunReport; format: string = &quot;text&quot;): string</a></li>
           </ul></dd>
+<dt><a name="addCheck" href="#addCheck"><span>addCheck:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="types: proc addCheck[S](linter: Linter; name: string;
+            run: proc (ast: PNode; settings: S): seq[Finding];
+            defaults: S = default(S)): Check[S]" href="lint/private/types.html#addCheck%2CLinter%2Cstring%2Cproc%28PNode%2CS%29%2CS">types: proc addCheck[S](linter: Linter; name: string;
+            run: proc (ast: PNode; settings: S): seq[Finding];
+            defaults: S = default(S)): Check[S]</a></li>
+          </ul></dd>
 <dt><a name="Check" href="#Check"><span>Check:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="types: object Check" href="lint/private/types.html#Check">types: object Check</a></li>
-          </ul></dd>
-<dt><a name="check" href="#check"><span>check:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="types: proc check[S](linter: Linter; name: string;
-         run: proc (ast: PNode; settings: S): seq[Finding];
-         defaults: S = default(S)): Check[S]" href="lint/private/types.html#check%2CLinter%2Cstring%2Cproc%28PNode%2CS%29%2CS">types: proc check[S](linter: Linter; name: string;
-         run: proc (ast: PNode; settings: S): seq[Finding];
-         defaults: S = default(S)): Check[S]</a></li>
           </ul></dd>
 <dt><a name="Config" href="#Config"><span>Config:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -89,10 +89,6 @@
 <li><a class="reference external"
           data-doc-search-tag="types: object Finding" href="lint/private/types.html#Finding">types: object Finding</a></li>
           </ul></dd>
-<dt><a name="finding" href="#finding"><span>finding:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="types: proc finding(node: PNode; msg: string): Finding" href="lint/private/types.html#finding%2CPNode%2Cstring">types: proc finding(node: PNode; msg: string): Finding</a></li>
-          </ul></dd>
 <dt><a name="FindingTag" href="#FindingTag"><span>FindingTag:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="runner: object FindingTag" href="lint/private/runner.html#FindingTag">runner: object FindingTag</a></li>
@@ -114,10 +110,6 @@
 <dt><a name="Linter" href="#Linter"><span>Linter:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="types: object Linter" href="lint/private/types.html#Linter">types: object Linter</a></li>
-          </ul></dd>
-<dt><a name="newLinter" href="#newLinter"><span>newLinter:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="types: proc newLinter(name: string): Linter" href="lint/private/types.html#newLinter%2Cstring">types: proc newLinter(name: string): Linter</a></li>
           </ul></dd>
 <dt><a name="Options" href="#Options"><span>Options:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -171,11 +163,15 @@
 <li><a class="reference external"
           data-doc-search-tag="cli: object Target" href="lint/private/cli.html#Target">cli: object Target</a></li>
           </ul></dd>
+<dt><a name="toFinding" href="#toFinding"><span>toFinding:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="types: proc toFinding(node: PNode; msg: string): Finding" href="lint/private/types.html#toFinding%2CPNode%2Cstring">types: proc toFinding(node: PNode; msg: string): Finding</a></li>
+          </ul></dd>
 </dl>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 08:46:35 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 17:13:27 UTC</small>
       </div>
     </div>
   </div>

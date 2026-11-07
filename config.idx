@@ -1,9 +1,8 @@
 markupTitle	Config File	config.html	Config File		0
-heading	Sources	config.html#sources	  Sources		0
-heading	Ignored patterns	config.html#ignored-patterns	  Ignored patterns		0
-heading	Steps	config.html#steps	  Steps		0
-heading	Checks	config.html#checks	  Checks		0
-heading	Linters	config.html#linters	  Linters		0
-heading	Writing your own linter	config.html#writing-your-own-linter	  Writing your own linter		0
-heading	Running the linter	config.html#running-the-linter	  Running the linter		0
-heading	What a run looks like	config.html#what-a-run-looks-like	  What a run looks like		0
+heading	Global config	config.html#global-config	 Global config		0
+heading	Step config	config.html#step-config	 Step config		0
+heading	Checks	config.html#checks	 Checks		0
+heading	Linters	config.html#linters	 Linters		0
+heading	Writing your own linter	config.html#writing-your-own-linter	 Writing your own linter		0
+heading	Running the linter	config.html#running-the-linter	 Running the linter		0
+heading	What a run looks like	config.html#what-a-run-looks-like	 What a run looks like		0

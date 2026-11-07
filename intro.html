@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="current">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
+  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="current">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -82,32 +82,25 @@
 <span class="Keyword">import</span> <span class="Identifier">namelinter</span>
 
 <span class="Identifier">runLint</span><span class="Punctuation">:</span>
-<span class="Comment">#startSources</span>
+<span class="Comment">#startGlobalConfig</span>
   <span class="Identifier">sources</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src&quot;</span><span class="Punctuation">]</span>
-<span class="Comment">#endSources</span>
-<span class="Comment">#startIgnoredPatterns</span>
   <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped.nim&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;./src/skip2/**/*&quot;</span><span class="Punctuation">]</span>
-<span class="Comment">#endIgnoredPatterns</span>
+<span class="Comment">#endGlobalConfig</span>
 
-<span class="Comment">#startStep</span>
+<span class="Comment">#startStepConfig</span>
   <span class="Identifier">step</span> <span class="StringLit">&quot;Check naming&quot;</span><span class="Punctuation">:</span>
     <span class="Identifier">linter</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span>
-<span class="Comment">#startStepIgnoredPatterns</span>
     <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped2.nim&quot;</span><span class="Punctuation">]</span>
-<span class="Comment">#endStepIgnoredPatterns</span>
-<span class="Comment">#startCheck</span>
     <span class="Identifier">check</span> <span class="Identifier">varNames</span><span class="Punctuation">:</span>
       <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">hint</span>
-<span class="Comment">#startSettings</span>
       <span class="Identifier">settings</span><span class="Punctuation">:</span>
         <span class="Identifier">minLength</span> <span class="Operator">=</span> <span class="DecNumber">3</span>
         <span class="Identifier">maxLength</span> <span class="Operator">=</span> <span class="DecNumber">12</span>
-<span class="Comment">#endSettings</span>
-<span class="Comment">#endCheck</span>
     <span class="Identifier">check</span> <span class="Identifier">constNames</span><span class="Punctuation">:</span>
       <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">error</span>
       <span class="Identifier">settings</span><span class="Punctuation">:</span>
         <span class="Identifier">prefix</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
+<span class="Comment">#endStepConfig</span>
 </pre><div class="admonition admonition-info"><span class="admonition-info-text"><b>Note:</b></span>
 <p>Lint config is a compiled Nim file. This is a bit unorthodox as you usually see configs written in YAML, TOML, or JSON. However, using Nim for configuration allows Lint to employ user-provided linters: the compiled binary has all your checks baked in.</p>
 <p>Also, because it's regular Nim, you never get an incorrect config due to a typo and you can enjoy autocompletions while you edit it.</p>
@@ -133,7 +126,7 @@ $ ./linter dir/s*.nim     # or a glob pattern</pre><p>Full docs are at <a class=
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 08:46:36 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 17:13:28 UTC</small>
       </div>
     </div>
   </div>

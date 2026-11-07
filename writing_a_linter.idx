@@ -1,7 +1,7 @@
 markupTitle	Writing a Linter	writing_a_linter.html	Writing a Linter		0
-heading	A minimal linter	writing_a_linter.html#a-minimal-linter	  A minimal linter		0
-heading	The AST	writing_a_linter.html#the-ast	  The AST		0
-heading	The compiler sources on the search path	writing_a_linter.html#the-compiler-sources-on-the-search-path	  The compiler sources on the search path		0
-heading	Findings	writing_a_linter.html#findings	  Findings		0
-heading	Settings	writing_a_linter.html#settings	  Settings		0
-heading	Using the linter	writing_a_linter.html#using-the-linter	  Using the linter		0
+heading	A minimal linter	writing_a_linter.html#a-minimal-linter	 A minimal linter		0
+heading	The AST	writing_a_linter.html#the-ast	 The AST		0
+heading	The compiler sources on the search path	writing_a_linter.html#the-compiler-sources-on-the-search-path	 The compiler sources on the search path		0
+heading	Findings	writing_a_linter.html#findings	 Findings		0
+heading	Settings	writing_a_linter.html#settings	 Settings		0
+heading	Using the linter	writing_a_linter.html#using-the-linter	 Using the linter		0

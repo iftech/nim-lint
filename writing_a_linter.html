@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><a href="writing_a_linter.html" class="current">Writing a Linter</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
+  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="writing_a_linter.html" class="current">Writing a Linter</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -53,13 +53,13 @@
 
     
     <ul class="simple simple-toc" id="toc-list">
-  <ul class="simple"><li><a class="reference" id="a-minimal-linter_toc" href="#a-minimal-linter">A minimal linter</a></li>
+  <li><a class="reference" id="a-minimal-linter_toc" href="#a-minimal-linter">A minimal linter</a></li>
 <li><a class="reference" id="the-ast_toc" href="#the-ast">The AST</a></li>
 <li><a class="reference" id="the-compiler-sources-on-the-search-path_toc" href="#the-compiler-sources-on-the-search-path">The compiler sources on the search path</a></li>
 <li><a class="reference" id="findings_toc" href="#findings">Findings</a></li>
 <li><a class="reference" id="settings_toc" href="#settings">Settings</a></li>
 <li><a class="reference" id="using-the-linter_toc" href="#using-the-linter">Using the linter</a></li>
-</ul>
+
 </ul>
 
   </div>
@@ -71,12 +71,14 @@
     
     <p class="module-desc"><p>A linter is a Nim module that declares one or more checks and exports a linter value. It lives in your repository, next to the config that uses it.</p>
 
-<h2><a class="toc-backref" id="a-minimal-linter" href="#a-minimal-linter">A minimal linter</a></h2><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">std</span><span class="Operator">/</span><span class="Identifier">strutils</span>
+<h1><a class="toc-backref" id="a-minimal-linter" href="#a-minimal-linter">A minimal linter</a></h1><p>This is an example linter from the tests:</p>
+<pre class="listing"><span class="Keyword">import</span> <span class="Identifier">std</span><span class="Operator">/</span><span class="Identifier">strutils</span>
 
 <span class="Keyword">import</span> <span class="Identifier">compiler</span><span class="Operator">/</span><span class="Identifier">ast</span>
 
 <span class="Keyword">import</span> <span class="Identifier">lint</span>
 
+<span class="Comment">#startSettings</span>
 <span class="Keyword">type</span>
   <span class="Identifier">VarNamesSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
     <span class="Identifier">minLength</span><span class="Operator">*:</span> <span class="Identifier">int</span> <span class="Operator">=</span> <span class="DecNumber">3</span>
@@ -84,6 +86,7 @@
 
   <span class="Identifier">ConstNamesSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
     <span class="Identifier">prefix</span><span class="Operator">*:</span> <span class="Identifier">string</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
+<span class="Comment">#endSettings</span>
 
 <span class="Keyword">proc</span> <span class="Identifier">runVarNames</span><span class="Punctuation">(</span><span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">VarNamesSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
   <span class="Keyword">for</span> <span class="Identifier">node</span> <span class="Keyword">in</span> <span class="Identifier">ast</span><span class="Operator">.</span><span class="Identifier">sons</span><span class="Punctuation">:</span>
@@ -97,14 +100,12 @@
           <span class="Keyword">raise</span> <span class="Identifier">newException</span><span class="Punctuation">(</span><span class="Identifier">ValueError</span><span class="Punctuation">,</span> <span class="StringLit">&quot;There is a bug in this check&quot;</span><span class="Punctuation">)</span>
 
         <span class="Keyword">if</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">&lt;</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">minLength</span><span class="Punctuation">:</span>
-          <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">finding</span><span class="Punctuation">(</span>
-            <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Punctuation">,</span>
-            <span class="StringLit">&quot;variable `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` is shorter than &quot;</span> <span class="Operator">&amp;</span> <span class="Operator">$</span><span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">minLength</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot; characters&quot;</span><span class="Punctuation">,</span>
+          <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">toFinding</span><span class="Punctuation">(</span>
+            <span class="StringLit">&quot;variable `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` is shorter than &quot;</span> <span class="Operator">&amp;</span> <span class="Operator">$</span><span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">minLength</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot; characters&quot;</span>
           <span class="Punctuation">)</span>
         <span class="Keyword">elif</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">&gt;</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">maxLength</span><span class="Punctuation">:</span>
-          <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">finding</span><span class="Punctuation">(</span>
-            <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Punctuation">,</span>
-            <span class="StringLit">&quot;variable `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` is longer than &quot;</span> <span class="Operator">&amp;</span> <span class="Operator">$</span><span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">maxLength</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot; characters&quot;</span><span class="Punctuation">,</span>
+          <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">toFinding</span><span class="Punctuation">(</span>
+            <span class="StringLit">&quot;variable `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` is longer than &quot;</span> <span class="Operator">&amp;</span> <span class="Operator">$</span><span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">maxLength</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot; characters&quot;</span>
           <span class="Punctuation">)</span>
 
 <span class="Keyword">proc</span> <span class="Identifier">runConstNames</span><span class="Punctuation">(</span><span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">ConstNamesSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
@@ -117,67 +118,79 @@
           <span class="Keyword">continue</span>
         <span class="Keyword">let</span> <span class="Identifier">name</span> <span class="Operator">=</span> <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">ident</span><span class="Operator">.</span><span class="Identifier">s</span>
         <span class="Keyword">if</span> <span class="Keyword">not</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">startsWith</span><span class="Punctuation">(</span><span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">prefix</span><span class="Punctuation">)</span><span class="Punctuation">:</span>
-          <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">finding</span><span class="Punctuation">(</span>
-            <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Punctuation">,</span> <span class="StringLit">&quot;constant `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` should start with `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">prefix</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;`&quot;</span>
+          <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">toFinding</span><span class="Punctuation">(</span>
+            <span class="StringLit">&quot;constant `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` should start with `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">prefix</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;`&quot;</span>
           <span class="Punctuation">)</span>
 
 <span class="Keyword">let</span>
-  <span class="Identifier">nameLinter</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">newLinter</span><span class="Punctuation">(</span><span class="StringLit">&quot;nameLinter&quot;</span><span class="Punctuation">)</span>
-  <span class="Identifier">varNames</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span><span class="Operator">.</span><span class="Identifier">check</span><span class="Punctuation">(</span><span class="StringLit">&quot;varNames&quot;</span><span class="Punctuation">,</span> <span class="Identifier">runVarNames</span><span class="Punctuation">)</span>
-  <span class="Identifier">constNames</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span><span class="Operator">.</span><span class="Identifier">check</span><span class="Punctuation">(</span><span class="StringLit">&quot;constNames&quot;</span><span class="Punctuation">,</span> <span class="Identifier">runConstNames</span><span class="Punctuation">)</span>
+  <span class="Identifier">nameLinter</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">Linter</span><span class="Punctuation">(</span><span class="Identifier">name</span><span class="Punctuation">:</span> <span class="StringLit">&quot;nameLinter&quot;</span><span class="Punctuation">)</span>
+  <span class="Identifier">varNames</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span><span class="Operator">.</span><span class="Identifier">addCheck</span><span class="Punctuation">(</span><span class="StringLit">&quot;varNames&quot;</span><span class="Punctuation">,</span> <span class="Identifier">runVarNames</span><span class="Punctuation">)</span>
+  <span class="Identifier">constNames</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span><span class="Operator">.</span><span class="Identifier">addCheck</span><span class="Punctuation">(</span><span class="StringLit">&quot;constNames&quot;</span><span class="Punctuation">,</span> <span class="Identifier">runConstNames</span><span class="Punctuation">)</span>
 
 </pre><p>Three things make this a linter:</p>
 <ul class="simple"><li>a settings type, which may be empty</li>
-<li>a <tt class="docutils literal"><span class="pre">run</span></tt> proc taking the file's AST and the settings, returning findings</li>
-<li>a <tt class="docutils literal"><span class="pre">Linter</span></tt> value and one <tt class="docutils literal"><span class="pre">Check</span></tt> per rule, created with <tt class="docutils literal"><span class="pre">check</span></tt></li>
+<li>a proc taking the file's AST and the settings, returning a sequence of <a class="reference external" href="api/lint/private/types.html#Finding">types: Finding</a></li>
+<li>a <a class="reference external" href="api/lint/private/types.html#Linter">types: Linter</a> value and one <a class="reference external" href="api/lint/private/types.html#Check">types: Check</a> per rule, created with <a class="reference external" href="api/lint/private/types.html#addCheck,Linter,string,proc(PNode,S),S">types: addCheck</a></li>
 </ul>
 
-<h2><a class="toc-backref" id="the-ast" href="#the-ast">The AST</a></h2><p>Checks receive the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced.</p>
+<h1><a class="toc-backref" id="the-ast" href="#the-ast">The AST</a></h1><p>Checks receive the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced.</p>
 <p>Writing a check therefore means importing <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> and matching on node kinds. A check must not modify the tree: the same AST is shared by every step that runs against the file.</p>
 
-<h2><a class="toc-backref" id="the-compiler-sources-on-the-search-path" href="#the-compiler-sources-on-the-search-path">The compiler sources on the search path</a></h2><p><tt class="docutils literal"><span class="pre">compiler/ast</span></tt> ships with the Nim distribution rather than with Lint, so the compiler sources have to be on the search path. This affects <strong>both</strong> files you write:</p>
+<h1><a class="toc-backref" id="the-compiler-sources-on-the-search-path" href="#the-compiler-sources-on-the-search-path">The compiler sources on the search path</a></h1><p><tt class="docutils literal"><span class="pre">compiler/ast</span></tt> ships with the Nim distribution rather than with Lint, so the compiler sources have to be on the search path. This affects <strong>both</strong> files you write:</p>
 <ul class="simple"><li>the <strong>linter</strong>, because it imports <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> to walk the tree</li>
 <li>the <strong>config</strong>, because it imports <tt class="docutils literal"><span class="pre">lint</span></tt>, which imports <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> in turn</li>
 </ul>
 <p>Without it, neither compiles:</p>
 <p><pre class="listing">Error: cannot open file: compiler/ast</pre></p>
 <p>The fix is a one-line <tt class="docutils literal"><span class="pre">.nims</span></tt> file next to each of them:</p>
-<p><pre class="listing"><span class="Operator">--</span><span class="Identifier">path</span><span class="Punctuation">:</span><span class="StringLit">&quot;$nim/&quot;</span></pre></p>
-<table border="1" class="docutils"><tr><th>What you have</th><th>Where the file goes</th></tr>
+<pre class="listing"><span class="Operator">--</span><span class="Identifier">path</span><span class="Punctuation">:</span><span class="StringLit">&quot;$nim/&quot;</span>
+</pre><table border="1" class="docutils"><tr><th>What you have</th><th>Where the file goes</th></tr>
 <tr><td>A single-module linter <tt class="docutils literal"><span class="pre">foo.nim</span></tt></td><td><tt class="docutils literal"><span class="pre">foo.nims</span></tt>, next to it</td></tr>
 <tr><td>A linter packaged as a Nimble package</td><td><tt class="docutils literal"><span class="pre">config.nims</span></tt> in the package root</td></tr>
 <tr><td>Your config <tt class="docutils literal"><span class="pre">linter.nim</span></tt></td><td><tt class="docutils literal"><span class="pre">linter.nims</span></tt>, next to it</td></tr>
 </table><p>Lint's own <tt class="docutils literal"><span class="pre">src/lint.nims</span></tt> contains the same line, which is why the library compiles when you install it.</p>
 
-<h2><a class="toc-backref" id="findings" href="#findings">Findings</a></h2><p>A finding carries a position and a message, and nothing else:</p>
-<p><pre class="listing"><span class="Keyword">type</span> <span class="Identifier">Finding</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
-  <span class="Identifier">line</span><span class="Operator">*:</span> <span class="Identifier">int</span>
-  <span class="Identifier">col</span><span class="Operator">*:</span> <span class="Identifier">int</span>
-  <span class="Identifier">msg</span><span class="Operator">*:</span> <span class="Identifier">string</span></pre></p>
+<h1><a class="toc-backref" id="findings" href="#findings">Findings</a></h1><p>A <a class="reference external" href="api/lint/private/types.html#Finding">types: Finding</a> carries a position and a message, and nothing else.</p>
 <p>A check does not know the file it runs against, the linter it belongs to, or the severity its findings are reported with. The runner attaches all of that when it collects findings, which is what lets the same check run at different severities in different steps.</p>
-<p>Use <tt class="docutils literal"><span class="pre">finding(node, msg)</span></tt> to build one from an AST node; it takes the position from the node.</p>
+<p>Use <a class="reference external" href="api/lint/private/types.html#toFinding,PNode,string">types: toFinding</a> to build one from an AST node; it extracts the position from the node.</p>
 
-<h2><a class="toc-backref" id="settings" href="#settings">Settings</a></h2><p>Settings are a plain object. Give each field a default in the type definition, and a config that omits the <tt class="docutils literal"><span class="pre">settings:</span></tt> block gets those defaults:</p>
-<p><pre class="listing"><span class="Keyword">type</span>
-  <span class="Identifier">NoTodoSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
-    <span class="Identifier">marker</span><span class="Operator">*:</span> <span class="Identifier">string</span> <span class="Operator">=</span> <span class="StringLit">&quot;TODO&quot;</span>
-    <span class="Identifier">ignoreCase</span><span class="Operator">*:</span> <span class="Identifier">bool</span> <span class="Operator">=</span> <span class="Identifier">false</span></pre></p>
-<p>A config that does provide settings has its keys checked against this type, so a misspelled key is a compile error.</p>
+<h1><a class="toc-backref" id="settings" href="#settings">Settings</a></h1><p>Settings are a plain object. Give each field a default in the type definition, and a config that omits the <tt class="docutils literal"><span class="pre">settings:</span></tt> block gets those defaults:</p>
+<pre class="listing">
+<span class="Keyword">type</span>
+  <span class="Identifier">VarNamesSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
+    <span class="Identifier">minLength</span><span class="Operator">*:</span> <span class="Identifier">int</span> <span class="Operator">=</span> <span class="DecNumber">3</span>
+    <span class="Identifier">maxLength</span><span class="Operator">*:</span> <span class="Identifier">int</span> <span class="Operator">=</span> <span class="DecNumber">12</span>
 
-<h2><a class="toc-backref" id="using-the-linter" href="#using-the-linter">Using the linter</a></h2><p>Import it from the config and refer to the checks by name:</p>
-<p><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">lint</span>
-<span class="Keyword">import</span> <span class="Identifier">tools</span><span class="Operator">/</span><span class="Identifier">comments_linter</span>
+  <span class="Identifier">ConstNamesSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
+    <span class="Identifier">prefix</span><span class="Operator">*:</span> <span class="Identifier">string</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
+</pre><p>A config that does provide settings has its keys checked against this type, so a misspelled key is a compile error.</p>
+
+<h1><a class="toc-backref" id="using-the-linter" href="#using-the-linter">Using the linter</a></h1><p>Import it from the config and refer to the checks by name:</p>
+<pre class="listing"><span class="Keyword">import</span> <span class="Identifier">lint</span>
+<span class="Keyword">import</span> <span class="Identifier">namelinter</span>
 
 <span class="Identifier">runLint</span><span class="Punctuation">:</span>
+<span class="Comment">#startGlobalConfig</span>
   <span class="Identifier">sources</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src&quot;</span><span class="Punctuation">]</span>
-  
-  <span class="Identifier">step</span> <span class="StringLit">&quot;Check comments&quot;</span><span class="Punctuation">:</span>
-    <span class="Identifier">linter</span> <span class="Operator">=</span> <span class="Identifier">comments</span>
-    <span class="Identifier">check</span> <span class="Identifier">noTodo</span><span class="Punctuation">:</span>
+  <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped.nim&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;./src/skip2/**/*&quot;</span><span class="Punctuation">]</span>
+<span class="Comment">#endGlobalConfig</span>
+
+<span class="Comment">#startStepConfig</span>
+  <span class="Identifier">step</span> <span class="StringLit">&quot;Check naming&quot;</span><span class="Punctuation">:</span>
+    <span class="Identifier">linter</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span>
+    <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped2.nim&quot;</span><span class="Punctuation">]</span>
+    <span class="Identifier">check</span> <span class="Identifier">varNames</span><span class="Punctuation">:</span>
       <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">hint</span>
       <span class="Identifier">settings</span><span class="Punctuation">:</span>
-        <span class="Identifier">marker</span> <span class="Operator">=</span> <span class="StringLit">&quot;FIXME&quot;</span></pre></p>
-<p>The import must be a plain <tt class="docutils literal"><span class="pre">import a/b</span></tt> line for the GitHub Action to notice changes to the linter and rebuild the cached binary. </p>
+        <span class="Identifier">minLength</span> <span class="Operator">=</span> <span class="DecNumber">3</span>
+        <span class="Identifier">maxLength</span> <span class="Operator">=</span> <span class="DecNumber">12</span>
+    <span class="Identifier">check</span> <span class="Identifier">constNames</span><span class="Punctuation">:</span>
+      <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">error</span>
+      <span class="Identifier">settings</span><span class="Punctuation">:</span>
+        <span class="Identifier">prefix</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
+<span class="Comment">#endStepConfig</span>
+</pre><div class="admonition admonition-info"><span class="admonition-info-text"><b>Note:</b></span>
+The import must be a plain <tt class="docutils literal"><span class="pre">import a/b</span></tt> line for the GitHub Action to notice changes to the linter and rebuild the cached binary.</div>
 </p>
     
   </div>
@@ -186,7 +199,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 08:46:36 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 17:13:28 UTC</small>
       </div>
     </div>
   </div>

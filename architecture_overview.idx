@@ -1,14 +1,14 @@
 markupTitle	Architecture Overview	architecture_overview.html	Architecture Overview		0
-heading	Concepts	architecture_overview.html#concepts	  Concepts		0
-heading	Lint	architecture_overview.html#concepts-lint	   Lint		0
-heading	Config file	architecture_overview.html#concepts-config-file	   Config file		0
-heading	Linter	architecture_overview.html#concepts-linter	   Linter		0
-heading	Check	architecture_overview.html#concepts-check	   Check		0
-heading	Settings	architecture_overview.html#concepts-settings	   Settings		0
-heading	Step	architecture_overview.html#concepts-step	   Step		0
-heading	Finding	architecture_overview.html#concepts-finding	   Finding		0
-heading	Severity	architecture_overview.html#concepts-severity	   Severity		0
-heading	Reports	architecture_overview.html#concepts-reports	   Reports		0
-heading	Execution Flow	architecture_overview.html#execution-flow	  Execution Flow		0
-heading	Library Surface	architecture_overview.html#library-surface	  Library Surface		0
-heading	Exit Modes	architecture_overview.html#exit-modes	  Exit Modes		0
+heading	Concepts	architecture_overview.html#concepts	 Concepts		0
+heading	Lint	architecture_overview.html#concepts-lint	  Lint		0
+heading	Config file	architecture_overview.html#concepts-config-file	  Config file		0
+heading	Linter	architecture_overview.html#concepts-linter	  Linter		0
+heading	Check	architecture_overview.html#concepts-check	  Check		0
+heading	Settings	architecture_overview.html#concepts-settings	  Settings		0
+heading	Step	architecture_overview.html#concepts-step	  Step		0
+heading	Finding	architecture_overview.html#concepts-finding	  Finding		0
+heading	Severity	architecture_overview.html#concepts-severity	  Severity		0
+heading	Reports	architecture_overview.html#concepts-reports	  Reports		0
+heading	Execution Flow	architecture_overview.html#execution-flow	 Execution Flow		0
+heading	Library Surface	architecture_overview.html#library-surface	 Library Surface		0
+heading	Exit Modes	architecture_overview.html#exit-modes	 Exit Modes		0
