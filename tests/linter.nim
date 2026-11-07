@@ -2,29 +2,22 @@ import lint
 import namelinter
 
 runLint:
-#startSources
+#startGlobalConfig
   sources = ["./src"]
-#endSources
-#startIgnoredPatterns
   ignoredPatterns = ["./src/skip/skipped.nim", "./src/skip2/**/*"]
-#endIgnoredPatterns
+#endGlobalConfig
 
-#startStep
+#startStepConfig
   step "Check naming":
     linter = nameLinter
-#startStepIgnoredPatterns
     ignoredPatterns = ["./src/skip/skipped2.nim"]
-#endStepIgnoredPatterns
-#startCheck
     check varNames:
       severity = hint
-#startSettings
       settings:
         minLength = 3
         maxLength = 12
-#endSettings
-#endCheck
     check constNames:
       severity = error
       settings:
         prefix = "k"
+#endStepConfig

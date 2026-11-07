@@ -1,2 +1,1 @@
 --"path":"$projectDir/../src"
---path:"$nim/"
