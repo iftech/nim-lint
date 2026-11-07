@@ -1,37 +1,27 @@
 .. title:: Suppressing Findings
 
-Sometimes a finding is correct but you do not want to act on it. Add a `#nolint` comment at the end of the line the finding points at:
+Sometimes a finding is correct but you do not want to act on it. Add a `#nolint` comment at the end of the line the finding points at. The test project's `src/main.nim` uses the marker on three of its variables:
 
-```nim
-var ok = 1  #nolint
-```
+.. include:: ../tests/src/main.nim
+  :code:
+  :start-after: #startSuppression
+  :end-before: #endSuppression
 
-The comment applies to that line only, and to every finding on it, regardless of which check produced it.
+Only `a` is reported. `ok` is suppressed by the marker, `b` is not suppressed because the marker is not at the end of the line, and `c` is suppressed even though the marker is followed by trailing whitespace. The comment applies to that line only, and to every finding on it, regardless of which check produced it.
 
-# Where to put it
+Put the marker on the line that actually contains the offending name, as `ok` does above: the finding for `ok` is suppressed, while a sibling variable on its own line would still be reported.
 
-Findings point at the declaration, not at the enclosing section. Put the marker on the line that actually contains the offending name:
+.. important::
+  The marker must be at the **end** of the line. Trailing whitespace is fine, as `c` shows; anything after the marker is not, as `b` shows.
 
-```nim
-var
-  ok = 1  #nolint   # suppresses the finding for `ok`
-  x = 2             # still reported
-```
+  Because the marker has to be at the end of the line, a `#nolint` inside a string literal never suppresses anything:
 
-# Rules
+  .. include:: ../tests/src/main.nim
+    :code:
+    :start-after: #startNoSuppressionInStrings
+    :end-before: #endNoSuppressionInStrings
 
-The marker must be at the **end** of the line. Trailing whitespace is fine; anything after the marker is not.
-
-```nim
-var ok = 1  #nolint          # suppressed
-var ok = 1  #nolint because  # not suppressed
-```
-
-Because the marker has to be at the end of the line, a `#nolint` inside a string literal never suppresses anything:
-
-```nim
-echo "#nolint"   # reported as usual
-```
+  Neither line is suppressed: the first is a string that happens to contain the marker, and the second has text after it.
 
 # When not to use it
 
