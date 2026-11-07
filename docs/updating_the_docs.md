@@ -8,9 +8,9 @@ To include a code sample, use `.. include::` with `:code:` option, optionally us
 
 ```
 .. include:: /examples/example.nim
-   :start-after: #comment at the beginning of the block
-   :end-before: #comment at the end of the block
-   :code:
+  :code:
+  :start-after: #comment at the beginning of the block
+  :end-before: #comment at the end of the block
 ```
 
 If you need an admonition, use `.. warning::` or `.. note::`.

@@ -1,6 +1,6 @@
 .. title:: Architecture Overview
 
-This page describes the concepts Lint is built from and how a run proceeds. It is meant for anyone writing a linter or working on Lint itself; if you only want to use Lint, [Getting Started](./getting_started.html) is the place to begin.
+This page describes the concepts Lint is built from and how a run proceeds. It is meant for anyone writing a linter or working on Lint itself; if you only want to use Lint, [Config File](./config.html) is the place to begin.
 
 ## Concepts
 
@@ -108,6 +108,6 @@ The run ends in exactly one of the following outcomes.
 
 *Parse error* — a source file could not be parsed, so no AST exists and no step can be run against it. The file report holds a single finding attributed to the runner (not to a step) describing the parse failure. A parse error always fails the run, regardless of configured severities, because no check was able to evaluate the file. Remaining files are still checked, so one unparseable file does not hide findings in the rest. The process exits with code 2.
 
-*Config error* — the config file cannot be compiled, or the run parameters cannot be satisfied (an unknown source path or an unusable ignore pattern). This is reported before any file is read. The process exits with code 3.
+*No sources* — the run selected no files: nothing matched the config's `sources`, or nothing matched the arguments given on the command line. This is reported before any file is read, because there is nothing to report on. The process exits with code 3.
 
 *Check error* — a check raised an exception. A check is library code, so an exception is a defect in the tool, not a property of the checked code. The run stops, the exception is reported with the step label, check name, and file path, and the process exits with code 4. Continuing past a raising check would report a file as checked when it was not.

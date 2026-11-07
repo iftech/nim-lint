@@ -5,7 +5,7 @@ A linter is a Nim module that declares one or more checks and exports a linter v
 ## A minimal linter
 
 .. include:: ../tests/namelinter.nim
-   :code:
+  :code:
 
 Three things make this a linter:
 

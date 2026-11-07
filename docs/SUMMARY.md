@@ -1,7 +1,6 @@
 # User Guide
 
 - [Intro](./intro.md)
-- [Getting Started](./getting_started.md)
 - [Config File](./config.md)
 - [Command Line](./cli.md)
 - [Suppressing Findings](./suppression.md)
