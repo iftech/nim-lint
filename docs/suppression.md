@@ -8,7 +8,7 @@ var ok = 1  #nolint
 
 The comment applies to that line only, and to every finding on it, regardless of which check produced it.
 
-## Where to put it
+# Where to put it
 
 Findings point at the declaration, not at the enclosing section. Put the marker on the line that actually contains the offending name:
 
@@ -18,7 +18,7 @@ var
   x = 2             # still reported
 ```
 
-## Rules
+# Rules
 
 The marker must be at the **end** of the line. Trailing whitespace is fine; anything after the marker is not.
 
@@ -33,6 +33,6 @@ Because the marker has to be at the end of the line, a `#nolint` inside a string
 echo "#nolint"   # reported as usual
 ```
 
-## When not to use it
+# When not to use it
 
 Suppression is for the occasional exception. If you find yourself adding `#nolint` to many lines, the rule is probably wrong for your project: change the check's settings, or exclude the directory in the config instead.

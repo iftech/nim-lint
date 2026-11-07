@@ -1,8 +1,11 @@
 .. title:: Writing a Linter
+.. importdoc:: api/lint/private/types
 
 A linter is a Nim module that declares one or more checks and exports a linter value. It lives in your repository, next to the config that uses it.
 
-## A minimal linter
+# A minimal linter
+
+This is an example linter from the tests:
 
 .. include:: ../tests/namelinter.nim
   :code:
@@ -10,16 +13,16 @@ A linter is a Nim module that declares one or more checks and exports a linter v
 Three things make this a linter:
 
 - a settings type, which may be empty
-- a `run` proc taking the file's AST and the settings, returning findings
-- a `Linter` value and one `Check` per rule, created with `check`
+- a proc taking the file's AST and the settings, returning a sequence of [Finding]
+- a [Linter] value and one [Check] per rule, created with [addCheck]
 
-## The AST
+# The AST
 
 Checks receive the parsed file as a `PNode` from Nim's own compiler AST module (`compiler/ast`). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced.
 
 Writing a check therefore means importing `compiler/ast` and matching on node kinds. A check must not modify the tree: the same AST is shared by every step that runs against the file.
 
-## The compiler sources on the search path
+# The compiler sources on the search path
 
 `compiler/ast` ships with the Nim distribution rather than with Lint, so the compiler sources have to be on the search path. This affects **both** files you write:
 
@@ -34,9 +37,8 @@ Error: cannot open file: compiler/ast
 
 The fix is a one-line `.nims` file next to each of them:
 
-```nim
---path:"$nim/"
-```
+.. include:: ../tests/linter.nims
+  :code:
 
 | What you have | Where the file goes |
 | --- | --- |
@@ -46,51 +48,31 @@ The fix is a one-line `.nims` file next to each of them:
 
 Lint's own `src/lint.nims` contains the same line, which is why the library compiles when you install it.
 
-## Findings
+# Findings
 
-A finding carries a position and a message, and nothing else:
-
-```nim
-type Finding* = object
-  line*: int
-  col*: int
-  msg*: string
-```
+A [Finding] carries a position and a message, and nothing else.
 
 A check does not know the file it runs against, the linter it belongs to, or the severity its findings are reported with. The runner attaches all of that when it collects findings, which is what lets the same check run at different severities in different steps.
 
-Use `finding(node, msg)` to build one from an AST node; it takes the position from the node.
+Use [toFinding] to build one from an AST node; it extracts the position from the node.
 
-## Settings
+# Settings
 
 Settings are a plain object. Give each field a default in the type definition, and a config that omits the `settings:` block gets those defaults:
 
-```nim
-type
-  NoTodoSettings* = object
-    marker*: string = "TODO"
-    ignoreCase*: bool = false
-```
+.. include:: ../tests/namelinter.nim
+  :code:
+  :start-after: #startSettings
+  :end-before: #endSettings
 
 A config that does provide settings has its keys checked against this type, so a misspelled key is a compile error.
 
-## Using the linter
+# Using the linter
 
 Import it from the config and refer to the checks by name:
 
-```nim
-import lint
-import tools/comments_linter
+.. include:: ../tests/linter.nim
+  :code:
 
-runLint:
-  sources = ["./src"]
-
-  step "Check comments":
-    linter = comments
-    check noTodo:
-      severity = hint
-      settings:
-        marker = "FIXME"
-```
-
-The import must be a plain `import a/b` line for the GitHub Action to notice changes to the linter and rebuild the cached binary.
+.. note::
+  The import must be a plain `import a/b` line for the GitHub Action to notice changes to the linter and rebuild the cached binary.
