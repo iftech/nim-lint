@@ -9,7 +9,7 @@ import ./lint/private/config
 
 # What a linter author needs: the types and helpers for declaring checks.
 export types.Linter, types.Check, types.Finding
-export types.newLinter, types.check, types.finding
+export types.addCheck, types.toFinding
 
 # What a config file needs: `runLint`.
 export config

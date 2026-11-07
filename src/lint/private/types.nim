@@ -17,14 +17,12 @@ type
     col*: int
     msg*: string
 
-  Check*[S] = object
-    ## One check declared by a linter, bound to its settings type.
+  Check*[S] = object ## One check declared by a linter, bound to its settings type.
     name*: string
     run*: proc(ast: PNode, settings: S): seq[Finding]
     defaults*: S ## Used when a config declares the check without settings.
 
-  Linter* = object
-    ## A group of checks. A linter module exports one `Linter` value.
+  Linter* = object ## A group of checks. A linter module exports one `Linter` value.
     name*: string
 
   StepSetting* = object
@@ -34,8 +32,7 @@ type
     severity*: Severity
     run*: proc(ast: PNode): seq[Finding]
 
-  Step* = object
-    ## One declared `step` block.
+  Step* = object ## One declared `step` block.
     label*: string
     linter*: string
     ignoredPatterns*: seq[string]
@@ -46,10 +43,7 @@ type
     ignoredPatterns*: seq[string]
     steps*: seq[Step]
 
-proc newLinter*(name: string): Linter =
-  Linter(name: name)
-
-proc check*[S](
+proc addCheck*[S](
     linter: Linter,
     name: string,
     run: proc(ast: PNode, settings: S): seq[Finding],
@@ -59,6 +53,7 @@ proc check*[S](
   ## settings to use when a config does not provide any.
   Check[S](name: name, run: run, defaults: defaults)
 
-proc finding*(node: PNode, msg: string): Finding =
+proc toFinding*(node: PNode, msg: string): Finding =
   ## Builds a finding located at a node.
   Finding(line: int(node.info.line), col: int(node.info.col), msg: msg)
+

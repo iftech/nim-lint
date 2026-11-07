@@ -4,6 +4,7 @@ import compiler/ast
 
 import lint
 
+#startSettings
 type
   VarNamesSettings* = object
     minLength*: int = 3
@@ -11,6 +12,7 @@ type
 
   ConstNamesSettings* = object
     prefix*: string = "k"
+#endSettings
 
 proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
   for node in ast.sons:
@@ -24,14 +26,12 @@ proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
           raise newException(ValueError, "There is a bug in this check")
 
         if name.len < s.minLength:
-          result.add finding(
-            def[0],
-            "variable `" & name & "` is shorter than " & $s.minLength & " characters",
+          result.add def[0].toFinding(
+            "variable `" & name & "` is shorter than " & $s.minLength & " characters"
           )
         elif name.len > s.maxLength:
-          result.add finding(
-            def[0],
-            "variable `" & name & "` is longer than " & $s.maxLength & " characters",
+          result.add def[0].toFinding(
+            "variable `" & name & "` is longer than " & $s.maxLength & " characters"
           )
 
 proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
@@ -44,12 +44,12 @@ proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
           continue
         let name = def[0].ident.s
         if not name.startsWith(s.prefix):
-          result.add finding(
-            def[0], "constant `" & name & "` should start with `" & s.prefix & "`"
+          result.add def[0].toFinding(
+            "constant `" & name & "` should start with `" & s.prefix & "`"
           )
 
 let
-  nameLinter* = newLinter("nameLinter")
-  varNames* = nameLinter.check("varNames", runVarNames)
-  constNames* = nameLinter.check("constNames", runConstNames)
+  nameLinter* = Linter(name: "nameLinter")
+  varNames* = nameLinter.addCheck("varNames", runVarNames)
+  constNames* = nameLinter.addCheck("constNames", runConstNames)
 
