@@ -19,6 +19,10 @@ proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
         if def[0].kind != nkIdent:
           continue
         let name = def[0].ident.s
+
+        if name == "killTheLinter":
+          raise newException(ValueError, "There is a bug in this check")
+
         if name.len < s.minLength:
           result.add finding(
             def[0],
