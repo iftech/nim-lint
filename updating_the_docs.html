@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="getting_started.html" class="">Getting Started</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="current">Updating the Docs</a></li></ul>
+  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="current">Updating the Docs</a></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -64,9 +64,9 @@
 <p>To add code references, use <tt class="docutils literal"><span class="pre">.. importdoc::</span></tt> syntax to import the API docs and <tt class="docutils literal"><span class="pre">[symbolName]</span></tt> to add a reference. To disambuguate between identically named symbols, add a qualifier (e.g. <tt class="docutils literal"><span class="pre">proc</span></tt>) and signature. Read more in the <a class="reference external" href="https://nim-lang.org/docs/docgen.html#simple-documentation-links">Nim DocGen Docs</a>.</p>
 <p>To include a code sample, use <tt class="docutils literal"><span class="pre">.. include::</span></tt> with <tt class="docutils literal"><span class="pre">:code:</span></tt> option, optionally using <tt class="docutils literal"><span class="pre">:start-after:</span></tt> and <tt class="docutils literal"><span class="pre">:end-before:</span></tt> for selective inclusion:</p>
 <p><pre class="listing">.. include:: /examples/example.nim
-   :start-after: #comment at the beginning of the block
-   :end-before: #comment at the end of the block
-   :code:</pre></p>
+  :code:
+  :start-after: #comment at the beginning of the block
+  :end-before: #comment at the end of the block</pre></p>
 <p>If you need an admonition, use <tt class="docutils literal"><span class="pre">.. warning::</span></tt> or <tt class="docutils literal"><span class="pre">.. note::</span></tt>. </p>
 </p>
     
@@ -76,7 +76,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:37:21 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 08:46:36 UTC</small>
       </div>
     </div>
   </div>

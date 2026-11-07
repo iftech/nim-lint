@@ -2,7 +2,7 @@ nimTitle	runner	lint/private/runner.html	module src/lint/private/runner		0
 nim	emClean	lint/private/runner.html#emClean	ExitMode.emClean		15
 nim	emErrorsFound	lint/private/runner.html#emErrorsFound	ExitMode.emErrorsFound		15
 nim	emParseError	lint/private/runner.html#emParseError	ExitMode.emParseError		15
-nim	emConfigError	lint/private/runner.html#emConfigError	ExitMode.emConfigError		15
+nim	emNoSources	lint/private/runner.html#emNoSources	ExitMode.emNoSources		15
 nim	emCheckError	lint/private/runner.html#emCheckError	ExitMode.emCheckError		15
 nim	ExitMode	lint/private/runner.html#ExitMode	enum ExitMode		15
 nim	FindingTag	lint/private/runner.html#FindingTag	object FindingTag		22

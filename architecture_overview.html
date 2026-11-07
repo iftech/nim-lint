@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="getting_started.html" class="">Getting Started</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="current">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
+  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="current">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -76,7 +76,7 @@
 
     <div id="tocRoot"></div>
     
-    <p class="module-desc"><p>This page describes the concepts Lint is built from and how a run proceeds. It is meant for anyone writing a linter or working on Lint itself; if you only want to use Lint, <a class="reference external" href="./getting_started.html">Getting Started</a> is the place to begin.</p>
+    <p class="module-desc"><p>This page describes the concepts Lint is built from and how a run proceeds. It is meant for anyone writing a linter or working on Lint itself; if you only want to use Lint, <a class="reference external" href="./config.html">Config File</a> is the place to begin.</p>
 
 <h2><a class="toc-backref" id="concepts" href="#concepts">Concepts</a></h2>
 <h3><a class="toc-backref" id="concepts-lint" href="#concepts-lint">Lint</a></h3><p><em>Lint</em> is a library for building linters for Nim projects.</p>
@@ -147,7 +147,7 @@
 <p><em>Clean run</em> — every file parsed, every step completed, and no finding carries the <em>error</em> severity. The run report contains only hints, or is empty. The process exits with code 0.</p>
 <p><em>Errors found</em> — every file parsed and every step completed, and at least one finding carries the <em>error</em> severity. The process exits with code 1.</p>
 <p><em>Parse error</em> — a source file could not be parsed, so no AST exists and no step can be run against it. The file report holds a single finding attributed to the runner (not to a step) describing the parse failure. A parse error always fails the run, regardless of configured severities, because no check was able to evaluate the file. Remaining files are still checked, so one unparseable file does not hide findings in the rest. The process exits with code 2.</p>
-<p><em>Config error</em> — the config file cannot be compiled, or the run parameters cannot be satisfied (an unknown source path or an unusable ignore pattern). This is reported before any file is read. The process exits with code 3.</p>
+<p><em>No sources</em> — the run selected no files: nothing matched the config's <tt class="docutils literal"><span class="pre">sources</span></tt>, or nothing matched the arguments given on the command line. This is reported before any file is read, because there is nothing to report on. The process exits with code 3.</p>
 <p><em>Check error</em> — a check raised an exception. A check is library code, so an exception is a defect in the tool, not a property of the checked code. The run stops, the exception is reported with the step label, check name, and file path, and the process exits with code 4. Continuing past a raising check would report a file as checked when it was not. </p>
 </p>
     
@@ -157,7 +157,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-06 22:37:21 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 08:46:36 UTC</small>
       </div>
     </div>
   </div>

@@ -1,0 +1,2 @@
+nimTitle	config	lint/private/config.html	module src/lint/private/config		0
+nim	runLint	lint/private/config.html#runLint.m,untyped	macro runLint(body: untyped): untyped		156
