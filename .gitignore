@@ -3,6 +3,8 @@
 *.sublime-workspace
 .idea
 dprint.json
+.sandbox
+opencode.json
 
 bin/
 
@@ -10,17 +12,17 @@ bin/
 *.html
 *.idx
 *.log
-htmldocs
-docs/
-book/book/
-nbook/
+htmldocs/
 
 nimcache/
+testresults/
+tests/nimcache/
+tests/linter
+tests/testresults/
+outputGotten.txt
 
-tests/tintops
-
-results.csv
-results.json
+tests/trun
+tests/texitcodes
 
 nimble.develop
 nimble.paths
@@ -28,3 +30,6 @@ nimbledeps
 /config.nims
 
 .monit*yml
+
+# Action build cache
+.lint-cache/

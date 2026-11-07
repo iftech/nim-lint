@@ -1,5 +1,15 @@
-# This is just an example to get you started. A typical binary package
-# uses this file as the main entry point of the application.
+## Lint: a library for building linters for Nim projects.
+##
+## A project imports `lint`, imports the linters it wants, and calls `runLint`
+## with a config block. Compiling that file produces the project's lint
+## executable.
 
-when isMainModule:
-  echo("Hello, World!")
+import ./lint/private/types
+import ./lint/private/config
+
+# What a linter author needs: the types and helpers for declaring checks.
+export types.Linter, types.Check, types.Finding
+export types.addCheck, types.toFinding
+
+# What a config file needs: `runLint`.
+export config

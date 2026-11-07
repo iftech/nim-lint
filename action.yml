@@ -1,0 +1,112 @@
+name: "lint"
+description: "Run lint on the files changed by a commit or pull request."
+author: "Constantine Molchanov"
+
+inputs:
+  config:
+    description: "Path to the lint config file."
+    required: false
+    default: "linter.nim"
+  nim-version:
+    description: "Nim version used to build the config."
+    required: false
+    default: "2.2.12"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Nim
+      uses: jiro4989/setup-nim-action@v2
+      with:
+        nim-version: ${{ inputs.nim-version }}
+
+    - name: Find local linters
+      id: local-linters
+      shell: bash
+      env:
+        CONFIG: ${{ inputs.config }}
+      run: |
+        # The config may import linters that live in this repository, and those
+        # are compiled into the binary, so they belong in the cache key.
+        #
+        # Only `import a/b/c` is detected: a module path made of letters,
+        # digits, underscores, and slashes. Relative imports (`import ./a`,
+        # `import ../a`), bracket groups (`import a/[b, c]`), `from x import y`,
+        # and `include` are not handled. Write such imports as plain
+        # `import a/b` lines to have them picked up.
+        dir=$(dirname "$CONFIG")
+        paths=""
+        for mod in $(grep -oE '^import [a-zA-Z0-9_/]+' "$CONFIG" | sed 's/^import //'); do
+          path="${mod%.nim}.nim"
+          if [ -f "$dir/$path" ]; then
+            paths="$paths,$(realpath --relative-to=. "$dir/$path")"
+          fi
+        done
+        echo "paths=${paths#,}" >> "$GITHUB_OUTPUT"
+
+    - name: Restore the compiled linter from cache
+      uses: actions/cache@v4
+      with:
+        path: .lint-cache
+        key: lint-${{ runner.os }}-${{ inputs.nim-version }}-${{ hashFiles(inputs.config, '**/*.nimble', 'nimble.lock', steps.local-linters.outputs.paths) }}
+
+    - name: Build the linter if it was not cached
+      shell: bash
+      env:
+        LINT_SRC: ${{ github.action_path }}/src
+      run: |
+        # if we have a cached executable, use it
+        if [ -x .lint-cache/linter ]; then
+          echo "Using the cached linter."
+          exit 0
+        fi
+
+        # install lint from the source
+        (cd "${{ github.action_path }}" && nimble install -y)
+
+        # lint uses `import compiler/...` so the compiler sources
+        # must be accessible
+        nim_root=$(dirname "$(dirname "$(command -v nim)")")
+        compiler_path=""
+        for candidate in "$nim_root" "$nim_root/lib"; do
+          if [ -d "$candidate/compiler" ]; then
+            compiler_path="$candidate"
+            break
+          fi
+        done
+        if [ -z "$compiler_path" ]; then
+          echo "Cannot find the Nim compiler sources next to $(command -v nim)"
+          exit 1
+        fi
+
+        # build the executable and cache it
+        mkdir -p .lint-cache
+        nim c -d:release --hints:off \
+          --path:"$compiler_path" \
+          --path:"$LINT_SRC" \
+          --out:.lint-cache/linter "${{ inputs.config }}"
+
+    - name: Lint changed files
+      shell: bash
+      env:
+        # The commit to diff against, per event: a pull request's base, a merge
+        # queue's base, or the previous commit on a push. Without the merge
+        # queue case the diff is empty and the job passes without linting.
+        BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
+        HEAD: ${{ github.sha }}
+      run: |
+        if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+          echo "No base commit to compare against, nothing to do."
+          exit 0
+        fi
+
+        files=$(git diff --name-only --diff-filter=ACMR "$BASE...$HEAD" -- '*.nim')
+        if [ -z "$files" ]; then
+          echo "No Nim files changed."
+          exit 0
+        fi
+
+        echo "Linting:"
+        echo "$files"
+        # shellcheck disable=SC2086
+        .lint-cache/linter --format=github $files
