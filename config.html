@@ -92,6 +92,10 @@
         <span class="Identifier">prefix</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
 <span class="Comment">#endStepConfig</span>
 </pre><p>Compiling this file produces your lint executable.</p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
+To make <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> importable in your linter and the Lint config, you have to add the Nim compiler source path to the compiler config:<pre class="listing"><span class="Operator">--</span><span class="Identifier">path</span><span class="Punctuation">:</span><span class="StringLit">&quot;$nim/&quot;</span>
+</pre><p>Put that in a <a class="reference external" href="https://nim-lang.org/docs/nimc.html#compiler-usage-configuration-files">config file</a> affecting your linter and Lint config, e.g. <tt class="docutils literal"><span class="pre">linter.nims</span></tt> for <tt class="docutils literal"><span class="pre">linter.nim</span></tt>.</p>
+</div>
 
 <h1><a class="toc-backref" id="global-config" href="#global-config">Global config</a></h1><p>The top of the block configures global settings for the run:</p>
 <pre class="listing">
@@ -140,7 +144,7 @@ Patterns are always written in UNIX form, with <tt class="docutils literal"><spa
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-09 10:13:17 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-09 10:53:59 UTC</small>
       </div>
     </div>
   </div>
