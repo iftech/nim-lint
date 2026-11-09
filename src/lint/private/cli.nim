@@ -20,6 +20,7 @@ type
     ## Everything the command line can say.
     targets*: seq[Target]
     format*: string ## `text` or `github`.
+    help*: bool ## `--help` or `-h` was given.
 
 proc parseRanges(s: string): seq[tuple[first, last: int]] =
   ## Parses `10-12,40` into ranges. Returns an empty seq when `s` is not a
@@ -65,8 +66,41 @@ proc parseOptions*(args: seq[string]): Options =
       case p.key
       of "format":
         result.format = p.val
+      of "help", "h":
+        result.help = true
       else:
         discard
+
+const helpText* = """Usage: linter [options] [target...]
+
+Lint the files selected by the config's `sources`, or the targets given on the
+command line.
+
+Targets:
+  path/to/file.nim        a single file
+  path/to/dir             a directory, linted recursively
+  path/to/dir/*.nim       a glob pattern, expanded by Lint
+  path/to/file.nim:10-12  a file, restricted to line ranges
+
+  Targets replace the config's `sources` and every `ignoredPatterns`, including
+  step-level ones. Quote glob patterns so the shell does not expand them first.
+
+  Glob patterns are always written in UNIX form, with `/` as the separator, even
+  on Windows.
+
+Options:
+  --format=text           human-readable report (default)
+  --format=github         GitHub Actions workflow commands, for inline
+                          annotations on a pull request
+  -h, --help              show this message and exit
+
+Exit codes:
+  0  no errors; hints may still have been reported
+  1  at least one finding was reported as an error
+  2  a source file could not be parsed
+  3  nothing to lint: no file matched the sources or the targets
+  4  a check raised an exception
+"""
 
 proc inRanges*(line: int, ranges: seq[tuple[first, last: int]]): bool =
   ## True when `line` falls in any of `ranges`. An empty list matches everything.

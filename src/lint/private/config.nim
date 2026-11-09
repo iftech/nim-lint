@@ -191,4 +191,7 @@ macro runLint*(body: untyped): untyped =
         sources: `sourcesId`, ignoredPatterns: `ignoredId`, steps: `stepsId`
       )
       let options = parseOptions(commandLineParams())
+      if options.help:
+        stdout.write helpText
+        quit(0)
       run(`configId`, options.targets, options.format)
