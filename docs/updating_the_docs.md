@@ -13,4 +13,4 @@ To include a code sample, use `.. include::` with `:code:` option, optionally us
   :end-before: #comment at the end of the block
 ```
 
-If you need an admonition, use `.. warning::` or `.. note::`.
+If you need an admonition, use `.. important::`, `.. warning::`, or `.. note::`.
