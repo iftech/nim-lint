@@ -1,0 +1,3 @@
+.. title:: Changelog
+
+.. include:: ../changelog.md

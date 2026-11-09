@@ -11,3 +11,8 @@
 - [Writing a Linter](./writing_a_linter.md)
 - [Architecture Overview](./architecture_overview.md)
 - [Updating the Docs](./updating_the_docs.md)
+
+# ---
+
+- [Changelog](./changelog.md)
+- [API Index](/api/theindex.html)
