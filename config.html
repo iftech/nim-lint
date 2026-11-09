@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="current">Config File</a></li><li><a href="cli.html" class="">Command Line</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
+  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="current">Config File</a></li><li><a href="cli.html" class="">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -57,9 +57,6 @@
 <li><a class="reference" id="step-config_toc" href="#step-config">Step config</a></li>
 <li><a class="reference" id="checks_toc" href="#checks">Checks</a></li>
 <li><a class="reference" id="linters_toc" href="#linters">Linters</a></li>
-<li><a class="reference" id="writing-your-own-linter_toc" href="#writing-your-own-linter">Writing your own linter</a></li>
-<li><a class="reference" id="running-the-linter_toc" href="#running-the-linter">Running the linter</a></li>
-<li><a class="reference" id="what-a-run-looks-like_toc" href="#what-a-run-looks-like">What a run looks like</a></li>
 
 </ul>
 
@@ -94,16 +91,18 @@
       <span class="Identifier">settings</span><span class="Punctuation">:</span>
         <span class="Identifier">prefix</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
 <span class="Comment">#endStepConfig</span>
-</pre><p>Compiling this file produces your lint executable. There is no separate config format to learn: what you write is what runs.</p>
+</pre><p>Compiling this file produces your lint executable.</p>
 
-<h1><a class="toc-backref" id="global-config" href="#global-config">Global config</a></h1><p>The top of the block configures the run as a whole:</p>
+<h1><a class="toc-backref" id="global-config" href="#global-config">Global config</a></h1><p>The top of the block configures global settings for the run:</p>
 <pre class="listing">
   <span class="Identifier">sources</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src&quot;</span><span class="Punctuation">]</span>
   <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped.nim&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;./src/skip2/**/*&quot;</span><span class="Punctuation">]</span>
-</pre><p><tt class="docutils literal"><span class="pre">sources</span></tt> lists the directories to walk. Every <tt class="docutils literal"><span class="pre">.nim</span></tt> file under them is checked. Paths are resolved relative to the current working directory, so run the executable from your project root.</p>
+</pre><p><tt class="docutils literal"><span class="pre">sources</span></tt> lists the locations of the <tt class="docutils literal"><span class="pre">.nim</span></tt> files to lint. Each entry is either path to a file, a path to a directory, or a glob pattern.</p>
+<div class="admonition admonition-info"><span class="admonition-info-text"><b>Note:</b></span>
+Paths are resolved relative to the current working directory, so run the executable from your project root.</div>
 <p><tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt> lists glob patterns for files to skip everywhere. <tt class="docutils literal"><span class="pre">*</span></tt> matches within a path segment, <tt class="docutils literal"><span class="pre">**</span></tt> crosses segments, and <tt class="docutils literal"><span class="pre">?</span></tt> matches one character.</p>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
-Patterns are always written in UNIX form, with <tt class="docutils literal"><span class="pre">/</span></tt> as the separator, even on Windows: <tt class="docutils literal"><span class="pre">src/generated/**/*</span></tt>, never <tt class="docutils literal"><span class="pre">src\generated\**\*</span></tt>. Lint converts them for the platform it runs on.</div>
+Patterns are always written in UNIX form, with <tt class="docutils literal"><span class="pre">/</span></tt> as the separator, even on Windows: <tt class="docutils literal"><span class="pre">src/generated/**/*</span></tt>, never <tt class="docutils literal"><span class="pre">src\generated\**\*</span></tt>.</div>
 
 <h1><a class="toc-backref" id="step-config" href="#step-config">Step config</a></h1><p>A <tt class="docutils literal"><span class="pre">step</span></tt> is one invocation of a linter. Steps run in the order they are declared, and each one gets the same parsed file.</p>
 <pre class="listing">
@@ -119,40 +118,20 @@ Patterns are always written in UNIX form, with <tt class="docutils literal"><spa
       <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">error</span>
       <span class="Identifier">settings</span><span class="Punctuation">:</span>
         <span class="Identifier">prefix</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
-</pre><p>The label in quotes identifies the step in the report. It is for the reader, not an identifier: nothing is looked up by it, and two steps may share one.</p>
-<p>A step may declare its own <tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt>, as the example above does. Those are added to the top-level ones for that step only, so you can run a linter everywhere except a directory without excluding that directory from every other linter.</p>
+</pre><p>The label in quotes is a human-readable of the step in the report.</p>
+<p>A step may declare its own <tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt>. Those are added to the top-level ones for that step only, so you can run a linter everywhere except a directory without excluding that directory from every other linter.</p>
 <p>The same linter can be used by more than one step, for example to run the same checks strictly on production code and leniently on tests.</p>
 
-<h1><a class="toc-backref" id="checks" href="#checks">Checks</a></h1><p>A <tt class="docutils literal"><span class="pre">check</span></tt> names one rule from the linter and says how to report it. The step above declares two of them.</p>
+<h1><a class="toc-backref" id="checks" href="#checks">Checks</a></h1><p>A <tt class="docutils literal"><span class="pre">check</span></tt> is a one rule from the linter. For example, the step &quot;Check naming&quot; above utilizes two checks: <tt class="docutils literal"><span class="pre">varNames</span></tt> and <tt class="docutils literal"><span class="pre">constNames</span></tt>.</p>
+<p>A check section specifies how to report its findings.</p>
 <p><tt class="docutils literal"><span class="pre">severity</span></tt> is either <tt class="docutils literal"><span class="pre">hint</span></tt> or <tt class="docutils literal"><span class="pre">error</span></tt>:</p>
 <ul class="simple"><li><strong>hints</strong> are informational. A run with only hints still succeeds.</li>
 <li><strong>errors</strong> fail the run.</li>
 </ul>
 <p><tt class="docutils literal"><span class="pre">settings</span></tt> is optional. When present, its keys are checked against the settings type the check declares, so a misspelled key is a compile error. When absent, the check's own defaults apply.</p>
-<p>Settings are used exactly as written: there are no &quot;empty means default&quot; rules, so an empty list really means &quot;none&quot;. The defaults apply only when the whole <tt class="docutils literal"><span class="pre">settings:</span></tt> block is omitted.</p>
 
-<h1><a class="toc-backref" id="linters" href="#linters">Linters</a></h1><p>Lint ships no linters of its own: a linter is a Nim module you import, whether it comes from your repository or from a Nimble package. The repository's <tt class="docutils literal"><span class="pre">tests/namelinter.nim</span></tt> is a small one to start from.</p>
-
-<h1><a class="toc-backref" id="writing-your-own-linter" href="#writing-your-own-linter">Writing your own linter</a></h1><p>A linter is a Nim module that declares checks and exports a linter value. Put it anywhere in your repository and import it from the config:</p>
-<p><pre class="listing"><span class="Keyword">import</span> <span class="Identifier">lint</span>
-<span class="Keyword">import</span> <span class="Identifier">tools</span><span class="Operator">/</span><span class="Identifier">my_linter</span></pre></p>
+<h1><a class="toc-backref" id="linters" href="#linters">Linters</a></h1><p>Lint ships no linters of its own: a linter is a Nim module you import, whether it comes from your repository or from a Nimble package. The repository's <tt class="docutils literal"><span class="pre">tests/namelinter.nim</span></tt> is just an example to start from.</p>
 <p>See <a class="reference external" href="./writing_a_linter.html">Writing a Linter</a> for the details.</p>
-
-<h1><a class="toc-backref" id="running-the-linter" href="#running-the-linter">Running the linter</a></h1><p>Compile the config and run the executable:</p>
-<p><pre class="listing">nim c -d:release linter.nim
-./linter</pre></p>
-<p>The exit code tells you what happened:</p>
-<table border="1" class="docutils"><tr><th>Exit code</th><th>Meaning</th></tr>
-<tr><td>0</td><td>No errors. Hints may still have been reported.</td></tr>
-<tr><td>1</td><td>At least one finding was reported as an error.</td></tr>
-<tr><td>2</td><td>A source file could not be parsed.</td></tr>
-<tr><td>3</td><td>Nothing to lint: no file matched the config's <tt class="docutils literal"><span class="pre">sources</span></tt> or the arguments.</td></tr>
-<tr><td>4</td><td>A check raised an exception. This is a bug in the check, not in your code.</td></tr>
-</table>
-<h1><a class="toc-backref" id="what-a-run-looks-like" href="#what-a-run-looks-like">What a run looks like</a></h1><p><pre class="listing">[Check naming][varNames][hint][src/foo.nim:7:2] variable `ok` is shorter than 3 characters
-[Check naming][constNames][error][src/foo.nim:4:2] constant `answer` should start with `k`
-hints: 1, errors: 1</pre></p>
-<p>Each line carries the step label, the check name, the severity, the position, and the message. The last line summarises the run. </p>
 </p>
     
   </div>
@@ -161,7 +140,7 @@ hints: 1, errors: 1</pre></p>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-07 17:13:28 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-09 10:13:17 UTC</small>
       </div>
     </div>
   </div>

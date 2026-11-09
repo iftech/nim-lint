@@ -1,6 +1,3 @@
 markupTitle	GitHub Action	github_action.html	GitHub Action		0
-heading	Setup	github_action.html#setup	 Setup		0
-heading	Inputs	github_action.html#inputs	 Inputs		0
-heading	What it does	github_action.html#what-it-does	 What it does		0
-heading	Caching	github_action.html#caching	 Caching		0
-heading	Merge queues	github_action.html#merge-queues	 Merge queues		0
+heading	Usage	github_action.html#usage	 Usage		0
+heading	Merge queues	github_action.html#usage-merge-queues	  Merge queues		0
