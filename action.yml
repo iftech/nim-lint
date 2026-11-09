@@ -10,7 +10,7 @@ inputs:
   nim-version:
     description: "Nim version used to build the config."
     required: false
-    default: "2.2.12"
+    default: "stable"
 
 runs:
   using: composite
