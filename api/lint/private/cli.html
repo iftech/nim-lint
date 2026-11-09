@@ -66,10 +66,49 @@
     <ul class="simple simple-toc-section">
       <li><a class="reference" href="#Options" title="Options = object
   targets*: seq[Target]
-  format*: string            ## `text` or `github`.">Options</a></li>
+  format*: string            ## `text` or `github`.
+  help*: bool                ## `--help` or `-h` was given.">Options</a></li>
 <li><a class="reference" href="#Target" title="Target = object
   path*: string              ## A file or a glob pattern.
   lines*: seq[tuple[first, last: int]] ## Empty means the whole file.">Target</a></li>
+
+    </ul>
+  </details>
+</li>
+<li>
+  <details open>
+    <summary><a class="reference reference-toplevel" href="#10" id="60">Consts</a></summary>
+    <ul class="simple simple-toc-section">
+      <li><a class="reference" href="#helpText" title="helpText = &quot;&quot;&quot;Usage: linter [options] [target...]
+
+Lint the files selected by the config's `sources`, or the targets given on the
+command line.
+
+Targets:
+  path/to/file.nim        a single file
+  path/to/dir             a directory, linted recursively
+  path/to/dir/*.nim       a glob pattern, expanded by Lint
+  path/to/file.nim:10-12  a file, restricted to line ranges
+
+  Targets replace the config's `sources` and every `ignoredPatterns`, including
+  step-level ones. Quote glob patterns so the shell does not expand them first.
+
+  Glob patterns are always written in UNIX form, with `/` as the separator, even
+  on Windows.
+
+Options:
+  --format=text           human-readable report (default)
+  --format=github         GitHub Actions workflow commands, for inline
+                          annotations on a pull request
+  -h, --help              show this message and exit
+
+Exit codes:
+  0  no errors; hints may still have been reported
+  1  at least one finding was reported as an error
+  2  a source file could not be parsed
+  3  nothing to lint: no file matched the sources or the targets
+  4  a check raised an exception
+&quot;&quot;&quot;">helpText</a></li>
 
     </ul>
   </details>
@@ -115,7 +154,8 @@
     <div id="Options">
   <dt><pre><a href="#Options"><span class="Identifier">Options</span></a> <span class="Other">=</span> <span class="Keyword">object</span>
   <span class="Identifier">targets</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#Target"><span class="Identifier">Target</span></a><span class="Other">]</span>
-  <span class="Identifier">format</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>            <span class="Comment">## `text` or `github`.</span></pre></dt>
+  <span class="Identifier">format</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">string</span>            <span class="Comment">## `text` or `github`.</span>
+  <span class="Identifier">help</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>                <span class="Comment">## `--help` or `-h` was given.</span></pre></dt>
   <dd>
     
     Everything the command line can say.
@@ -139,6 +179,51 @@
 
   </dl>
 </div>
+<div class="section" id="10">
+  <h1><a class="toc-backref" href="#10">Consts</a></h1>
+  <dl class="item">
+    <div id="helpText">
+  <dt><pre><a href="#helpText"><span class="Identifier">helpText</span></a> <span class="Other">=</span> <span class="StringLit">&quot;&quot;&quot;Usage: linter [options] [target...]
+
+Lint the files selected by the config's `sources`, or the targets given on the
+command line.
+
+Targets:
+  path/to/file.nim        a single file
+  path/to/dir             a directory, linted recursively
+  path/to/dir/*.nim       a glob pattern, expanded by Lint
+  path/to/file.nim:10-12  a file, restricted to line ranges
+
+  Targets replace the config's `sources` and every `ignoredPatterns`, including
+  step-level ones. Quote glob patterns so the shell does not expand them first.
+
+  Glob patterns are always written in UNIX form, with `/` as the separator, even
+  on Windows.
+
+Options:
+  --format=text           human-readable report (default)
+  --format=github         GitHub Actions workflow commands, for inline
+                          annotations on a pull request
+  -h, --help              show this message and exit
+
+Exit codes:
+  0  no errors; hints may still have been reported
+  1  at least one finding was reported as an error
+  2  a source file could not be parsed
+  3  nothing to lint: no file matched the sources or the targets
+  4  a check raised an exception
+&quot;&quot;&quot;</span></pre></dt>
+  <dd>
+    
+    
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L74" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L74" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+
+  </dd>
+</div>
+
+  </dl>
+</div>
 <div class="section" id="12">
   <h1><a class="toc-backref" href="#12">Procs</a></h1>
   <dl class="item">
@@ -149,8 +234,8 @@
   <dd>
     
     True when <tt class="docutils literal"><span class="pre"><span class="Identifier">line</span></span></tt> falls in any of <tt class="docutils literal"><span class="pre"><span class="Identifier">ranges</span></span></tt>. An empty list matches everything.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L71" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L71" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L105" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L105" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -163,8 +248,8 @@
   <dd>
     
     Parses the command line. Accepts <tt class="docutils literal"><span class="pre"><span class="Operator">--</span><span class="Identifier">format</span><span class="Operator">=</span><span class="Identifier">github</span></span></tt> and <tt class="docutils literal"><span class="pre"><span class="Operator">--</span><span class="Identifier">format</span><span class="Punctuation">:</span><span class="Identifier">github</span></span></tt>.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L53" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L53" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L54" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L54" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -178,8 +263,8 @@
     <p>Splits an argument into a path and optional line ranges.</p>
 <p>The split is on the last <tt class="docutils literal"><span class="pre"><span class="Punctuation">:</span></span></tt>, and only when the suffix parses as ranges, so paths containing colons (Windows drive letters) are left alone.</p>
 
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L41" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L41" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L42" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L42" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -195,7 +280,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-09 11:08:29 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-09 11:20:59 UTC</small>
       </div>
     </div>
   </div>
