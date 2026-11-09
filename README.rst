@@ -1,13 +1,13 @@
 Lint
 ====
 
-**Lint** is a tool that runs linting checks on Nim modules. It checks a module's abstract syntax tree against rules expressed with Nim code and reports what it finds.
+**Lint** is a toolkit to write and run linting checks on Nim projects.
 
 Thanks to its modular architecture, Lint allows you to *BYOL—bring your own linter*:
 - you can write a standalone Nim module with your linting checks and ship it as part of your project
 - or you can publish it as a Nimble package so that anyone could use in in their projects
 
-Lint ships with an accompanying [GitHub action](./action.yml) to make it easy to include linting in the CI process.
+Lint ships with an accompanying GitHub action to make it easy to enable linting in your CI process.
 
 Quickstart
 ----------
