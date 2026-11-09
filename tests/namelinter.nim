@@ -34,6 +34,7 @@ proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
             "variable `" & name & "` is longer than " & $s.maxLength & " characters"
           )
 
+#startRunConstNames
 proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
   if s.prefix.len == 0:
     return
@@ -47,6 +48,7 @@ proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
           result.add def[0].toFinding(
             "constant `" & name & "` should start with `" & s.prefix & "`"
           )
+#endRunConstNames
 
 let
   nameLinter* = Linter(name: "nameLinter")

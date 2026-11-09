@@ -9,6 +9,14 @@ The config file is a Nim program. It imports Lint, imports the linters you want,
 
 Compiling this file produces your lint executable.
 
+.. important::
+  To make `compiler/ast` importable in your linter and the Lint config, you have to add the Nim compiler source path to the compiler config:
+
+  .. include:: ../tests/linter.nims
+    :code:
+
+  Put that in a [config file](https://nim-lang.org/docs/nimc.html#compiler-usage-configuration-files) affecting your linter and Lint config, e.g. `linter.nims` for `linter.nim`.
+
 # Global config
 
 The top of the block configures global settings for the run:
