@@ -7,9 +7,9 @@ nim	emCheckError	lint/private/runner.html#emCheckError	ExitMode.emCheckError		15
 nim	ExitMode	lint/private/runner.html#ExitMode	enum ExitMode		15
 nim	FindingTag	lint/private/runner.html#FindingTag	object FindingTag		22
 nim	StepReport	lint/private/runner.html#StepReport	object StepReport		29
-nim	FileReport	lint/private/runner.html#FileReport	object FileReport		34
-nim	RunReport	lint/private/runner.html#RunReport	object RunReport		38
-nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		90
-nim	`$`	lint/private/runner.html#$,RunReport,string	proc `$`(report: RunReport; format: string = "text"): string		115
-nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		132
-nim	run	lint/private/runner.html#run,Config,seq[Target],string	proc run(config: Config; targets: seq[Target] = @[]; format: string = "text")		140
+nim	FileReport	lint/private/runner.html#FileReport	object FileReport		33
+nim	RunReport	lint/private/runner.html#RunReport	object RunReport		37
+nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		89
+nim	`$`	lint/private/runner.html#$,RunReport,string	proc `$`(report: RunReport; format: string = "text"): string		114
+nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		131
+nim	run	lint/private/runner.html#run,Config,seq[Target],string	proc run(config: Config; targets: seq[Target] = @[]; format: string = "text")		139
