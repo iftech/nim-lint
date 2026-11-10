@@ -18,7 +18,7 @@ Quickstart
 
     $ nimble install lint
 
-2. Write a linter config (see an example in `tests/linter.nim <tests/linter.nim>`_.
+2. Write a linter config (see an example in `tests/linter.nim <https://github.com/iftech/nim-lint/blob/develop/tests/linter.nim>`)_.
 
 .. include:: ./tests/linter.nim
   :code:
