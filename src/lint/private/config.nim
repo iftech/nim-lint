@@ -11,8 +11,10 @@ import ./runner
 
 proc toSeverity(node: NimNode): Severity =
   case node.strVal
-  of "hint": Severity.hint
-  of "error": Severity.error
+  of "hint":
+    Severity.hint
+  of "error":
+    Severity.error
   else:
     error("severity must be `hint` or `error`, got `" & node.strVal & "`", node)
 
@@ -25,16 +27,14 @@ proc strList(node: NimNode): NimNode =
       error("expected a string literal", item)
   node
 
-macro mkStepCheck(
-    check: typed, nameLit: static string, sev: static Severity, settings: untyped
-): untyped =
+macro mkStepCheck(check: typed, sev: static Severity, settings: untyped): untyped =
   ## Builds one `StepSetting`.
   ##
   ## The settings type comes from the check's own `Check[S]` type, so building
   ## an object constructor from it makes a misspelled key a compile error.
   let typ = check.getTypeInst
   if typ.kind != nnkBracketExpr or typ.len != 2 or typ[0].eqIdent("Check") == false:
-    error("`" & nameLit & "` is not a check", check)
+    error("`" & check.strVal & "` is not a check", check)
 
   let settingsType = typ[1]
 
@@ -56,17 +56,19 @@ macro mkStepCheck(
         value = newTree(nnkPrefix, bindSym"@", value)
       ctor.add newTree(nnkExprColonExpr, stmt[0], value)
 
+  # The check is identified by the identifier the config binds it to: that is
+  # the name the user wrote and the name the report shows.
   let
     runId = check
     astId = genSym(nskParam, "ast")
-    name = newLit(nameLit)
+    name = newLit(check.strVal)
     severity = newLit(sev)
 
   # The settings value is baked into the generated proc rather than captured
   # from an enclosing scope: a captured local is reconstructed from the syntax
   # tree inside the closure's scope, which loses `seq` fields (they come back
   # nil at run time).
-  result = quote do:
+  result = quote:
     StepSetting(
       name: `name`,
       severity: `severity`,
@@ -78,7 +80,7 @@ proc parseCheck(stmt: NimNode): NimNode =
   if stmt.len != 3 or stmt[0].strVal != "check":
     error("expected `check <name>:`", stmt)
   let checkName = stmt[1]
-  if checkName.kind != nnkIdent:
+  if checkName.kind notin {nnkIdent, nnkDotExpr}:
     error("expected a check name", checkName)
 
   var severity = newLit(Severity.hint)
@@ -95,7 +97,11 @@ proc parseCheck(stmt: NimNode): NimNode =
           error("severity must be `hint` or `error`", entry[1])
         severity = newLit(toSeverity(entry[1]))
       else:
-        error("unknown check field `" & entry[0].strVal & "` (settings go in a `settings:` block)", entry[0])
+        error(
+          "unknown check field `" & entry[0].strVal &
+            "` (settings go in a `settings:` block)",
+          entry[0],
+        )
     of nnkCall:
       if entry[0].strVal != "settings":
         error("unknown check entry `" & entry[0].strVal & "`", entry[0])
@@ -105,10 +111,11 @@ proc parseCheck(stmt: NimNode): NimNode =
     else:
       error("unexpected entry in check", entry)
 
-  let nameLit = newLit(checkName.strVal)
   # `checkName` is passed as the first argument so it is resolved in the
-  # enclosing scope and arrives at `mkStepCheck` as a typed symbol.
-  result = newCall(bindSym"mkStepCheck", checkName, nameLit, severity, settings)
+  # enclosing scope and arrives at `mkStepCheck` as a typed symbol. It may be a
+  # plain identifier or a qualified `linter.check` when two linters export
+  # checks with the same name.
+  result = newCall(bindSym"mkStepCheck", checkName, severity, settings)
 
 proc parseStep(stmt: NimNode): NimNode =
   if stmt.kind != nnkCommand or stmt[0].strVal != "step":
@@ -117,7 +124,6 @@ proc parseStep(stmt: NimNode): NimNode =
     error("`step` takes a label string and a block", stmt)
 
   let label = newLit(stmt[1].strVal)
-  var linterName: NimNode = newLit("")
   var ignored: NimNode = nnkBracket.newTree()
   var checks = newNimNode(nnkBracket)
 
@@ -127,10 +133,6 @@ proc parseStep(stmt: NimNode): NimNode =
       if entry[0].kind != nnkIdent:
         error("expected a step field name", entry[0])
       case entry[0].strVal
-      of "linter":
-        if entry[1].kind != nnkIdent:
-          error("`linter` takes a linter name", entry[1])
-        linterName = newLit(entry[1].strVal)
       of "ignoredPatterns":
         ignored = strList(entry[1])
       else:
@@ -142,16 +144,11 @@ proc parseStep(stmt: NimNode): NimNode =
 
   let ignoredId = genSym(nskLet, "ignored")
   let checksId = genSym(nskLet, "checks")
-  result = quote do:
+  result = quote:
     block:
       let `ignoredId`: seq[string] = @`ignored`
       let `checksId`: seq[StepSetting] = @`checks`
-      Step(
-        label: `label`,
-        linter: `linterName`,
-        ignoredPatterns: `ignoredId`,
-        checks: `checksId`,
-      )
+      Step(label: `label`, ignoredPatterns: `ignoredId`, checks: `checksId`)
 
 macro runLint*(body: untyped): untyped =
   ## Declares a lint config and runs it.
@@ -182,16 +179,16 @@ macro runLint*(body: untyped): untyped =
     stepsId = genSym(nskLet, "steps")
     configId = genSym(nskLet, "config")
 
-  result = quote do:
+  result = quote:
     block:
       let `sourcesId`: seq[string] = @`sources`
       let `ignoredId`: seq[string] = @`ignored`
       let `stepsId`: seq[Step] = @`steps`
-      let `configId` = Config(
-        sources: `sourcesId`, ignoredPatterns: `ignoredId`, steps: `stepsId`
-      )
+      let `configId` =
+        Config(sources: `sourcesId`, ignoredPatterns: `ignoredId`, steps: `stepsId`)
       let options = parseOptions(commandLineParams())
       if options.help:
         stdout.write helpText
         quit(0)
       run(`configId`, options.targets, options.format)
+

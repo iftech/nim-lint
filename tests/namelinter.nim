@@ -51,7 +51,7 @@ proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
 #endRunConstNames
 
 let
-  nameLinter* = Linter(name: "nameLinter")
-  varNames* = nameLinter.addCheck("varNames", runVarNames)
-  constNames* = nameLinter.addCheck("constNames", runConstNames)
+  nameLinter* = Linter()
+  varNames* = nameLinter.addCheck(runVarNames)
+  constNames* = nameLinter.addCheck(runConstNames)
 

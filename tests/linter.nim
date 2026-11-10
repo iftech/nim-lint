@@ -9,7 +9,6 @@ runLint:
 
 #startStepConfig
   step "Check naming":
-    linter = nameLinter
     ignoredPatterns = ["./src/skip/skipped2.nim"]
     check varNames:
       severity = hint

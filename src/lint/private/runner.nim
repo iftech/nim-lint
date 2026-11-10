@@ -28,7 +28,6 @@ type
 
   StepReport* = object
     label*: string
-    linter*: string
     findings*: seq[FindingTag]
 
   FileReport* = object
@@ -168,7 +167,6 @@ proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
       parseFailed = true
       fileReport.stepReports.add StepReport(
         label: "runner",
-        linter: "",
         findings: @[
           FindingTag(
             severity: Severity.error,
@@ -187,7 +185,7 @@ proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
         # named file is a request to lint it.
         if targets.len == 0 and isIgnored(file, step.ignoredPatterns):
           continue
-        var stepReport = StepReport(label: step.label, linter: step.linter)
+        var stepReport = StepReport(label: step.label)
         for check in step.checks:
           var findings: seq[Finding]
           try:
