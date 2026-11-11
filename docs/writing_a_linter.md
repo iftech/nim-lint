@@ -34,8 +34,8 @@ Settings are a plain object. Give the fields a default value in the type definit
 
 .. include:: ../tests/namelinter.nim
   :code:
-  :start-after: #startSettings
-  :end-before: #endSettings
+  :start-after: #ANCHOR: settings
+  :end-before: #ANCHOR_END: settings
 
 A config that provides settings has its keys checked against this type, so a misspelled key is a compile error.
 
@@ -49,5 +49,5 @@ Use [toFinding] to build one from an AST node; it extracts the position from the
 
 .. include:: ../tests/namelinter.nim
   :code:
-  :start-after:#startRunConstNames
-  :end-before:#endRunConstNames
+  :start-after:#ANCHOR: runConstNames
+  :end-before:#ANCHOR_END: runConstNames

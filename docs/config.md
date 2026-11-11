@@ -23,8 +23,8 @@ The top of the block configures global settings for the run:
 
 .. include:: ../tests/linter.nim
   :code:
-  :start-after: #startGlobalConfig
-  :end-before: #endGlobalConfig
+  :start-after: #ANCHOR: globalConfig
+  :end-before: #ANCHOR_END: globalConfig
 
 `sources` lists the locations of the `.nim` files to lint. Each entry is either path to a file, a path to a directory, or a glob pattern.
 
@@ -42,8 +42,8 @@ A `step` is one invocation of a linter. Steps run in the order they are declared
 
 .. include:: ../tests/linter.nim
   :code:
-  :start-after: #startStepConfig
-  :end-before: #endStepConfig
+  :start-after: #ANCHOR: stepConfig
+  :end-before: #ANCHOR_END: stepConfig
 
 The label in quotes is a human-readable of the step in the report.
 

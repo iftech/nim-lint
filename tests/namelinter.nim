@@ -4,7 +4,7 @@ import compiler/ast
 
 import lint
 
-#startSettings
+#ANCHOR: settings
 type
   VarNamesSettings* = object
     minLength*: int = 3
@@ -12,7 +12,7 @@ type
 
   ConstNamesSettings* = object
     prefix*: string = "k"
-#endSettings
+#ANCHOR_END: settings
 
 proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
   for node in ast.sons:
@@ -34,7 +34,7 @@ proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
             "variable `" & name & "` is longer than " & $s.maxLength & " characters"
           )
 
-#startRunConstNames
+#ANCHOR: runConstNames
 proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
   if s.prefix.len == 0:
     return
@@ -48,7 +48,7 @@ proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
           result.add def[0].toFinding(
             "constant `" & name & "` should start with `" & s.prefix & "`"
           )
-#endRunConstNames
+#ANCHOR_END: runConstNames
 
 let
   nameLinter* = Linter()
