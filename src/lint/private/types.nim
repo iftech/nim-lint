@@ -15,7 +15,7 @@
 import compiler/ast
 
 type
-  Severity* = enum
+  Severity* {.pure.} = enum
     hint
     error
 
@@ -59,9 +59,11 @@ proc addCheck*[S](
   ##
   ## The check has no name of its own: a config refers to it by the identifier
   ## it binds the result to, and that identifier is what the report shows.
+
   Check[S](run: run, defaults: defaults)
 
 proc toFinding*(node: PNode, msg: string): Finding =
   ## Builds a finding located at a node.
+
   Finding(line: int(node.info.line), col: int(node.info.col), msg: msg)
 

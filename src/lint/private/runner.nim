@@ -16,12 +16,10 @@ import glob
 import compiler/[ast, parser, idents, options]
 import compiler/lineinfos except Severity
 
-import ./cli
-import ./suppress
-import ./types
+import ./[cli, suppress, types]
 
 type
-  ExitMode* = enum
+  ExitMode* {.pure.} = enum
     emClean = 0
     emErrorsFound = 1
     emParseError = 2
@@ -46,24 +44,26 @@ type
   RunReport* = object
     fileReports*: seq[FileReport]
 
+  ParseFailure* = object of CatchableError
+
 proc normalize(path: string): string =
   ## The glob library matches against patterns without a leading `./`.
-  result = path
-  while result.len > 2 and result[0] == '.' and result[1] == '/':
-    result = result[2 .. ^1]
+
+  if path.startsWith("./"):
+    path[2 .. ^1]
+  else:
+    path
 
 proc isIgnored(file: string, patterns: seq[string]): bool =
   let f = normalize(file)
+
   for p in patterns:
     if f.matches(normalize(p)):
       return true
 
 proc nimFiles(pattern: string): seq[string] =
   ## Expands a glob pattern to the `.nim` files it matches.
-  ##
-  ## `walkGlob` is used rather than `walkDirRec` plus `matches` because it
-  ## builds the pattern for the host platform: on Windows a `/` in the pattern
-  ## becomes `\`, which is what the paths it yields contain.
+
   for path in walkGlob(pattern, options = {Files, FileLinks, DirLinks, Hidden}):
     if splitFile(path).ext == ".nim":
       result.add normalize(path)
@@ -95,11 +95,10 @@ proc collectFiles(config: Config, targets: seq[Target]): seq[string] =
 
   result.sort()
 
-type ParseFailure* = object of CatchableError
-
 proc raiseParseError(conf: ConfigRef, info: TLineInfo, msg: TMsgKind, arg: string) =
   ## The default parser error handler calls `quit`, which would kill the whole
   ## run on one bad file. Raise instead so the runner can report it.
+
   raise newException(ParseFailure, "(" & $info.line & ", " & $info.col & ") " & arg)
 
 proc parseFile(path: string): tuple[ast: PNode, lines: seq[string]] =
@@ -107,21 +106,28 @@ proc parseFile(path: string): tuple[ast: PNode, lines: seq[string]] =
     src = readFile(path)
     cache = newIdentCache()
     conf = newPartialConfigRef()
+
   result.ast = parseString(src, cache, conf, path, errorHandler = raiseParseError)
   result.lines = src.splitLines()
 
 proc renderFinding(tag: FindingTag): string =
-  result = &"[{tag.stepLabel}][{tag.checkName}][{tag.severity}][{tag.file}:{tag.finding.line}:{tag.finding.col}] {tag.finding.msg}"
+  fmt"[{tag.stepLabel}][{tag.checkName}][{tag.severity}][{tag.file}:{tag.finding.line}:{tag.finding.col}] {tag.finding.msg}"
 
 proc renderGithub(tag: FindingTag): string =
   ## A GitHub Actions workflow command, which the runner turns into an inline
   ## annotation on the pull request.
-  let kind = if tag.severity == Severity.error: "error" else: "warning"
-  let title = tag.stepLabel & "/" & tag.checkName
-  result = &"::{kind} file={tag.file},line={tag.finding.line},col={tag.finding.col},title={title}::{tag.finding.msg}"
 
-proc `$`*(report: RunReport, format: string = "text"): string =
+  let
+    kind =
+      if tag.severity == Severity.error: "error"
+      else: "warning"
+    title = tag.stepLabel & "/" & tag.checkName
+
+  fmt"::{kind} file={tag.file},line={tag.finding.line},col={tag.finding.col},title={title}::{tag.finding.msg}"
+
+proc `$`*(report: RunReport, format = Format.text): string =
   var hints, errors = 0
+
   for fileReport in report.fileReports:
     for stepReport in fileReport.stepReports:
       for tag in stepReport.findings:
@@ -130,11 +136,14 @@ proc `$`*(report: RunReport, format: string = "text"): string =
           inc hints
         of Severity.error:
           inc errors
-        if format == "github":
+
+        case format
+        of Format.github:
           result.add renderGithub(tag) & "\n"
-        else:
+        of Format.text:
           result.add renderFinding(tag) & "\n"
-  if format != "github":
+
+  if format != Format.github:
     result.add &"hints: {hints}, errors: {errors}\n"
 
 proc exitMode*(report: RunReport): ExitMode =
@@ -142,10 +151,11 @@ proc exitMode*(report: RunReport): ExitMode =
     for stepReport in fileReport.stepReports:
       for tag in stepReport.findings:
         if tag.severity == Severity.error:
-          return emErrorsFound
-  emClean
+          return ExitMode.emErrorsFound
 
-proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
+  ExitMode.emClean
+
+proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
   ## Runs the config and exits with the code for the resulting exit mode.
   ##
   ## `targets` come from the command line and override the config's sources.
@@ -166,10 +176,12 @@ proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
       rangesByPath[target.path] = target.lines
 
   for file in files:
-    var fileReport = FileReport(file: file)
-    var ast: PNode
-    var sourceLines: seq[string]
-    var parseFailed = false
+    var
+      fileReport = FileReport(file: file)
+      ast: PNode
+      sourceLines: seq[string]
+      parseFailed = false
+
     try:
       (ast, sourceLines) = parseFile(file)
     except CatchableError as e:
@@ -194,6 +206,7 @@ proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
         # named file is a request to lint it.
         if targets.len == 0 and isIgnored(file, step.ignoredPatterns):
           continue
+
         var stepReport = StepReport(label: step.label)
         for check in step.checks:
           var findings: seq[Finding]
@@ -215,11 +228,15 @@ proc run*(config: Config, targets: seq[Target] = @[], format: string = "text") =
               finding: f,
             )
         fileReport.stepReports.add stepReport
-    report.fileReports.add fileReport
+
+    report.fileReports.add(fileReport)
 
   stdout.write report.`$`(format)
+
   let mode = report.exitMode
+
   if exitCode != ExitMode.emParseError:
     exitCode = mode
+
   quit(ord(exitCode))
 

@@ -20,66 +20,6 @@
 
 import std/[parseopt, strutils]
 
-type
-  Target* = object ## One thing to lint.
-    path*: string ## A file or a glob pattern.
-    lines*: seq[tuple[first, last: int]] ## Empty means the whole file.
-
-  Options* = object
-    ## Everything the command line can say.
-    targets*: seq[Target]
-    format*: string ## `text` or `github`.
-    help*: bool ## `--help` or `-h` was given.
-
-proc parseRanges(s: string): seq[tuple[first, last: int]] =
-  ## Parses `10-12,40` into ranges. Returns an empty seq when `s` is not a
-  ## range list, which is how a Windows path like `C:\src\a.nim` stays a path.
-  for part in s.split(','):
-    let bounds = part.split('-')
-    if bounds.len > 2:
-      return
-    var first, last: int
-    try:
-      first = parseInt(bounds[0])
-      last = if bounds.len == 2: parseInt(bounds[1]) else: first
-    except ValueError:
-      return
-    if first < 1 or last < first:
-      return
-    result.add (first, last)
-
-proc parseTarget*(arg: string): Target =
-  ## Splits an argument into a path and optional line ranges.
-  ##
-  ## The split is on the last `:`, and only when the suffix parses as ranges, so
-  ## paths containing colons (Windows drive letters) are left alone.
-  let colon = arg.rfind(':')
-  if colon > 0:
-    let ranges = parseRanges(arg[colon + 1 .. ^1])
-    if ranges.len > 0:
-      return Target(path: arg[0 ..< colon], lines: ranges)
-  Target(path: arg)
-
-proc parseOptions*(args: seq[string]): Options =
-  ## Parses the command line. Accepts `--format=github` and `--format:github`.
-  result.format = "text"
-  var p = initOptParser(args)
-  while true:
-    p.next()
-    case p.kind
-    of cmdEnd:
-      break
-    of cmdArgument:
-      result.targets.add parseTarget(p.key)
-    of cmdShortOption, cmdLongOption:
-      case p.key
-      of "format":
-        result.format = p.val
-      of "help", "h":
-        result.help = true
-      else:
-        discard
-
 const helpText* = """Usage: linter [options] [target...]
 
 Lint the files selected by the config's `sources`, or the targets given on the
@@ -111,10 +51,90 @@ Exit codes:
   4  a check raised an exception
 """
 
+type
+  Target* = object ## One thing to lint.
+    path*: string ## A file or a glob pattern.
+    lines*: seq[tuple[first, last: int]] ## Empty means the whole file.
+
+  Format* {.pure.} = enum
+    text
+    github
+
+  Options* = object ## Everything the command line can say.
+    targets*: seq[Target]
+    format*: Format ## `text` or `github`.
+    help*: bool ## `--help` or `-h` was given.
+
+proc parseRanges(s: string): seq[tuple[first, last: int]] =
+  ## Parses `10-12,40` into ranges. Returns an empty seq when `s` is not a
+  ## range list, which is how a Windows path like `C:\src\a.nim` stays a path.
+
+  for part in s.split(','):
+    let bounds = part.split('-')
+
+    if bounds.len > 2:
+      return
+
+    var first, last: int
+
+    try:
+      first = parseInt(bounds[0])
+      last =
+        if bounds.len == 2:
+          parseInt(bounds[1])
+        else:
+          first
+    except ValueError:
+      return
+
+    if first < 1 or last < first:
+      return
+
+    result.add (first, last)
+
+proc parseTarget*(arg: string): Target =
+  ## Splits an argument into a path and optional line ranges.
+  ##
+  ## The split is on the last `:`, and only when the suffix parses as ranges, so
+  ## paths containing colons (Windows drive letters) are left alone.
+
+  let colonPosition = arg.rfind(':')
+
+  if colonPosition <= 0:
+    Target(path: arg)
+  else:
+    let
+      path = arg[0 ..< colonPosition]
+      ranges = parseRanges(arg[colonPosition + 1 .. ^1])
+
+    Target(path: path, lines: ranges)
+
+proc parseOptions*(args: seq[string]): Options =
+  ## Parses the command line. Accepts `--format=github` and `--format:github`.
+
+  for kind, key, val in getopt(args):
+    case kind
+    of cmdEnd:
+      break
+    of cmdArgument:
+      result.targets.add parseTarget(key)
+    of cmdShortOption, cmdLongOption:
+      case key
+      of "format", "f":
+        result.format = parseEnum[Format](val)
+      of "help", "h":
+        result.help = true
+      else:
+        # show help message if invalid args are passed
+        result.help = true
+
 proc inRanges*(line: int, ranges: seq[tuple[first, last: int]]): bool =
   ## True when `line` falls in any of `ranges`. An empty list matches everything.
+
   if ranges.len == 0:
     return true
+
   for r in ranges:
     if line >= r.first and line <= r.last:
       return true
+

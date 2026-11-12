@@ -24,11 +24,14 @@ const suppressionMarker* = "#nolint"
 
 proc isSuppressed*(line: string): bool =
   ## True when `line` ends with a `#nolint` comment.
+
   line.strip(leading = false).endsWith(suppressionMarker)
 
 proc isSuppressed*(lines: seq[string]; line: int): bool =
   ## True when the 1-based `line` ends with a `#nolint` comment. Out-of-range
   ## lines are never suppressed.
+
   if line < 1 or line > lines.len:
     return false
+
   isSuppressed(lines[line - 1])
