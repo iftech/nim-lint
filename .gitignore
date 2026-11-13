@@ -27,7 +27,6 @@ tests/texitcodes
 nimble.develop
 nimble.paths
 nimbledeps
-/config.nims
 
 .monit*yml
 
