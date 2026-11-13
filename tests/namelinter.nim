@@ -12,6 +12,7 @@ type
 
   ConstNamesSettings* = object
     prefix*: string = "k"
+
 #ANCHOR_END: settings
 
 proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
@@ -24,6 +25,9 @@ proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
 
         if name == "killTheLinter":
           raise newException(ValueError, "There is a bug in this check")
+
+        if name == "killTheLinter2":
+          raise newException(AssertionDefect, "There is a bug in this check")
 
         if name.len < s.minLength:
           result.add def[0].toFinding(
@@ -48,6 +52,7 @@ proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
           result.add def[0].toFinding(
             "constant `" & name & "` should start with `" & s.prefix & "`"
           )
+
 #ANCHOR_END: runConstNames
 
 let

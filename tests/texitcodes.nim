@@ -34,5 +34,9 @@ suite "Exit codes":
     let (_, exitCode) = runLinter("src/skip2/bug.nim")
     check exitCode == 4
 
+  test "Non-CatchableError bug in check":
+    let (_, exitCode) = runLinter("src/skip2/bug2.nim")
+    check exitCode == 4
+
   removeLinterExecutable()
 

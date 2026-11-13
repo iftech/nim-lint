@@ -212,7 +212,7 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
           var findings: seq[Finding]
           try:
             findings = check.run(ast)
-          except CatchableError as e:
+          except Exception as e:
             stderr.writeLine &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
             quit(ord(ExitMode.emCheckError))
           for f in findings:
