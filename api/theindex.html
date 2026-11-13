@@ -31,7 +31,7 @@
       Modules: <a href="lint.html">lint</a>, <a href="lint/private/cli.html">lint/private/cli</a>, <a href="lint/private/config.html">lint/private/config</a>, <a href="lint/private/runner.html">lint/private/runner</a>, <a href="lint/private/suppress.html">lint/private/suppress</a>, <a href="lint/private/types.html">lint/private/types</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%24%60" href="#%60%24%60"><span>`$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="runner: proc `$`(report: RunReport; format: string = &quot;text&quot;): string" href="lint/private/runner.html#%24%2CRunReport%2Cstring">runner: proc `$`(report: RunReport; format: string = &quot;text&quot;): string</a></li>
+          data-doc-search-tag="runner: proc `$`(report: RunReport; format = Format.text): string" href="lint/private/runner.html#%24%2CRunReport">runner: proc `$`(report: RunReport; format = Format.text): string</a></li>
           </ul></dd>
 <dt><a name="addCheck" href="#addCheck"><span>addCheck:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -46,30 +46,6 @@
 <dt><a name="Config" href="#Config"><span>Config:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="types: object Config" href="lint/private/types.html#Config">types: object Config</a></li>
-          </ul></dd>
-<dt><a name="emCheckError" href="#emCheckError"><span>emCheckError:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="runner: ExitMode.emCheckError" href="lint/private/runner.html#emCheckError">runner: ExitMode.emCheckError</a></li>
-          </ul></dd>
-<dt><a name="emClean" href="#emClean"><span>emClean:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="runner: ExitMode.emClean" href="lint/private/runner.html#emClean">runner: ExitMode.emClean</a></li>
-          </ul></dd>
-<dt><a name="emErrorsFound" href="#emErrorsFound"><span>emErrorsFound:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="runner: ExitMode.emErrorsFound" href="lint/private/runner.html#emErrorsFound">runner: ExitMode.emErrorsFound</a></li>
-          </ul></dd>
-<dt><a name="emNoSources" href="#emNoSources"><span>emNoSources:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="runner: ExitMode.emNoSources" href="lint/private/runner.html#emNoSources">runner: ExitMode.emNoSources</a></li>
-          </ul></dd>
-<dt><a name="emParseError" href="#emParseError"><span>emParseError:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="runner: ExitMode.emParseError" href="lint/private/runner.html#emParseError">runner: ExitMode.emParseError</a></li>
-          </ul></dd>
-<dt><a name="error" href="#error"><span>error:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="types: Severity.error" href="lint/private/types.html#error">types: Severity.error</a></li>
           </ul></dd>
 <dt><a name="ExitMode" href="#ExitMode"><span>ExitMode:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -91,13 +67,13 @@
 <li><a class="reference external"
           data-doc-search-tag="runner: object FindingTag" href="lint/private/runner.html#FindingTag">runner: object FindingTag</a></li>
           </ul></dd>
+<dt><a name="Format" href="#Format"><span>Format:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="cli: enum Format" href="lint/private/cli.html#Format">cli: enum Format</a></li>
+          </ul></dd>
 <dt><a name="helpText" href="#helpText"><span>helpText:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="cli: const helpText" href="lint/private/cli.html#helpText">cli: const helpText</a></li>
-          </ul></dd>
-<dt><a name="hint" href="#hint"><span>hint:</span></a></dt><dd><ul class="simple">
-<li><a class="reference external"
-          data-doc-search-tag="types: Severity.hint" href="lint/private/types.html#hint">types: Severity.hint</a></li>
           </ul></dd>
 <dt><a name="inRanges" href="#inRanges"><span>inRanges:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -131,7 +107,7 @@
           </ul></dd>
 <dt><a name="run" href="#run"><span>run:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="runner: proc run(config: Config; targets: seq[Target] = @[]; format: string = &quot;text&quot;)" href="lint/private/runner.html#run%2CConfig%2Cseq%5BTarget%5D%2Cstring">runner: proc run(config: Config; targets: seq[Target] = @[]; format: string = &quot;text&quot;)</a></li>
+          data-doc-search-tag="runner: proc run(config: Config; targets: seq[Target] = @[]; format = Format.text)" href="lint/private/runner.html#run%2CConfig%2Cseq%5BTarget%5D">runner: proc run(config: Config; targets: seq[Target] = @[]; format = Format.text)</a></li>
           </ul></dd>
 <dt><a name="runLint" href="#runLint"><span>runLint:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -173,7 +149,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-10 11:58:03 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-13 09:10:24 UTC</small>
       </div>
     </div>
   </div>

@@ -1,12 +1,10 @@
 nimTitle	types	lint/private/types.html	module src/lint/private/types		0
-nim	hint	lint/private/types.html#hint	Severity.hint		9
-nim	error	lint/private/types.html#error	Severity.error		9
-nim	Severity	lint/private/types.html#Severity	enum Severity		9
-nim	Finding	lint/private/types.html#Finding	object Finding		13
-nim	Check	lint/private/types.html#Check	object Check		20
-nim	Linter	lint/private/types.html#Linter	object Linter		24
-nim	StepSetting	lint/private/types.html#StepSetting	object StepSetting		26
-nim	Step	lint/private/types.html#Step	object Step		33
-nim	Config	lint/private/types.html#Config	object Config		38
-nim	addCheck	lint/private/types.html#addCheck,Linter,proc(PNode,S),S	proc addCheck[S](linter: Linter; run: proc (ast: PNode; settings: S): seq[Finding];\n            defaults: S = default(S)): Check[S]		43
-nim	toFinding	lint/private/types.html#toFinding,PNode,string	proc toFinding(node: PNode; msg: string): Finding		55
+nim	Severity	lint/private/types.html#Severity	enum Severity		18
+nim	Finding	lint/private/types.html#Finding	object Finding		22
+nim	Check	lint/private/types.html#Check	object Check		29
+nim	Linter	lint/private/types.html#Linter	object Linter		33
+nim	StepSetting	lint/private/types.html#StepSetting	object StepSetting		35
+nim	Step	lint/private/types.html#Step	object Step		42
+nim	Config	lint/private/types.html#Config	object Config		47
+nim	addCheck	lint/private/types.html#addCheck,Linter,proc(PNode,S),S	proc addCheck[S](linter: Linter; run: proc (ast: PNode; settings: S): seq[Finding];\n            defaults: S = default(S)): Check[S]		52
+nim	toFinding	lint/private/types.html#toFinding,PNode,string	proc toFinding(node: PNode; msg: string): Finding		65

@@ -1,15 +1,10 @@
 nimTitle	runner	lint/private/runner.html	module src/lint/private/runner		0
-nim	emClean	lint/private/runner.html#emClean	ExitMode.emClean		15
-nim	emErrorsFound	lint/private/runner.html#emErrorsFound	ExitMode.emErrorsFound		15
-nim	emParseError	lint/private/runner.html#emParseError	ExitMode.emParseError		15
-nim	emNoSources	lint/private/runner.html#emNoSources	ExitMode.emNoSources		15
-nim	emCheckError	lint/private/runner.html#emCheckError	ExitMode.emCheckError		15
-nim	ExitMode	lint/private/runner.html#ExitMode	enum ExitMode		15
-nim	FindingTag	lint/private/runner.html#FindingTag	object FindingTag		22
-nim	StepReport	lint/private/runner.html#StepReport	object StepReport		29
-nim	FileReport	lint/private/runner.html#FileReport	object FileReport		33
-nim	RunReport	lint/private/runner.html#RunReport	object RunReport		37
-nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		89
-nim	`$`	lint/private/runner.html#$,RunReport,string	proc `$`(report: RunReport; format: string = "text"): string		114
-nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		131
-nim	run	lint/private/runner.html#run,Config,seq[Target],string	proc run(config: Config; targets: seq[Target] = @[]; format: string = "text")		139
+nim	ExitMode	lint/private/runner.html#ExitMode	enum ExitMode		22
+nim	FindingTag	lint/private/runner.html#FindingTag	object FindingTag		29
+nim	StepReport	lint/private/runner.html#StepReport	object StepReport		36
+nim	FileReport	lint/private/runner.html#FileReport	object FileReport		40
+nim	RunReport	lint/private/runner.html#RunReport	object RunReport		44
+nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		47
+nim	`$`	lint/private/runner.html#$,RunReport	proc `$`(report: RunReport; format = Format.text): string		128
+nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		149
+nim	run	lint/private/runner.html#run,Config,seq[Target]	proc run(config: Config; targets: seq[Target] = @[]; format = Format.text)		158

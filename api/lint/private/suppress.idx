@@ -1,5 +1,5 @@
 nimTitle	suppress	lint/private/suppress.html	module src/lint/private/suppress		0
-nim	suppressionMarker	lint/private/suppress.html#suppressionMarker	const suppressionMarker		14
-nim	isSuppressed	lint/private/suppress.html#isSuppressed,string	proc isSuppressed(line: string): bool		16
-nim	isSuppressed	lint/private/suppress.html#isSuppressed,seq[string],int	proc isSuppressed(lines: seq[string]; line: int): bool		20
-nimgrp	issuppressed	lint/private/suppress.html#isSuppressed-procs-all	proc		16
+nim	suppressionMarker	lint/private/suppress.html#suppressionMarker	const suppressionMarker		23
+nim	isSuppressed	lint/private/suppress.html#isSuppressed,string	proc isSuppressed(line: string): bool		25
+nim	isSuppressed	lint/private/suppress.html#isSuppressed,seq[string],int	proc isSuppressed(lines: seq[string]; line: int): bool		30
+nimgrp	issuppressed	lint/private/suppress.html#isSuppressed-procs-all	proc		25

@@ -72,12 +72,12 @@
 <span class="Keyword">import</span> <span class="Identifier">namelinter</span>
 
 <span class="Identifier">runLint</span><span class="Punctuation">:</span>
-<span class="Comment">#startGlobalConfig</span>
+<span class="Comment">#ANCHOR: globalConfig</span>
   <span class="Identifier">sources</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src&quot;</span><span class="Punctuation">]</span>
   <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped.nim&quot;</span><span class="Punctuation">,</span> <span class="StringLit">&quot;./src/skip2/**/*&quot;</span><span class="Punctuation">]</span>
-<span class="Comment">#endGlobalConfig</span>
+<span class="Comment">#ANCHOR_END: globalConfig</span>
 
-<span class="Comment">#startStepConfig</span>
+<span class="Comment">#ANCHOR: stepConfig</span>
   <span class="Identifier">step</span> <span class="StringLit">&quot;Check naming&quot;</span><span class="Punctuation">:</span>
     <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;./src/skip/skipped2.nim&quot;</span><span class="Punctuation">]</span>
     <span class="Identifier">check</span> <span class="Identifier">varNames</span><span class="Punctuation">:</span>
@@ -89,7 +89,7 @@
       <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">error</span>
       <span class="Identifier">settings</span><span class="Punctuation">:</span>
         <span class="Identifier">prefix</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
-<span class="Comment">#endStepConfig</span>
+<span class="Comment">#ANCHOR_END: stepConfig</span>
 </pre><p>Compiling this file produces your lint executable.</p>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
 To make <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> importable in your linter and the Lint config, you have to add the Nim compiler source path to the compiler config:<pre class="listing"><span class="Operator">--</span><span class="Identifier">path</span><span class="Punctuation">:</span><span class="StringLit">&quot;$nim/&quot;</span>
@@ -142,7 +142,7 @@ Patterns are always written in UNIX form, with <tt class="docutils literal"><spa
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-10 11:58:04 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-13 09:10:25 UTC</small>
       </div>
     </div>
   </div>

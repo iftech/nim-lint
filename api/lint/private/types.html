@@ -76,7 +76,7 @@
   col*: int
   msg*: string">Finding</a></li>
 <li><a class="reference" href="#Linter" title="Linter = object">Linter</a></li>
-<li><a class="reference" href="#Severity" title="Severity = enum
+<li><a class="reference" href="#Severity" title="Severity {.pure.} = enum
   hint, error">Severity</a></li>
 <li><a class="reference" href="#Step" title="Step = object
   label*: string
@@ -131,8 +131,8 @@
   <dd>
     
     One check declared by a linter, bound to its settings type.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L20" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L20" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L29" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L29" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -144,8 +144,8 @@
   <dd>
     
     
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L38" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L38" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L47" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L47" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -157,8 +157,8 @@
   <dd>
     
     What a check returns. Deliberately carries no severity, no label, and no file path: the runner stamps those.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L13" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L13" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L22" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L22" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -167,19 +167,19 @@
   <dd>
     
     A group of checks. A linter module exports one <tt class="docutils literal"><span class="pre"><span class="Identifier">Linter</span></span></tt> value.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L24" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L24" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L33" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L33" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
 <div id="Severity">
-  <dt><pre><a href="#Severity"><span class="Identifier">Severity</span></a> <span class="Other">=</span> <span class="Keyword">enum</span>
+  <dt><pre><a href="#Severity"><span class="Identifier">Severity</span></a> {.<span class="Identifier">pure</span>.} <span class="Other">=</span> <span class="Keyword">enum</span>
   <span class="Identifier">hint</span><span class="Other">,</span> <span class="Identifier">error</span></pre></dt>
   <dd>
     
     
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L9" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L9" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L18" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L18" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -191,8 +191,8 @@
   <dd>
     
     One declared <tt class="docutils literal"><span class="pre"><span class="Identifier">step</span></span></tt> block.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L33" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L33" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L42" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L42" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -204,8 +204,8 @@
   <dd>
     
     Runtime form of one <tt class="docutils literal"><span class="pre"><span class="Identifier">check</span></span></tt> entry: the check plus its settings, type-erased at the last moment.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L26" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L26" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L35" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L35" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -225,8 +225,8 @@
     <p>Used by linter modules to declare one check, its settings type, and the settings to use when a config does not provide any.</p>
 <p>The check has no name of its own: a config refers to it by the identifier it binds the result to, and that identifier is what the report shows.</p>
 
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L43" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L43" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L52" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L52" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -239,8 +239,8 @@
   <dd>
     
     Builds a finding located at a node.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L55" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L55" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/types.nim#L65" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/types.nim#L65" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -256,7 +256,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-10 11:58:02 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-13 09:10:23 UTC</small>
       </div>
     </div>
   </div>
