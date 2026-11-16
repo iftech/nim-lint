@@ -66,4 +66,3 @@ This is useful when you want to check a change without being told about everythi
 ```shell
 ./linter --format=github src/foo.nim
 ```
-
