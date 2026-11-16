@@ -49,4 +49,3 @@ Licensed under either of:
 - MIT license `LICENSE-MIT <./LICENSE-MIT>`_
 
 at your option.
-
