@@ -60,4 +60,3 @@ let
   nameLinter* = Linter()
   varNames* = nameLinter.addCheck(runVarNames)
   constNames* = nameLinter.addCheck(runConstNames)
-

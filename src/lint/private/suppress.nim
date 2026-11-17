@@ -27,7 +27,7 @@ proc isSuppressed*(line: string): bool =
 
   line.strip(leading = false).endsWith(suppressionMarker)
 
-proc isSuppressed*(lines: seq[string]; line: int): bool =
+proc isSuppressed*(lines: seq[string], line: int): bool =
   ## True when the 1-based `line` ends with a `#nolint` comment. Out-of-range
   ## lines are never suppressed.
 

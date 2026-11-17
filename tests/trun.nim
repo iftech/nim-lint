@@ -26,7 +26,7 @@ suite "Run options":
   test "Legacy check warns and still runs":
     check compilationOutput.splitLines().anyIt(
       "Warning:" in it and "addCheck is deprecated" in it and
-      "proc(source: string, ast: PNode, settings: S)" in it
+        "proc(source: string, ast: PNode, settings: S)" in it
     )
     let (output, exitCode) = runLinter("src/skip/skipped.nim")
     check exitCode == 0
@@ -149,8 +149,7 @@ suite "Run options":
     check ":4:" notin output
 
   test "Source comments respect line ranges and output format":
-    let (output, exitCode) =
-      runLinter("--format=github src/skip2/comments.nim:5")
+    let (output, exitCode) = runLinter("--format=github src/skip2/comments.nim:5")
     check exitCode == 0
     check "::warning file=" in output
     check ",line=5,col=4," in output
@@ -158,4 +157,3 @@ suite "Run options":
     check "line=1," notin output
 
   removeLinterExecutable()
-

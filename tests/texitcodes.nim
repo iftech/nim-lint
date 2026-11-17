@@ -39,4 +39,3 @@ suite "Exit codes":
     check exitCode == 4
 
   removeLinterExecutable()
-

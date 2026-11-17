@@ -137,4 +137,3 @@ proc inRanges*(line: int, ranges: seq[tuple[first, last: int]]): bool =
   for r in ranges:
     if line >= r.first and line <= r.last:
       return true
-

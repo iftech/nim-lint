@@ -222,4 +222,3 @@ macro runLint*(body: untyped): untyped =
         quit(0)
 
       run(`configId`, options.targets, options.format)
-

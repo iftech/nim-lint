@@ -118,9 +118,7 @@ proc renderGithub(tag: FindingTag): string =
   ## annotation on the pull request.
 
   let
-    kind =
-      if tag.severity == Severity.error: "error"
-      else: "warning"
+    kind = if tag.severity == Severity.error: "error" else: "warning"
     title = tag.stepLabel & "/" & tag.checkName
 
   fmt"::{kind} file={tag.file},line={tag.finding.line},col={tag.finding.col},title={title}::{tag.finding.msg}"
@@ -241,4 +239,3 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
     exitCode = mode
 
   quit(ord(exitCode))
-

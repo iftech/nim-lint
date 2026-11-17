@@ -66,7 +66,10 @@ proc addCheck*[S](
     linter: Linter,
     run: proc(ast: PNode, settings: S): seq[Finding],
     defaults: S = default(S),
-): Check[S] {.deprecated: "Use addCheck with proc(source: string, ast: PNode, settings: S) to receive the original source text.".} =
+): Check[S] {.
+    deprecated:
+      "Use addCheck with proc(source: string, ast: PNode, settings: S) to receive the original source text."
+.} =
   addCheck(
     linter,
     proc(source: string, ast: PNode, settings: S): seq[Finding] =
@@ -78,4 +81,3 @@ proc toFinding*(node: PNode, msg: string): Finding =
   ## Builds a finding located at a node.
 
   Finding(line: int(node.info.line), col: int(node.info.col), msg: msg)
-
