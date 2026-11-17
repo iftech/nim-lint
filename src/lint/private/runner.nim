@@ -179,6 +179,7 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
     var
       fileReport = FileReport(file: file)
       ast: PNode
+      source: string
       sourceLines: seq[string]
       parseFailed = false
 
@@ -212,7 +213,7 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
         for check in step.checks:
           var findings: seq[Finding]
           try:
-            findings = check.run(ast)
+            findings = check.run(source, ast)
           except Exception as e:
             stderr.writeLine &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
             quit(ord(ExitMode.emCheckError))
