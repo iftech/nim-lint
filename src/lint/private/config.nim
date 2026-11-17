@@ -75,6 +75,7 @@ macro mkStepCheck(check: typed, sev: static Severity, settings: untyped): untype
   let
     runId = check
     astId = genSym(nskParam, "ast")
+    sourceId = genSym(nskParam, "source")
     name = newLit(check.strVal)
     severity = newLit(sev)
 
@@ -86,8 +87,8 @@ macro mkStepCheck(check: typed, sev: static Severity, settings: untyped): untype
     StepSetting(
       name: `name`,
       severity: `severity`,
-      run: proc(`astId`: PNode): seq[Finding] =
-        `runId`.run(`astId`, `ctor`),
+      run: proc(`sourceId`: string, `astId`: PNode): seq[Finding] =
+        `runId`.run(`sourceId`, `astId`, `ctor`),
     )
 
 proc parseCheck(stmt: NimNode): NimNode =
