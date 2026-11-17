@@ -1,5 +1,6 @@
 import lint
 import namelinter
+import commentlinter
 
 runLint:
 #ANCHOR: globalConfig
@@ -20,3 +21,7 @@ runLint:
       settings:
         prefix = "k"
 #ANCHOR_END: stepConfig
+
+  step "Check comments":
+    check todoComments:
+      severity = hint

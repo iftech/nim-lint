@@ -1,16 +1,17 @@
-import std/[unittest, os, osproc, strutils]
+import std/[unittest, os, osproc, strutils, sequtils]
 
 const
   config = "linter.nim"
   linterExecutable = config.splitFile().name
   testsDir = currentSourcePath().parentDir
 
-proc compileLinter() =
+proc compileLinter(): string =
   let (output, exitCode) =
     execCmdEx("nim c -d:release $#" % config, workingDir = testsDir)
   if exitCode != 0:
     echo output
     quit(exitCode)
+  output
 
 proc runLinter(targets = ""): tuple[output: string, exitCode: int] =
   let command = "$# $#" % [findExe(testsDir / linterExecutable), targets]
@@ -20,7 +21,17 @@ proc removeLinterExecutable() =
   removeFile findExe(testsDir / linterExecutable)
 
 suite "Run options":
-  compileLinter()
+  let compilationOutput = compileLinter()
+
+  test "Legacy check warns and still runs":
+    check compilationOutput.splitLines().anyIt(
+      "Warning:" in it and "addCheck is deprecated" in it and
+      "proc(source: string, ast: PNode, settings: S)" in it
+    )
+    let (output, exitCode) = runLinter("src/skip/skipped.nim")
+    check exitCode == 0
+    check "variable `y` is shorter than 3 characters" in output
+    check "hints: 1, errors: 0" in output
 
   test "Project using the config":
     const
@@ -126,6 +137,25 @@ suite "Run options":
       check finding in output
 
     check summary in output
+
+  test "Source comments":
+    let (output, exitCode) = runLinter("src/skip2/comments.nim")
+    check exitCode == 0
+    check "[Check comments][todoComments][hint]" in output
+    check ":1:2] unfinished comment: TODO" in output
+    check ":5:4] unfinished comment: TODO" in output
+    check "hints: 2, errors: 0" in output
+    check ":3:" notin output
+    check ":4:" notin output
+
+  test "Source comments respect line ranges and output format":
+    let (output, exitCode) =
+      runLinter("--format=github src/skip2/comments.nim:5")
+    check exitCode == 0
+    check "::warning file=" in output
+    check ",line=5,col=4," in output
+    check "unfinished comment: TODO" in output
+    check "line=1," notin output
 
   removeLinterExecutable()
 

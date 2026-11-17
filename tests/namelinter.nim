@@ -15,6 +15,7 @@ type
 
 #ANCHOR_END: settings
 
+# Keep one AST-only check to exercise the deprecated registration API.
 proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
   for node in ast.sons:
     if node.kind == nkVarSection:
@@ -39,7 +40,7 @@ proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
           )
 
 #ANCHOR: runConstNames
-proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
+proc runConstNames(source: string, ast: PNode, s: ConstNamesSettings): seq[Finding] =
   if s.prefix.len == 0:
     return
   for node in ast.sons:
