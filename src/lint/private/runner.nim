@@ -101,14 +101,14 @@ proc raiseParseError(conf: ConfigRef, info: TLineInfo, msg: TMsgKind, arg: strin
 
   raise newException(ParseFailure, "(" & $info.line & ", " & $info.col & ") " & arg)
 
-proc parseFile(path: string): tuple[ast: PNode, lines: seq[string]] =
+proc parseFile(path: string): tuple[ast: PNode, source: string] =
   let
     src = readFile(path)
     cache = newIdentCache()
     conf = newPartialConfigRef()
 
   result.ast = parseString(src, cache, conf, path, errorHandler = raiseParseError)
-  result.lines = src.splitLines()
+  result.source = src
 
 proc renderFinding(tag: FindingTag): string =
   fmt"[{tag.stepLabel}][{tag.checkName}][{tag.severity}][{tag.file}:{tag.finding.line}:{tag.finding.col}] {tag.finding.msg}"
@@ -183,7 +183,8 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
       parseFailed = false
 
     try:
-      (ast, sourceLines) = parseFile(file)
+      (ast, source) = parseFile(file)
+      sourceLines = source.splitLines()
     except CatchableError as e:
       parseFailed = true
       fileReport.stepReports.add StepReport(
