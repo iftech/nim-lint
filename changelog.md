@@ -14,3 +14,4 @@
 ## 1.0.1 (WIP)
 
 - `[f]` Catch non-`CatchableError` exceptions in checks.
+- `[t]` CI: Use nimbus-coammon-workflow.
