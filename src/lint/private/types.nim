@@ -27,7 +27,7 @@ type
     msg*: string
 
   Check*[S] = object ## One check declared by a linter, bound to its settings type.
-    run*: proc(ast: PNode, settings: S): seq[Finding]
+    run*: proc(source: string, ast: PNode, settings: S): seq[Finding]
     defaults*: S ## Used when a config declares the check without settings.
 
   Linter* = object ## A group of checks. A linter module exports one `Linter` value.
@@ -37,7 +37,7 @@ type
     ## type-erased at the last moment.
     name*: string
     severity*: Severity
-    run*: proc(ast: PNode): seq[Finding]
+    run*: proc(source: string, ast: PNode): seq[Finding]
 
   Step* = object ## One declared `step` block.
     label*: string
@@ -51,7 +51,7 @@ type
 
 proc addCheck*[S](
     linter: Linter,
-    run: proc(ast: PNode, settings: S): seq[Finding],
+    run: proc(source: string, ast: PNode, settings: S): seq[Finding],
     defaults: S = default(S),
 ): Check[S] =
   ## Used by linter modules to declare one check, its settings type, and the
