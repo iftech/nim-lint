@@ -2,7 +2,7 @@ import std/[os, sequtils, strutils, unittest]
 
 import compiler/[ast, lineinfos]
 
-import lint/private/semantic
+import lint/private/semanalysis
 
 const fixtures = currentSourcePath().parentDir / "semantic"
 
