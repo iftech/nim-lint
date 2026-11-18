@@ -37,7 +37,9 @@ proc strList(node: NimNode): NimNode =
 
   node
 
-macro mkStepCheck(check: typed, sev: static Severity, settings: untyped): untyped =
+macro mkStepCheck(
+    check: typed, sev: static Severity, semantic: static bool, settings: untyped
+): untyped =
   ## Builds one `StepSetting`.
   ##
   ## The settings type comes from the check's own `Check[S]` type, so building
@@ -45,8 +47,10 @@ macro mkStepCheck(check: typed, sev: static Severity, settings: untyped): untype
 
   let typ = check.getTypeInst
 
-  if typ.kind != nnkBracketExpr or typ.len != 2 or typ[0].eqIdent("Check") == false:
-    error("`" & check.strVal & "` is not a check", check)
+  let expectedType = if semantic: "SemCheck" else: "Check"
+  if typ.kind != nnkBracketExpr or typ.len != 2 or not typ[0].eqIdent(expectedType):
+    let keyword = if semantic: "semCheck" else: "check"
+    error("`" & keyword & "` requires a " & expectedType & " value", check)
 
   let settingsType = typ[1]
 
@@ -76,6 +80,7 @@ macro mkStepCheck(check: typed, sev: static Severity, settings: untyped): untype
     runId = check
     astId = genSym(nskParam, "ast")
     sourceId = genSym(nskParam, "source")
+    typedId = genSym(nskParam, "typed")
     name = newLit(check.strVal)
     severity = newLit(sev)
 
@@ -83,17 +88,28 @@ macro mkStepCheck(check: typed, sev: static Severity, settings: untyped): untype
   # from an enclosing scope: a captured local is reconstructed from the syntax
   # tree inside the closure's scope, which loses `seq` fields (they come back
   # nil at run time).
-  quote:
-    StepSetting(
-      name: `name`,
-      severity: `severity`,
-      run: proc(`sourceId`: string, `astId`: PNode): seq[Finding] =
-        `runId`.run(`sourceId`, `astId`, `ctor`),
-    )
+  if semantic:
+    quote:
+      StepSetting(
+        name: `name`,
+        severity: `severity`,
+        isSemantic: true,
+        semRun: proc(`sourceId`: string, `astId`, `typedId`: PNode): seq[Finding] =
+          `runId`.run(`sourceId`, `astId`, `typedId`, `ctor`),
+      )
+  else:
+    quote:
+      StepSetting(
+        name: `name`,
+        severity: `severity`,
+        isSemantic: false,
+        run: proc(`sourceId`: string, `astId`: PNode): seq[Finding] =
+          `runId`.run(`sourceId`, `astId`, `ctor`),
+      )
 
 proc parseCheck(stmt: NimNode): NimNode =
-  if stmt.len != 3 or stmt[0].strVal != "check":
-    error("expected `check <name>:`", stmt)
+  if stmt.len != 3 or stmt[0].strVal notin ["check", "semCheck"]:
+    error("expected `check <name>:` or `semCheck <name>:`", stmt)
 
   let checkName = stmt[1]
   if checkName.kind notin {nnkIdent, nnkDotExpr}:
@@ -132,7 +148,13 @@ proc parseCheck(stmt: NimNode): NimNode =
   # enclosing scope and arrives at `mkStepCheck` as a typed symbol. It may be a
   # plain identifier or a qualified `linter.check` when two linters export
   # checks with the same name.
-  newCall(bindSym"mkStepCheck", checkName, severity, settings)
+  newCall(
+    bindSym"mkStepCheck",
+    checkName,
+    severity,
+    newLit(stmt[0].strVal == "semCheck"),
+    settings,
+  )
 
 proc parseStep(stmt: NimNode): NimNode =
   if stmt.kind != nnkCommand or stmt[0].strVal != "step":

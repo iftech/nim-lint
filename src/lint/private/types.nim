@@ -30,14 +30,22 @@ type
     run*: proc(source: string, ast: PNode, settings: S): seq[Finding]
     defaults*: S ## Used when a config declares the check without settings.
 
+  SemCheck*[S] = object ## A check that additionally reads the typed AST.
+    run*: proc(source: string, ast: PNode, typed: PNode, settings: S): seq[Finding]
+    defaults*: S
+
   Linter* = object ## A group of checks. A linter module exports one `Linter` value.
 
   StepSetting* = object
-    ## Runtime form of one `check` entry: the check plus its settings,
+    ## Runtime form of one `check` or `semCheck` entry, with its settings,
     ## type-erased at the last moment.
     name*: string
     severity*: Severity
-    run*: proc(source: string, ast: PNode): seq[Finding]
+    case isSemantic*: bool
+    of false:
+      run*: proc(source: string, ast: PNode): seq[Finding]
+    of true:
+      semRun*: proc(source: string, ast: PNode, typed: PNode): seq[Finding]
 
   Step* = object ## One declared `step` block.
     label*: string
@@ -76,6 +84,14 @@ proc addCheck*[S](
       run(ast, settings),
     defaults,
   )
+
+proc addCheck*[S](
+    linter: Linter,
+    run: proc(source: string, ast: PNode, typed: PNode, settings: S): seq[Finding],
+    defaults: S = default(S),
+): SemCheck[S] =
+  ## Declares a semantic check, with the same settings rules as an ordinary check.
+  SemCheck[S](run: run, defaults: defaults)
 
 proc toFinding*(node: PNode, msg: string): Finding =
   ## Builds a finding located at a node.
