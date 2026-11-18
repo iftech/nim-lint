@@ -38,9 +38,10 @@ Targets:
   on Windows.
 
 Options:
-  --format=text           human-readable report (default)
-  --format=github         GitHub Actions workflow commands, for inline
+  -f, --format=text       human-readable report (default)
+  -f, --format=github     GitHub Actions workflow commands, for inline
                           annotations on a pull request
+  -s, --semantic          run semantic checks in addition to ordinary checks
   -h, --help              show this message and exit
 
 Exit codes:
@@ -64,6 +65,7 @@ type
     targets*: seq[Target]
     format*: Format ## `text` or `github`.
     help*: bool ## `--help` or `-h` was given.
+    semantic*: bool ## Enable semantic checks for this run.
 
 proc parseRanges(s: string): seq[tuple[first, last: int]] =
   ## Parses `10-12,40` into ranges. Returns an empty seq when `s` is not a
@@ -122,6 +124,8 @@ proc parseOptions*(args: seq[string]): Options =
       case key
       of "format", "f":
         result.format = parseEnum[Format](val)
+      of "semantic", "s":
+        result.semantic = true
       of "help", "h":
         result.help = true
       else:

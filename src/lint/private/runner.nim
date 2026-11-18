@@ -17,6 +17,7 @@ import compiler/[ast, parser, idents, options]
 import compiler/lineinfos except Severity
 
 import ./[cli, suppress, types]
+import ./semanalysis
 
 type
   ExitMode* {.pure.} = enum
@@ -153,7 +154,9 @@ proc exitMode*(report: RunReport): ExitMode =
 
   ExitMode.emClean
 
-proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
+proc run*(
+    config: Config, targets: seq[Target] = @[], format = Format.text, semantic = false
+) =
   ## Runs the config and exits with the code for the resulting exit mode.
   ##
   ## `targets` come from the command line and override the config's sources.
@@ -164,6 +167,16 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
   if files.len == 0:
     stderr.writeLine "no sources to lint"
     quit(ord(ExitMode.emNoSources))
+
+  if not semantic:
+    var skipped: seq[string]
+    for step in config.steps:
+      for check in step.checks:
+        if check.isSemantic:
+          skipped.addUnique(check.name)
+    if skipped.len > 0:
+      stderr.writeLine "warning: semantic checks skipped (" & skipped.join(", ") &
+        "); pass --semantic to run them"
 
   var report = RunReport()
 
@@ -201,6 +214,10 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
       exitCode = ExitMode.emParseError
 
     if not parseFailed:
+      var
+        analyzed: semanalysis.SemResult
+        analysisAttempted = false
+
       for step in config.steps:
         # Explicit targets override every ignore, including step-level ones: a
         # named file is a request to lint it.
@@ -209,9 +226,30 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
 
         var stepReport = StepReport(label: step.label)
         for check in step.checks:
+          if check.isSemantic:
+            if not semantic:
+              continue
+            if not analysisAttempted:
+              analysisAttempted = true
+              analyzed = semanalysis.analyzeFile(file)
+              for diagnostic in analyzed.diagnostics:
+                let location =
+                  if diagnostic.file.len > 0:
+                    &"{diagnostic.file}:{diagnostic.line}:{diagnostic.col}: "
+                  else:
+                    ""
+                stderr.writeLine "warning: " & location & diagnostic.message
+            if analyzed.tree.isNil:
+              stderr.writeLine &"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available"
+              continue
+
           var findings: seq[Finding]
           try:
-            findings = check.run(source, ast)
+            findings =
+              if check.isSemantic:
+                check.semRun(source, ast, analyzed.tree)
+              else:
+                check.run(source, ast)
           except Exception as e:
             stderr.writeLine &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
             quit(ord(ExitMode.emCheckError))
