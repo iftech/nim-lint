@@ -3,6 +3,32 @@
 
 A linter is a Nim module that declares ordinary [Check] or semantic [SemCheck] rules and exports a [Linter] value. Like any other Nim module, it can sit next to the config that uses it in your project or be installed with Nimble.
 
+# Using an LLM agent
+
+Lint ships an authoring skill at `.agents/skills/writing-lint-checks/` in its [source repository](https://github.com/iftech/nim-lint/tree/develop/.agents/skills/writing-lint-checks). Copy the entire directory, including `references/`, from the Lint release your project uses into the same location in your project:
+
+```text
+.agents/
+  skills/
+    writing-lint-checks/
+      SKILL.md
+      references/
+        ordinary-check.md
+        semantic-check.md
+```
+
+Agents with skill discovery can load it when you ask them to write or extend a Lint check. For agents without discovery, explicitly provide `SKILL.md` and let the agent read the relevant reference file. For example:
+
+```text
+Use .agents/skills/writing-lint-checks/SKILL.md to implement a Lint rule
+that flags trailing whitespace. Prefer an ordinary check unless resolved
+symbols or types are necessary. Add it to our existing lint config and
+compile the config and try the linter on our existing sources. Do not add
+tests unless asked.
+```
+
+The skill helps clarify the policy, choose ordinary or semantic inputs, implement against the project's API version, and smoke-check the compiled executable on existing sources. It does not add test suites or fixtures unless requested; testing custom rule logic is the project's choice. It is guidance, not an executable generator or a guarantee that generated code is correct. Review the rule and observed output before adopting it. Update the copied skill when upgrading Lint.
+
 # A minimal linter
 
 This is an example linter from the tests:
