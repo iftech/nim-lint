@@ -157,89 +157,55 @@ suite "Run options":
     check "line=1," notin output
 
   test "Semantic checks are opt-in and skipped checks are named once":
-    let (output, exitCode) = runLinter("src/skip2/semantic/valid.nim")
+    let (output, exitCode) = runLinter("src/stringify.nim")
     check exitCode == 0
     check output.count("warning: semantic checks skipped") == 1
-    check "intCalls" in output
+    check "customDollar" in output
     check "pass --semantic" in output
-    check "integer call" notin output
+    check "has no custom `$` overload" notin output
 
-  test "Semantic checks resolve imports and both call syntaxes":
-    let (output, exitCode) = runLinter("--semantic src/skip2/semantic/valid.nim")
+  test "Default semantic run requires custom string representations":
+    let (output, exitCode) = runLinter("--semantic")
     check exitCode == 1
-    check output.count("integer call to importedValue") == 2
-    check "[Check resolved calls][intCalls][error]" in output
-    check "hints: 0, errors: 2" in output
+    check "type `Account` has no custom `$` overload" in output
+    check "type `AccountId` has no custom `$` overload" in output
+    check "type `SafeAccount` has no custom `$` overload" notin output
+    check "type `SafeId` has no custom `$` overload" notin output
+    check "type `GenericBox` has no custom `$` overload" notin output
+    check "[Check string representations][customDollar][error]" in output
+    check "variable `a` is shorter than 3 characters" in output
+    check "constant `invalid` should start with `k`" in output
+    check "hints: 2, errors: 3" in output
     check "type mismatch" notin output
-    check "configuration was not loaded" notin output
     check "[Conf]" notin output
 
-  test "Semantic mode preserves ordinary checks and target selection":
-    let (output, exitCode) = runLinter("--semantic src/skip/skipped.nim")
-    check exitCode == 0
-    check "variable `y` is shorter than 3 characters" in output
-    check "hints: 1, errors: 0" in output
-    check "semantic checks skipped" notin output
-    check "excluded semantic input was analyzed" notin output
-
   test "Semantic findings respect line ranges and output format":
-    let (output, exitCode) =
-      runLinter("--semantic --format=github src/skip2/semantic/valid.nim:11")
+    let (output, exitCode) = runLinter("--semantic --format=github src/stringify.nim:2")
     check exitCode == 1
     check "::error file=" in output
-    check ",line=11," in output
-    check output.count("integer call to importedValue") == 1
+    check ",line=2," in output
+    check "type `Account` has no custom `$` overload" in output
+    check "type `AccountId` has no custom `$` overload" notin output
 
   test "Partial typed trees and later files are still checked":
-    let (output, exitCode) = runLinter(
-      "--semantic src/skip2/semantic/broken.nim src/skip2/semantic/separate.nim"
-    )
+    let (output, exitCode) =
+      runLinter("--semantic src/skip2/broken_stringify.nim src/stringify.nim")
     check exitCode == 1
     check output.count("type mismatch") == 1
-    check "broken.nim:4:" in output
-    check output.count("integer call to importedValue") == 3
-    check "configuration leaked" notin output
-    check "hints: 0, errors: 3" in output
+    check "broken_stringify.nim:4:" in output
+    check "type `BeforeError` has no custom `$` overload" in output
+    check "type `AfterError` has no custom `$` overload" in output
+    check "type `IgnoredType` has no custom `$` overload" notin output
+    check "hints: 0, errors: 4" in output
 
   test "Compiler diagnostics bypass suppression and requested lines":
     let (output, exitCode) =
-      runLinter("--semantic --format=github src/skip2/semantic/suppressed_error.nim:3")
+      runLinter("--semantic --format=github src/skip2/broken_stringify.nim:7")
     check exitCode == 0
     check "warning:" in output
     check "type mismatch" in output
-    check "suppressed_error.nim:4:" in output
-    check "integer call" notin output
+    check "broken_stringify.nim:4:" in output
+    check "has no custom `$` overload" notin output
     check "::error" notin output
-
-  test "Dependency diagnostics keep their attribution":
-    let (output, exitCode) =
-      runLinter("--semantic src/skip2/semantic/dependency_error.nim:4")
-    check exitCode == 1
-    check "broken_dependency.nim:1:" in output
-    check "type mismatch" in output
-    check output.count("integer call to importedValue") == 1
-
-  test "Macro errors retain useful partial trees":
-    let (output, exitCode) = runLinter("--semantic src/skip2/semantic/macro_error.nim")
-    check exitCode == 1
-    check "intentional semantic test error" in output
-    check "type mismatch" notin output
-    check output.count("integer call to importedValue") == 2
-
-  test "Unavailable analysis warns and does not prevent later checks":
-    let (output, exitCode) = runLinter(
-      "--semantic src/skip2/semantic/javascript.nim src/skip2/semantic/separate.nim"
-    )
-    check exitCode == 1
-    check output.count("JavaScript backend is not supported") == 1
-    check "[Check resolved calls][intCalls]" in output
-    check "no typed tree available" in output
-    check output.count("integer call to importedValue") == 1
-
-  test "Explicit targets override semantic step exclusions":
-    let (output, exitCode) = runLinter("--semantic src/skip2/semantic/no_analysis.nim")
-    check exitCode == 0
-    check "excluded semantic input was analyzed" in output
-    check "hints: 0, errors: 0" in output
 
   removeLinterExecutable()

@@ -1,7 +1,5 @@
 import lint
-import namelinter
-import commentlinter
-import semanticlinter
+import ./[namelinter, commentlinter, stringifylinter]
 
 runLint:
   #ANCHOR: globalConfig
@@ -26,7 +24,6 @@ runLint:
     check todoComments:
       severity = hint
 
-  step "Check resolved calls":
-    ignoredPatterns = ["./src/skip2/semantic/no_analysis.nim"]
-    semCheck intCalls:
+  step "Check string representations":
+    semCheck customDollar:
       severity = error
