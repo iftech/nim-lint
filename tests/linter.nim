@@ -1,6 +1,7 @@
 import lint
 import namelinter
 import commentlinter
+import semanticlinter
 
 runLint:
   #ANCHOR: globalConfig
@@ -24,3 +25,8 @@ runLint:
   step "Check comments":
     check todoComments:
       severity = hint
+
+  step "Check resolved calls":
+    ignoredPatterns = ["./src/skip2/semantic/no_analysis.nim"]
+    semCheck intCalls:
+      severity = error

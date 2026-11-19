@@ -38,4 +38,17 @@ suite "Exit codes":
     let (_, exitCode) = runLinter("src/skip2/bug2.nim")
     check exitCode == 4
 
+  test "Non-CatchableError bug in semantic check":
+    let (output, exitCode) =
+      runLinter("--semantic src/skip2/semantic/check_failure.nim")
+    check exitCode == 4
+    check "check error: [Check resolved calls][intCalls]" in output
+    check "semantic check failed" in output
+
+  test "Unavailable semantic analysis does not fail the run":
+    let (output, exitCode) = runLinter("--semantic src/skip2/semantic/javascript.nim")
+    check exitCode == 0
+    check "JavaScript backend is not supported" in output
+    check "no typed tree available" in output
+
   removeLinterExecutable()
