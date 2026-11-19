@@ -28,3 +28,7 @@ task docs, "Generate the documentation":
   exec "nimble apidocs"
   exec "nimble bookIndex"
   exec "nimble book"
+
+task lint, "Run the code checks":
+  exec "nim c -d:release linter.nim"
+  exec "./bin/linter"
