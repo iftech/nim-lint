@@ -12,6 +12,11 @@ inputs:
     required: false
     default: "stable"
 
+  semantic:
+    description: "Run semantic checks in addition to ordinary checks."
+    required: false
+    default: "false"
+
 runs:
   using: composite
   steps:
@@ -94,6 +99,7 @@ runs:
         # queue case the diff is empty and the job passes without linting.
         BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
         HEAD: ${{ github.sha }}
+        SEMANTIC: ${{ inputs.semantic }}
       run: |
         if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
           echo "No base commit to compare against, nothing to do."
@@ -108,5 +114,9 @@ runs:
 
         echo "Linting:"
         echo "$files"
+        args=(--format=github)
+        if [ "$SEMANTIC" = "true" ]; then
+          args+=(--semantic)
+        fi
         # shellcheck disable=SC2086
-        .lint-cache/linter --format=github $files
+        .lint-cache/linter "${args[@]}" $files
