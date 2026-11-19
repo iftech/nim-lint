@@ -15,7 +15,7 @@
 import compiler/ast
 
 type
-  Severity* {.pure.} = enum
+  Severity* {.pure.} = enum ## Reporting level assigned by the config to a check.
     hint
     error
 
@@ -52,7 +52,7 @@ type
     ignoredPatterns*: seq[string]
     checks*: seq[StepSetting]
 
-  Config* = object
+  Config* = object ## Source selection and ordered checking steps for a run.
     sources*: seq[string]
     ignoredPatterns*: seq[string]
     steps*: seq[Step]
@@ -78,6 +78,7 @@ proc addCheck*[S](
     deprecated:
       "Use addCheck with proc(source: string, ast: PNode, settings: S) to receive the original source text."
 .} =
+  ## Adapts a legacy AST-only callback; new checks also receive source text.
   addCheck(
     linter,
     proc(source: string, ast: PNode, settings: S): seq[Finding] =

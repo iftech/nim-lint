@@ -20,7 +20,7 @@ import ./[cli, suppress, types]
 import ./semanalysis
 
 type
-  ExitMode* {.pure.} = enum
+  ExitMode* {.pure.} = enum ## Process exit codes for completed or interrupted runs.
     emClean = 0
     emErrorsFound = 1
     emParseError = 2
@@ -34,18 +34,18 @@ type
     file*: string
     finding*: Finding
 
-  StepReport* = object
+  StepReport* = object ## Findings produced by one step for one file.
     label*: string
     findings*: seq[FindingTag]
 
-  FileReport* = object
+  FileReport* = object ## Ordered step reports for a selected file.
     file*: string
     stepReports*: seq[StepReport]
 
-  RunReport* = object
+  RunReport* = object ## Ordered file reports collected during a run.
     fileReports*: seq[FileReport]
 
-  ParseFailure* = object of CatchableError
+  ParseFailure* = object of CatchableError ## A parser error the runner can report.
 
 proc normalize(path: string): string =
   ## The glob library matches against patterns without a leading `./`.
@@ -125,6 +125,8 @@ proc renderGithub(tag: FindingTag): string =
   fmt"::{kind} file={tag.file},line={tag.finding.line},col={tag.finding.col},title={title}::{tag.finding.msg}"
 
 proc `$`*(report: RunReport, format = Format.text): string =
+  ## Renders findings in the selected format, with a summary for text output.
+
   var hints, errors = 0
 
   for fileReport in report.fileReports:
@@ -146,6 +148,8 @@ proc `$`*(report: RunReport, format = Format.text): string =
     result.add(&"hints: {hints}, errors: {errors}\n")
 
 proc exitMode*(report: RunReport): ExitMode =
+  ## Returns errors-found if a finding has error severity, otherwise clean.
+
   for fileReport in report.fileReports:
     for stepReport in fileReport.stepReports:
       for tag in stepReport.findings:

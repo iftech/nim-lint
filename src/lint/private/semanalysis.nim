@@ -29,7 +29,7 @@ type
     message*: string
     severity*: lineinfos.Severity
 
-  SemResult* = ref object
+  SemResult* = ref object ## Retained compiler context and best-effort typed tree.
     ## The outcome of analyzing one entry file and its import dependencies.
     ## Retains compiler state so the tree's symbols and types remain usable.
     ## Diagnostics do not imply the tree is absent: it may be partial after errors,
@@ -39,6 +39,9 @@ type
     graph: ModuleGraph # Keep symbols, types, and compiler state alive with the tree.
 
 proc analyzeFile*(path: string): SemResult =
+  ## Analyzes an entry file with Nim's configuration and recursive imports.
+  ## Returns diagnostics and any retained typed tree, including partial results.
+
   if not fileExists(path):
     return SemResult(
       diagnostics: @[

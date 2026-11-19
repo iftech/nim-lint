@@ -20,6 +20,7 @@
 
 import std/[parseopt, strutils]
 
+## Command-line usage, supported options, and exit codes.
 const helpText* = """Usage: linter [options] [target...]
 
 Lint the files selected by the config's `sources`, or the targets given on the
@@ -57,7 +58,7 @@ type
     path*: string ## A file or a glob pattern.
     lines*: seq[tuple[first, last: int]] ## Empty means the whole file.
 
-  Format* {.pure.} = enum
+  Format* {.pure.} = enum ## Output encoding for findings and run summaries.
     text
     github
 
