@@ -48,7 +48,7 @@ macro mkStepCheck(
   let typ = check.getTypeInst
 
   let expectedType = if semantic: "SemCheck" else: "Check"
-  if typ.kind != nnkBracketExpr or typ.len != 2 or not typ[0].eqIdent(expectedType):
+  if typ.kind != nnkBracketExpr or len(typ) != 2 or not typ[0].eqIdent(expectedType):
     let keyword = if semantic: "semCheck" else: "check"
     error("`" & keyword & "` requires a " & expectedType & " value", check)
 
@@ -56,7 +56,7 @@ macro mkStepCheck(
 
   # With no `settings:` block, the check's own declared defaults apply.
   var ctor: NimNode
-  if settings.len == 0:
+  if len(settings) == 0:
     ctor = newTree(nnkDotExpr, check, ident"defaults")
   else:
     ctor = newTree(nnkObjConstr, settingsType)
@@ -108,7 +108,7 @@ macro mkStepCheck(
       )
 
 proc parseCheck(stmt: NimNode): NimNode =
-  if stmt.len != 3 or stmt[0].strVal notin ["check", "semCheck"]:
+  if len(stmt) != 3 or stmt[0].strVal notin ["check", "semCheck"]:
     error("expected `check <name>:` or `semCheck <name>:`", stmt)
 
   let checkName = stmt[1]
@@ -138,7 +138,7 @@ proc parseCheck(stmt: NimNode): NimNode =
     of nnkCall:
       if entry[0].strVal != "settings":
         error("unknown check entry `" & entry[0].strVal & "`", entry[0])
-      if settings.len != 0:
+      if len(settings) != 0:
         error("`settings` is declared twice", entry[0])
       settings = entry[1]
     else:
@@ -160,7 +160,7 @@ proc parseStep(stmt: NimNode): NimNode =
   if stmt.kind != nnkCommand or stmt[0].strVal != "step":
     error("""expected `step "label":`""", stmt)
 
-  if stmt.len != 3 or stmt[1].kind notin {nnkStrLit .. nnkTripleStrLit}:
+  if len(stmt) != 3 or stmt[1].kind notin {nnkStrLit .. nnkTripleStrLit}:
     error("`step` takes a label string and a block", stmt)
 
   let label = newLit(stmt[1].strVal)

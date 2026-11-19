@@ -164,7 +164,7 @@ proc run*(
   var exitCode = ExitMode.emClean
 
   let files = collectFiles(config, targets)
-  if files.len == 0:
+  if len(files) == 0:
     stderr.writeLine "no sources to lint"
     quit(ord(ExitMode.emNoSources))
 
@@ -174,7 +174,7 @@ proc run*(
       for check in step.checks:
         if check.isSemantic:
           skipped.addUnique(check.name)
-    if skipped.len > 0:
+    if len(skipped) > 0:
       stderr.writeLine "warning: semantic checks skipped (" & skipped.join(", ") &
         "); pass --semantic to run them"
 
@@ -183,7 +183,7 @@ proc run*(
   # Line ranges requested on the command line, keyed by path.
   var rangesByPath: Table[string, seq[tuple[first, last: int]]]
   for target in targets:
-    if target.lines.len > 0:
+    if len(target.lines) > 0:
       rangesByPath[target.path] = target.lines
 
   for file in files:
@@ -221,7 +221,7 @@ proc run*(
       for step in config.steps:
         # Explicit targets override every ignore, including step-level ones: a
         # named file is a request to lint it.
-        if targets.len == 0 and isIgnored(file, step.ignoredPatterns):
+        if len(targets) == 0 and isIgnored(file, step.ignoredPatterns):
           continue
 
         var stepReport = StepReport(label: step.label)
@@ -234,7 +234,7 @@ proc run*(
               analyzed = semanalysis.analyzeFile(file)
               for diagnostic in analyzed.diagnostics:
                 let location =
-                  if diagnostic.file.len == 0:
+                  if len(diagnostic.file) == 0:
                     ""
                   elif diagnostic.line > 0:
                     &"{diagnostic.file}:{diagnostic.line}:{diagnostic.col}: "

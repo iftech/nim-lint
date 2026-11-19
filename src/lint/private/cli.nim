@@ -74,7 +74,7 @@ proc parseRanges(s: string): seq[tuple[first, last: int]] =
   for part in s.split(','):
     let bounds = part.split('-')
 
-    if bounds.len > 2:
+    if len(bounds) > 2:
       return
 
     var first, last: int
@@ -82,7 +82,7 @@ proc parseRanges(s: string): seq[tuple[first, last: int]] =
     try:
       first = parseInt(bounds[0])
       last =
-        if bounds.len == 2:
+        if len(bounds) == 2:
           parseInt(bounds[1])
         else:
           first
@@ -135,7 +135,7 @@ proc parseOptions*(args: seq[string]): Options =
 proc inRanges*(line: int, ranges: seq[tuple[first, last: int]]): bool =
   ## True when `line` falls in any of `ranges`. An empty list matches everything.
 
-  if ranges.len == 0:
+  if len(ranges) == 0:
     return true
 
   for r in ranges:
