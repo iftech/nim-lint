@@ -72,7 +72,7 @@ macro mkStepCheck(
       if value.kind == nnkBracket:
         value = newTree(nnkPrefix, bindSym"@", value)
 
-      ctor.add newTree(nnkExprColonExpr, stmt[0], value)
+      ctor.add(newTree(nnkExprColonExpr, stmt[0], value))
 
   # The check is identified by the identifier the config binds it to: that is
   # the name the user wrote and the name the report shows.
@@ -181,7 +181,7 @@ proc parseStep(stmt: NimNode): NimNode =
       else:
         error("unknown step field `" & entry[0].strVal & "`", entry[0])
     of nnkCommand:
-      checks.add parseCheck(entry)
+      checks.add(parseCheck(entry))
     else:
       error("unexpected entry in step", entry)
 
@@ -219,7 +219,7 @@ macro runLint*(body: untyped): untyped =
       else:
         error("unknown config field `" & entry[0].strVal & "`", entry[0])
     of nnkCommand:
-      steps.add parseStep(entry)
+      steps.add(parseStep(entry))
     else:
       error("unexpected entry in config", entry)
 

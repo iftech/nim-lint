@@ -67,7 +67,7 @@ proc nimFiles(pattern: string): seq[string] =
 
   for path in walkGlob(pattern, options = {Files, FileLinks, DirLinks, Hidden}):
     if splitFile(path).ext == ".nim":
-      result.add normalize(path)
+      result.add(normalize(path))
 
 proc collectFiles(config: Config, targets: seq[Target]): seq[string] =
   ## Returns the files to lint in ascending path order.
@@ -138,12 +138,12 @@ proc `$`*(report: RunReport, format = Format.text): string =
 
         case format
         of Format.github:
-          result.add renderGithub(tag) & "\n"
+          result.add(renderGithub(tag) & "\n")
         of Format.text:
-          result.add renderFinding(tag) & "\n"
+          result.add(renderFinding(tag) & "\n")
 
   if format != Format.github:
-    result.add &"hints: {hints}, errors: {errors}\n"
+    result.add(&"hints: {hints}, errors: {errors}\n")
 
 proc exitMode*(report: RunReport): ExitMode =
   for fileReport in report.fileReports:
@@ -165,7 +165,7 @@ proc run*(
 
   let files = collectFiles(config, targets)
   if len(files) == 0:
-    stderr.writeLine "no sources to lint"
+    stderr.writeLine("no sources to lint")
     quit(ord(ExitMode.emNoSources))
 
   if not semantic:
@@ -175,8 +175,8 @@ proc run*(
         if check.isSemantic:
           skipped.addUnique(check.name)
     if len(skipped) > 0:
-      stderr.writeLine "warning: semantic checks skipped (" & skipped.join(", ") &
-        "); pass --semantic to run them"
+      stderr.writeLine("warning: semantic checks skipped (" & skipped.join(", ") &
+        "); pass --semantic to run them")
 
   var report = RunReport()
 
@@ -199,7 +199,7 @@ proc run*(
       sourceLines = source.splitLines()
     except CatchableError as e:
       parseFailed = true
-      fileReport.stepReports.add StepReport(
+      fileReport.stepReports.add(StepReport(
         label: "runner",
         findings: @[
           FindingTag(
@@ -210,7 +210,7 @@ proc run*(
             finding: Finding(line: 0, col: 0, msg: "parse error: " & e.msg),
           )
         ],
-      )
+      ))
       exitCode = ExitMode.emParseError
 
     if not parseFailed:
@@ -240,9 +240,9 @@ proc run*(
                     &"{diagnostic.file}:{diagnostic.line}:{diagnostic.col}: "
                   else:
                     diagnostic.file & ": "
-                stderr.writeLine "warning: " & location & diagnostic.message
+                stderr.writeLine("warning: " & location & diagnostic.message)
             if analyzed.tree.isNil:
-              stderr.writeLine &"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available"
+              stderr.writeLine(&"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available")
               continue
 
           var findings: seq[Finding]
@@ -253,25 +253,25 @@ proc run*(
               else:
                 check.run(source, ast)
           except Exception as e:
-            stderr.writeLine &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
+            stderr.writeLine(&"check error: [{step.label}][{check.name}] {file}: {e.msg}")
             quit(ord(ExitMode.emCheckError))
           for f in findings:
             if rangesByPath.hasKey(file) and not inRanges(f.line, rangesByPath[file]):
               continue
             if isSuppressed(sourceLines, f.line):
               continue
-            stepReport.findings.add FindingTag(
+            stepReport.findings.add(FindingTag(
               severity: check.severity,
               stepLabel: step.label,
               checkName: check.name,
               file: file,
               finding: f,
-            )
-        fileReport.stepReports.add stepReport
+            ))
+        fileReport.stepReports.add(stepReport)
 
     report.fileReports.add(fileReport)
 
-  stdout.write report.`$`(format)
+  stdout.write(report.`$`(format))
 
   let mode = report.exitMode
 

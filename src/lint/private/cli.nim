@@ -92,7 +92,7 @@ proc parseRanges(s: string): seq[tuple[first, last: int]] =
     if first < 1 or last < first:
       return
 
-    result.add (first, last)
+    result.add((first, last))
 
 proc parseTarget*(arg: string): Target =
   ## Splits an argument into a path and optional line ranges.
@@ -119,7 +119,7 @@ proc parseOptions*(args: seq[string]): Options =
     of cmdEnd:
       break
     of cmdArgument:
-      result.targets.add parseTarget(key)
+      result.targets.add(parseTarget(key))
     of cmdShortOption, cmdLongOption:
       case key
       of "format", "f":

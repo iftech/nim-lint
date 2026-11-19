@@ -72,7 +72,7 @@ proc analyzeFile*(path: string): SemResult =
     # `compiles(...)` probes deliberately silence diagnostics while testing code.
     if config.m.errorOutputs != {} and
         severity in {lineinfos.Severity.Error, lineinfos.Severity.Warning}:
-      diagnostics.add SemDiagnostic(
+      diagnostics.add(SemDiagnostic(
         file: (
           if info.fileIndex == InvalidFileIdx: ""
           else: config.toFullPath(info.fileIndex)
@@ -81,16 +81,16 @@ proc analyzeFile*(path: string): SemResult =
         col: int(info.col),
         message: message,
         severity: severity,
-      )
+      ))
 
   try:
     loadConfigs(DefaultConfig, cache, conf, graph.idgen)
     if conf.backend == backendJs:
-      diagnostics.add SemDiagnostic(
+      diagnostics.add(SemDiagnostic(
         file: absolutePath(path),
         message: "JavaScript backend is not supported for semantic analysis",
         severity: lineinfos.Severity.Error,
-      )
+      ))
       result.diagnostics = diagnostics
       return
 
@@ -117,10 +117,10 @@ proc analyzeFile*(path: string): SemResult =
     compilePipelineProject(graph)
 
   except Exception as error:
-    diagnostics.add SemDiagnostic(
+    diagnostics.add(SemDiagnostic(
       message: "compiler analysis failed: " & error.msg,
       severity: lineinfos.Severity.Error,
-    )
+    ))
     result.diagnostics = diagnostics
     return
 
