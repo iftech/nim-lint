@@ -234,10 +234,12 @@ proc run*(
               analyzed = semanalysis.analyzeFile(file)
               for diagnostic in analyzed.diagnostics:
                 let location =
-                  if diagnostic.file.len > 0:
+                  if diagnostic.file.len == 0:
+                    ""
+                  elif diagnostic.line > 0:
                     &"{diagnostic.file}:{diagnostic.line}:{diagnostic.col}: "
                   else:
-                    ""
+                    diagnostic.file & ": "
                 stderr.writeLine "warning: " & location & diagnostic.message
             if analyzed.tree.isNil:
               stderr.writeLine &"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available"
