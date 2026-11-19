@@ -38,7 +38,7 @@ The top of the block configures global settings for the run:
 
 # Step config
 
-A `step` is one invocation of a linter. Steps run in the order they are declared, and each one gets the same parsed file.
+A `step` selects checks from the imported linters. Steps run in declaration order. Ordinary checks receive the original source and parsed AST; semantic checks additionally receive the typed AST.
 
 .. include:: ../tests/linter.nim
   :code:
@@ -53,7 +53,17 @@ The same linter can be used by more than one step, for example to run the same c
 
 # Checks
 
-A `check` is a one rule from the linter. For example, the step "Check naming" above utilizes two checks: `varNames` and `constNames`.
+A `check` selects an ordinary rule from a linter. For example, the step "Check naming" above uses `varNames` and `constNames`. A `semCheck` selects a semantic rule that also reads the typed AST. Both declarations accept the same settings and severity fields.
+
+The example config also imports a linter requiring custom string representations and declares:
+
+```nim
+step "Check string representations":
+  semCheck customDollar:
+    severity = error
+```
+
+Ordinary and semantic checks can share a step and run in declaration order. The declaration matches the rule's registered interface: using `check` for a semantic rule, or `semCheck` for an ordinary rule, is a compile error.
 
 A check section specifies how to report its findings.
 
@@ -63,6 +73,8 @@ A check section specifies how to report its findings.
 - **errors** fail the run.
 
 `settings` is optional. When present, its keys are checked against the settings type the check declares, so a misspelled key is a compile error. When absent, the check's own defaults apply.
+
+Semantic checks are disabled unless the executable is run with `--semantic` (or `-s`). Without that flag, ordinary checks still run and a warning names the configured semantic checks that were skipped. Declaring `semCheck` does not implicitly enable expensive analysis. See [the CLI guide](./cli.html#semantic-checks).
 
 # Linters
 

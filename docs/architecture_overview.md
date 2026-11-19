@@ -106,7 +106,7 @@ Reproducibility also depends on the compiler version, configuration, dependency 
 
 # Semantic Mode
 
-Semantic checks are off by default. Passing `--semantic` enables them in addition to ordinary checks. It does not replace the parsed AST with the typed AST or disable ordinary checks.
+Semantic checks are off by default. Passing `--semantic` (or `-s`) enables them in addition to ordinary checks. It does not replace the parsed AST with the typed AST or disable ordinary checks.
 
 When the flag is absent and the config declares semantic checks, Lint warns that they were skipped, names the checks, and explains how to enable them. The warning does not itself fail the run. There is no config-level switch enabling semantic analysis implicitly.
 
@@ -140,11 +140,13 @@ Dependencies are analyzed to establish context, but checks run only on selected 
 .. note::
   Standalone analysis may differ from a full project build. For example, `isMainModule` differs when a file is an entry point rather than an import, and file-specific compiler configuration may differ from the main project's configuration. This design does not provide whole-project checks or select a single project entry point automatically.
 
-Lint reuses analysis results within a run when their compiler contexts are compatible. Reuse preserves the result of analyzing each selected file in its own context. A dependency analyzed under incompatible defines, paths, or entry-point conditions is analyzed again. Analysis state is shared only where that reuse preserves correctness; a run can use separate module graphs for different contexts.
+Each selected entry file has an independent compiler context. Dependencies are reused within that context, but overlapping import closures are analyzed again for other entry files. This keeps file-specific configuration and entry-point conditions isolated.
+
+JavaScript semantic analysis is unsupported. When configuration selects the JS backend, Lint reports it and skips the affected semantic checks rather than analyzing the file under native assumptions.
 
 ## Errors and partial trees
 
-Semantic analysis is best-effort. Lint requests compiler error recovery so that recoverable errors do not prevent analysis of the rest of a file or other selected files. Recovery cannot guarantee that every error will be reported or that every file will have a usable typed tree.
+Semantic analysis is best-effort. Lint requests compiler error recovery so that recoverable errors do not prevent analysis of the rest of a file or other selected files. Recovery cannot guarantee that every error will be reported or that every file will have a usable typed tree. Unexpected raised exceptions are reported as analysis failures without exposing the interrupted tree; compiler failures that terminate the process directly are outside this recovery boundary.
 
 When the compiler reports semantic errors:
 
@@ -167,7 +169,7 @@ Semantic diagnostics and unavailable-tree warnings do not themselves change the 
 3. The runner selects Nim files from targets or configured sources, applies the applicable exclusions, and orders files by path.
 4. Without semantic mode, the runner warns about configured semantic checks that will not run.
 5. For each selected file, the runner obtains its original source and parsed AST. These inputs are reused by its checks rather than prepared separately for each step. If parsing fails, the runner reports it and continues with the remaining files.
-6. When semantic mode is enabled and a file has applicable semantic checks, the compiler resolves the file's configuration and analyzes its import closure. Compatible analysis results may be reused. Diagnostics are reported without disabling the file's ordinary checks.
+6. When semantic mode is enabled and a file has applicable semantic checks, the compiler resolves the file's configuration and analyzes its import closure. The resulting typed tree is reused by all semantic checks for that file. Diagnostics are reported without disabling the file's ordinary checks.
 7. The runner runs applicable steps and checks in declaration order, supplying each check's inputs and settings. Semantic checks use the available full or partial typed tree; unavailable inputs are reported explicitly.
 8. The runner attributes findings to their file, step, and check, and applies the configured severity. It filters findings by requested line ranges and `#nolint` suppression.
 9. The runner assembles the reports, presents the results and any analysis warnings, and exits with the appropriate status.

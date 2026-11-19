@@ -1,7 +1,7 @@
 .. title:: Writing a Linter
 .. importdoc:: api/lint/private/types
 
-A linter is a Nim module that declares one or more [Check] and exports a [Linter] value. Like any other Nim module, it can sit next to the config that uses it in your project or be installed with Nimble.
+A linter is a Nim module that declares ordinary [Check] or semantic [SemCheck] rules and exports a [Linter] value. Like any other Nim module, it can sit next to the config that uses it in your project or be installed with Nimble.
 
 # A minimal linter
 
@@ -37,7 +37,23 @@ The original source preserves comments, whitespace, and line endings. This examp
 .. include:: ../tests/commentlinter.nim
   :code:
 
-This is a deliberately small example, not a full Nim comment lexer: distinguishing comments from text inside multiline string literals needs additional parsing.
+## Semantic checks
+
+A semantic check receives a separate typed AST in addition to the original source and parsed AST. Its callback has the signature `proc(source: string, ast, typed: PNode, settings: S): seq[Finding]`, where `S` is the check's settings type.
+
+Register it with [addCheck], just like an ordinary check. The callback's extra `typed` parameter selects the overload returning a [SemCheck]. The config declares it with `semCheck` rather than `check`; using the wrong declaration is a compile error. Settings and defaults work the same way for both.
+
+This example requires an explicit, type-specific `$` proc or func for every non-generic object or distinct type declared at module level. It compares resolved parameter types rather than names. Standard or user-defined generic fallbacks do not satisfy the rule. The example deliberately searches only declarations in the checked module; it does not perform overload resolution or verify the safety of the formatter's body.
+
+.. include:: ../tests/stringifylinter.nim
+  :code:
+
+The parsed and typed trees both use `PNode`, but they are separate inputs. Semantic analysis resolves identifiers into symbols and can expand or transform code; it does not preserve every syntactic distinction. A semantic check can still consult the parsed tree or original source when it needs those distinctions.
+
+.. warning::
+  Semantic checks also run on partial trees after compiler errors. Nodes can have missing types, error types, or incomplete children. Check the information needed by a rule before using it, and do not infer a result from unavailable information. Nodes originating in imported macros or templates can refer to another file; findings refer only to the file being checked.
+
+Semantic checks run only with `--semantic`. See [the CLI guide](./cli.html#semantic-checks) for the matching Nim installation requirement, compiler configuration, and analysis limitations.
 
 ## Settings
 
@@ -56,7 +72,7 @@ A [Finding] carries a position and a message, and nothing else.
 
 A check does not know the file it runs against, the linter it belongs to, or the severity its findings are reported with. The runner attaches all of that when it collects findings, which is what lets the same check run at different severities in different steps.
 
-For findings in source text, construct a `Finding` with a 1-based line, a 0-based column, and a message, as in the comment check above.
+For findings in source text, construct a [Finding] with a 1-based line, a 0-based column, and a message, as in the comment check above.
 
 Use [toFinding] to build one from an AST node; it extracts the position from the node:
 

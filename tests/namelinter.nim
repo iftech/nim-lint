@@ -12,10 +12,8 @@ type
 
   ConstNamesSettings* = object
     prefix*: string = "k"
-
 #ANCHOR_END: settings
 
-# Keep one AST-only check to exercise the deprecated registration API.
 proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
   for node in ast.sons:
     if node.kind == nkVarSection:
@@ -53,7 +51,6 @@ proc runConstNames(source: string, ast: PNode, s: ConstNamesSettings): seq[Findi
           result.add def[0].toFinding(
             "constant `" & name & "` should start with `" & s.prefix & "`"
           )
-
 #ANCHOR_END: runConstNames
 
 let
