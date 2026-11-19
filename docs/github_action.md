@@ -14,7 +14,7 @@ on:
   merge_group:
 
 jobs:
-  lint:
+  Lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
