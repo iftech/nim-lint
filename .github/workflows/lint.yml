@@ -5,7 +5,7 @@ on:
   merge_group:
 
 jobs:
-  lint:
+  Lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -13,4 +13,4 @@ jobs:
         with:
           fetch-depth: 2
       - name: Run Lint
-        uses: iftech/nim-lint@semantic_checks
+        uses: iftech/nim-lint@feature/semantic_checks
