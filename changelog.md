@@ -9,6 +9,7 @@
 
 ## 1.1.0 (WIP)
 
+- `[+]` Ship a portable `writing-lint-checks` agent skill with ordinary/semantic selection guidance and verified examples.
 - `[+]` Add semantic checks registered with `addCheck` and declared with `semCheck`. Pass `--semantic` or `-s` to analyze resolved symbols and types alongside the original source and parsed AST.
 - `[+]` Report compiler diagnostics as warnings and run semantic checks on available partial trees. Each file uses its own compiler configuration and import closure; JavaScript analysis is unsupported.
 - `[+]` Pass original source text to checks alongside the parsed AST. AST-only `addCheck` registration remains supported but is deprecated; add `source: string` as the check proc's first parameter.
