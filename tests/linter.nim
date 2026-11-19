@@ -1,5 +1,8 @@
 import lint
-import ./[namelinter, commentlinter, stringifylinter]
+
+import namelinter
+import commentlinter
+import stringifylinter
 
 runLint:
   #ANCHOR: globalConfig
