@@ -85,12 +85,20 @@ proc analyzeFile*(path: string): SemResult =
 
   try:
     loadConfigs(DefaultConfig, cache, conf, graph.idgen)
+    if conf.backend == backendJs:
+      diagnostics.add SemDiagnostic(
+        file: absolutePath(path),
+        message: "JavaScript backend is not supported for semantic analysis",
+        severity: lineinfos.Severity.Error,
+      )
+      result.diagnostics = diagnostics
+      return
 
     extccomp.initVars(conf)
 
     if conf.backend == backendInvalid:
       conf.backend = backendC
-    if conf.selectedGC == gcUnselected and conf.backend != backendJs:
+    if conf.selectedGC == gcUnselected:
       initOrcDefines(conf)
 
     defineSymbol(conf.symbols, $conf.backend)
