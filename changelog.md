@@ -9,6 +9,8 @@
 
 ## 1.1.0 (WIP)
 
+- `[t]` Use Lint to lint Lint.
+- `[d]` Add an LLM skill to generate linters.
 - `[f]` Enable compiler stdlib VM callbacks for semantic analysis without requiring users to define `nimcore`. Report compiler errors while omitting compiler warnings and hints.
 - `[+]` Ship a portable `writing-lint-checks` agent skill with ordinary/semantic selection guidance and verified examples.
 - `[+]` Add semantic checks registered with `addCheck` and declared with `semCheck`. Pass `--semantic` or `-s` to analyze resolved symbols and types alongside the original source and parsed AST.
