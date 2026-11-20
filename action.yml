@@ -16,6 +16,10 @@ inputs:
     description: "Run semantic checks in addition to ordinary checks."
     required: false
     default: "false"
+  setup:
+    description: "Command to prepare project dependencies for semantic analysis; empty to skip."
+    required: false
+    default: "nimble setup -y"
 
 runs:
   using: composite
@@ -24,6 +28,13 @@ runs:
       uses: jiro4989/setup-nim-action@v2
       with:
         nim-version: ${{ inputs.nim-version }}
+
+    - name: Set up project dependencies
+      if: inputs.semantic == 'true' && inputs.setup != ''
+      shell: bash
+      env:
+        SETUP: ${{ inputs.setup }}
+      run: bash -eo pipefail -c "$SETUP"
 
     - name: Find local linters
       id: local-linters

@@ -9,6 +9,7 @@
 
 ## 1.1.0 (WIP)
 
+- `[+]` Set up project dependencies in the GitHub Action when semantic checks are enabled. Override the `setup` command or set it to empty to skip.
 - `[t]` Use Lint to lint Lint.
 - `[d]` Add an LLM skill to generate linters.
 - `[f]` Enable compiler stdlib VM callbacks for semantic analysis without requiring users to define `nimcore`. Report compiler errors while omitting compiler warnings and hints.

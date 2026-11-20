@@ -32,6 +32,7 @@ Possible inputs:
 | `config`      | `linter.nim` | Path to the config file.              |
 | `nim-version` | `stable`     | Nim version used to build the config. |
 | `semantic`    | `false`      | Enable semantic checks (`--semantic`). |
+| `setup`       | `nimble setup -y` | Dependency setup command; runs only with `semantic: 'true'`. Empty to skip. |
 
 Enable semantic checks explicitly and select the Nim version your project uses:
 
@@ -42,6 +43,20 @@ Enable semantic checks explicitly and select the Nim version your project uses:
     nim-version: '2.2.14'
     semantic: 'true'
 ```
+
+With semantic checks enabled, the action runs `nimble setup -y` in the project workspace after setting up Nim and before restoring or building the linter. This also runs when the compiled linter is cached: semantic analysis needs the project's dependencies at runtime. A setup failure stops the action.
+
+Override `setup` when your project needs a different dependency policy:
+
+```yaml
+- name: Run Lint with semantic checks
+  uses: iftech/nim-lint@develop
+  with:
+    semantic: 'true'
+    setup: nimble --noLockfile --resolver:minver -l setup -y
+```
+
+Use `setup: ''` if dependencies and their compiler paths are already prepared, or if the project has no dependencies to set up. The setup command is not run when semantic checks are disabled.
 
 Pin the action to a release or commit that includes semantic-check support when using it in production. The `semantic` input affects the run, not compilation, so both modes reuse the same cached executable.
 
