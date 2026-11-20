@@ -178,12 +178,14 @@ suite "Run options":
     check "hints: 2, errors: 3" in output
     check "type mismatch" notin output
     check "[Conf]" notin output
+    check "compiler warnings are not lint findings" notin output
+    check "implemented in the vmops" notin output
 
   test "Semantic findings respect line ranges and output format":
-    let (output, exitCode) = runLinter("--semantic --format=github src/stringify.nim:2")
+    let (output, exitCode) = runLinter("--semantic --format=github src/stringify.nim:11")
     check exitCode == 1
     check "::error file=" in output
-    check ",line=2," in output
+    check ",line=11," in output
     check "type `Account` has no custom `$` overload" in output
     check "type `AccountId` has no custom `$` overload" notin output
 

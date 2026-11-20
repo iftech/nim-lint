@@ -11,6 +11,9 @@
 
 import std/os
 
+# Compile the stdlib VM callbacks used by configuration scripts and macros.
+{.define: nimcore.}
+
 import
   compiler/[
     ast, commands, condsyms, extccomp, idents, lineinfos, modulegraphs, msgs, nimconf,
@@ -19,7 +22,7 @@ import
 
 type
   SemDiagnostic* = object
-    ## A compiler warning or error from configuration loading or semantic analysis,
+    ## A compiler error from configuration loading or semantic analysis,
     ## or a backend error such as an unreadable input file. Not a lint finding:
     ## severity is the compiler's classification, independent of check settings.
     ## The location refers to the compiler-reported file, which may be a dependency;
@@ -73,9 +76,8 @@ proc analyzeFile*(path: string): SemResult =
       config: ConfigRef, info: TLineInfo, message: string, severity: lineinfos.Severity
   ) {.gcsafe.} =
     # `compiles(...)` probes deliberately silence diagnostics while testing code.
-    if config.m.errorOutputs != {} and
-        severity in {lineinfos.Severity.Error, lineinfos.Severity.Warning}:
-      diagnostics.add(SemDiagnostic(
+    if config.m.errorOutputs != {} and severity == lineinfos.Severity.Error:
+      let diagnostic = SemDiagnostic(
         file: (
           if info.fileIndex == InvalidFileIdx: ""
           else: config.toFullPath(info.fileIndex)
@@ -84,7 +86,8 @@ proc analyzeFile*(path: string): SemResult =
         col: int(info.col),
         message: message,
         severity: severity,
-      ))
+      )
+      diagnostics.add(diagnostic)
 
   try:
     loadConfigs(DefaultConfig, cache, conf, graph.idgen)

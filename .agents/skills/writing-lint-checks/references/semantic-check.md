@@ -131,8 +131,9 @@ inferred automatically. JavaScript semantic analysis is unsupported. Configs,
 macros, and compile-time code execute; do not run untrusted input without the
 appropriate isolation/permission.
 
-Compiler diagnostics are warnings in Lint, separate from check findings; they are
-not suppressed by line ranges or `#nolint` and do not alone change the exit code.
+Compiler errors are reported as analysis warnings in Lint, separate
+from check findings; compiler warnings and hints are omitted. Analysis warnings
+are not suppressed by line ranges or `#nolint` and do not alone change the exit code.
 If no tree is available, the runner warns about unavailable checks. Some fatal
 compiler failures can still terminate the process. A green run is not proof that
 analysis was complete: inspect diagnostics when trying the generated linter.

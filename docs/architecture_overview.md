@@ -152,7 +152,7 @@ When the compiler reports semantic errors:
 
 - ordinary checks still run on the source and parsed AST;
 - semantic checks run on the retained typed tree when one is available, even if that tree is partial;
-- compiler diagnostics are surfaced as warnings, preserving their messages and source locations where available;
+- compiler errors are surfaced as analysis warnings, preserving their messages and source locations where available; compiler warnings and hints are omitted;
 - if no typed tree is available, Lint explicitly warns which semantic checks could not run for that file.
 
 Compiler diagnostics may refer to dependencies or compile-time execution locations rather than the selected file. They retain that attribution and are not relabeled as check findings in the selected file. Requested line ranges and `#nolint` suppression apply to check findings, not to compiler diagnostics or incomplete-analysis warnings.

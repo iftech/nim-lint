@@ -1,3 +1,12 @@
+import std/[os, compilesettings]
+
+static:
+  doAssert len(getEnv("PATH")) > 0
+  doAssert fileExists(currentSourcePath())
+  doAssert len(querySetting(libPath)) > 0
+
+{.warning: "compiler warnings are not lint findings".}
+
 type
   Account* = object
     secret: string
