@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="current">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li><li><strong>---</strong></li><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul>
+  <ul class="simple simple-toc-section"><li><details open><summary>User Guide</summary><ul class="simple nested-toc-section"><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="current">GitHub Action</a></li></ul></details></li><li><details><summary>Developer Guide</summary><ul class="simple nested-toc-section"><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul></details></li><li><details><summary>References</summary><ul class="simple nested-toc-section"><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul></details></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -75,7 +75,7 @@
   <span class="StringLit">merge_group</span><span class="Punctuation">:</span>
 
 <span class="StringLit">jobs</span><span class="Punctuation">:</span>
-  <span class="StringLit">lint</span><span class="Punctuation">:</span>
+  <span class="StringLit">Lint</span><span class="Punctuation">:</span>
     <span class="StringLit">runs-on</span><span class="Punctuation">:</span> <span class="StringLit">ubuntu-latest</span>
     <span class="StringLit">steps</span><span class="Punctuation">:</span>
       <span class="Punctuation">-</span> <span class="StringLit">name</span><span class="Punctuation">:</span> <span class="StringLit">Checkout repository</span>
@@ -88,7 +88,17 @@
 <table border="1" class="docutils"><tr><th>Input</th><th>Default</th><th>Meaning</th></tr>
 <tr><td><tt class="docutils literal"><span class="pre">config</span></tt></td><td><tt class="docutils literal"><span class="pre">linter.nim</span></tt></td><td>Path to the config file.</td></tr>
 <tr><td><tt class="docutils literal"><span class="pre">nim-version</span></tt></td><td><tt class="docutils literal"><span class="pre">stable</span></tt></td><td>Nim version used to build the config.</td></tr>
-</table><p>What the action does:</p>
+<tr><td><tt class="docutils literal"><span class="pre">semantic</span></tt></td><td><tt class="docutils literal"><span class="pre">false</span></tt></td><td>Enable semantic checks (<tt class="docutils literal"><span class="pre">--semantic</span></tt>).</td></tr>
+</table><p>Enable semantic checks explicitly and select the Nim version your project uses:</p>
+<p><pre class="listing"><span class="Punctuation">-</span> <span class="StringLit">name</span><span class="Punctuation">:</span> <span class="StringLit">Run Lint with semantic checks</span>
+  <span class="StringLit">uses</span><span class="Punctuation">:</span> <span class="StringLit">iftech/nim-lint@develop</span>
+  <span class="StringLit">with</span><span class="Punctuation">:</span>
+    <span class="StringLit">nim-version</span><span class="Punctuation">:</span> <span class="StringLit">'2.2.14'</span>
+    <span class="StringLit">semantic</span><span class="Punctuation">:</span> <span class="StringLit">'true'</span></pre></p>
+<p>Pin the action to a release or commit that includes semantic-check support when using it in production. The <tt class="docutils literal"><span class="pre">semantic</span></tt> input affects the run, not compilation, so both modes reuse the same cached executable.</p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
+Semantic checks analyze import dependencies and execute compiler configuration scripts, macros, and compile-time code. They can be substantially more expensive than ordinary checks. Enable them only for code you trust and ensure the analysis configuration contains the project's dependency paths and build settings.</div>
+<p>What the action does:</p>
 <ol class="simple"><li>Installs the Lint version that matches the action's own ref, so <tt class="docutils literal"><span class="pre">uses: iftech/nim-lint@1.0.0</span></tt> pins both the action and the library.</li>
 </ol>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
@@ -108,7 +118,7 @@ Your project does not need <tt class="docutils literal"><span class="pre">lint</
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-16 16:16:21 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-20 12:00:25 UTC</small>
       </div>
     </div>
   </div>

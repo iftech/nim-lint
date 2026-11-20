@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="current">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li><li><strong>---</strong></li><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul>
+  <ul class="simple simple-toc-section"><li><details open><summary>User Guide</summary><ul class="simple nested-toc-section"><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="current">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li></ul></details></li><li><details><summary>Developer Guide</summary><ul class="simple nested-toc-section"><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul></details></li><li><details><summary>References</summary><ul class="simple nested-toc-section"><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul></details></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -54,7 +54,8 @@
     
     <ul class="simple simple-toc" id="toc-list">
   <li><a class="reference" id="run-options_toc" href="#run-options">Run options</a></li>
-<ul class="simple"><li><a class="reference" id="run-options-linting-a-subset_toc" href="#run-options-linting-a-subset">Linting a subset</a></li>
+<ul class="simple"><li><a class="reference" id="run-options-semantic-checks_toc" href="#run-options-semantic-checks">Semantic checks</a></li>
+<li><a class="reference" id="run-options-linting-a-subset_toc" href="#run-options-linting-a-subset">Linting a subset</a></li>
 <li><a class="reference" id="run-options-linting-specific-lines_toc" href="#run-options-linting-specific-lines">Linting specific lines</a></li>
 <li><a class="reference" id="run-options-github-actions-output_toc" href="#run-options-github-actions-output">GitHub Actions output</a></li>
 </ul>
@@ -86,6 +87,20 @@ hints: 1, errors: 1</pre></p>
 <h1><a class="toc-backref" id="run-options" href="#run-options">Run options</a></h1><p>With no arguments, the executable lints the config's <tt class="docutils literal"><span class="pre">sources</span></tt>:</p>
 <p><pre class="listing">./linter</pre></p>
 
+<h2><a class="toc-backref" id="run-options-semantic-checks" href="#run-options-semantic-checks">Semantic checks</a></h2><p>Pass <tt class="docutils literal"><span class="pre">--semantic</span></tt> (or <tt class="docutils literal"><span class="pre">-s</span></tt>) to run semantic checks in addition to ordinary checks:</p>
+<p><pre class="listing">nim --version                      # verify this is the project's Nim version
+nim c -d:release linter.nim
+./linter --semantic</pre></p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
+Compile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> with the Nim version your project uses, and keep that same Nim installation on <tt class="docutils literal"><span class="pre">PATH</span></tt> when running <tt class="docutils literal"><span class="pre">./linter --semantic</span></tt>. Recompile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> whenever you change the project's Nim version.</div>
+<p>The lint executable embeds the compiler front end it was built with, while semantic analysis reads standard-library sources from disk. Changing the Nim on <tt class="docutils literal"><span class="pre">PATH</span></tt> does not switch the executable's embedded compiler. For example, if your project uses Nim 2.2.12 but <tt class="docutils literal"><span class="pre">linter.nim</span></tt> was compiled with Nim 2.4.0, select Nim 2.2.12 and recompile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> before running semantic checks.</p>
+<p>Without <tt class="docutils literal"><span class="pre">--semantic</span></tt>, ordinary checks still run and Lint warns about configured semantic checks that were skipped.</p>
+<p>Each file with applicable semantic checks is analyzed as an entry point, including its recursive imports. The compiler loads the applicable Nim configuration files; Lint does not infer arguments supplied only by a Nimble task or custom build command. Analysis uses an independent compiler context per selected file, so overlapping dependencies can be analyzed again.</p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
+Semantic analysis evaluates configuration scripts, macros, and compile-time code. Run it only on code you trust. It is more expensive than ordinary checking and is not sandboxed.</div>
+<p>Compiler errors are reported as analysis warnings, with locations when available. Compiler warnings and hints are not printed; they are not lint findings. Semantic checks still run on partial typed trees after recoverable errors. If no tree is available, Lint names the checks that could not run and continues with ordinary checks and other files. These warnings alone do not fail the run; error findings and check exceptions retain the exit codes above. Some fatal compiler failures can terminate the process before recovery.</p>
+<p>Line ranges and <tt class="docutils literal"><span class="pre">#nolint</span></tt> filter check findings, not compiler diagnostics or notices about unavailable analysis. JavaScript semantic analysis is not supported; a JS-configured file produces a warning and its semantic checks do not run.</p>
+
 <h2><a class="toc-backref" id="run-options-linting-a-subset" href="#run-options-linting-a-subset">Linting a subset</a></h2><p>Arguments override <tt class="docutils literal"><span class="pre">sources</span></tt> and every <tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt>, including step-level ones. An explicit argument is a request to lint exactly that, so nothing in the config can silently exclude it.</p>
 <p><pre class="listing">./linter src/foo.nim                 # one file
 ./linter 'src/module/*'              # a glob pattern
@@ -98,7 +113,7 @@ hints: 1, errors: 1</pre></p>
 ./linter src/foo.nim:10-12,40        # several ranges</pre></p>
 <p>This is useful when you want to check a change without being told about everything that was already wrong in the file.</p>
 
-<h2><a class="toc-backref" id="run-options-github-actions-output" href="#run-options-github-actions-output">GitHub Actions output</a></h2><p><tt class="docutils literal"><span class="pre">--format=github</span></tt> emits GitHub Actions workflow commands instead of the human-readable report, so findings appear as inline annotations on a pull request:</p>
+<h2><a class="toc-backref" id="run-options-github-actions-output" href="#run-options-github-actions-output">GitHub Actions output</a></h2><p><tt class="docutils literal"><span class="pre">--format=github</span></tt> (or <tt class="docutils literal"><span class="pre">-f:github</span></tt>) emits GitHub Actions workflow commands instead of the human-readable report, so findings appear as inline annotations on a pull request:</p>
 <p><pre class="listing">./linter --format=github src/foo.nim</pre> </p>
 </p>
     
@@ -108,7 +123,7 @@ hints: 1, errors: 1</pre></p>
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-16 16:16:21 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-20 12:00:25 UTC</small>
       </div>
     </div>
   </div>

@@ -1,4 +1,7 @@
 markupTitle	Writing a Linter	writing_a_linter.html	Writing a Linter		0
+heading	Using an LLM agent	writing_a_linter.html#using-an-llm-agent	 Using an LLM agent		0
 heading	A minimal linter	writing_a_linter.html#a-minimal-linter	 A minimal linter		0
+heading	Checking comments	writing_a_linter.html#a-minimal-linter-checking-comments	  Checking comments		0
+heading	Semantic checks	writing_a_linter.html#a-minimal-linter-semantic-checks	  Semantic checks		0
 heading	Settings	writing_a_linter.html#a-minimal-linter-settings	  Settings		0
 heading	Findings	writing_a_linter.html#a-minimal-linter-findings	  Findings		0

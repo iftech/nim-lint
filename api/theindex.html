@@ -28,7 +28,7 @@
     <label for="nav-toggle" id="nav-overlay"></label>
     <div class="container">
       <h1 class="title">Index</h1>
-      Modules: <a href="lint.html">lint</a>, <a href="lint/private/cli.html">lint/private/cli</a>, <a href="lint/private/config.html">lint/private/config</a>, <a href="lint/private/runner.html">lint/private/runner</a>, <a href="lint/private/suppress.html">lint/private/suppress</a>, <a href="lint/private/types.html">lint/private/types</a>.<br/><p /><h2>API symbols</h2>
+      Modules: <a href="lint.html">lint</a>, <a href="lint/private/cli.html">lint/private/cli</a>, <a href="lint/private/config.html">lint/private/config</a>, <a href="lint/private/runner.html">lint/private/runner</a>, <a href="lint/private/semanalysis.html">lint/private/semanalysis</a>, <a href="lint/private/suppress.html">lint/private/suppress</a>, <a href="lint/private/types.html">lint/private/types</a>.<br/><p /><h2>API symbols</h2>
 <dl><dt><a name="%60%24%60" href="#%60%24%60"><span>`$`:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="runner: proc `$`(report: RunReport; format = Format.text): string" href="lint/private/runner.html#%24%2CRunReport">runner: proc `$`(report: RunReport; format = Format.text): string</a></li>
@@ -38,6 +38,22 @@
           data-doc-search-tag="types: proc addCheck[S](linter: Linter; run: proc (ast: PNode; settings: S): seq[Finding];
             defaults: S = default(S)): Check[S]" href="lint/private/types.html#addCheck%2CLinter%2Cproc%28PNode%2CS%29%2CS">types: proc addCheck[S](linter: Linter; run: proc (ast: PNode; settings: S): seq[Finding];
             defaults: S = default(S)): Check[S]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="types: proc addCheck[S](linter: Linter; run: proc (source: string; ast: PNode; typed: PNode;
+                                       settings: S): seq[Finding];
+            defaults: S = default(S)): SemCheck[S]" href="lint/private/types.html#addCheck%2CLinter%2Cproc%28string%2CPNode%2CPNode%2CS%29%2CS">types: proc addCheck[S](linter: Linter; run: proc (source: string; ast: PNode; typed: PNode;
+                                       settings: S): seq[Finding];
+            defaults: S = default(S)): SemCheck[S]</a></li>
+          <li><a class="reference external"
+          data-doc-search-tag="types: proc addCheck[S](linter: Linter;
+            run: proc (source: string; ast: PNode; settings: S): seq[Finding];
+            defaults: S = default(S)): Check[S]" href="lint/private/types.html#addCheck%2CLinter%2Cproc%28string%2CPNode%2CS%29%2CS">types: proc addCheck[S](linter: Linter;
+            run: proc (source: string; ast: PNode; settings: S): seq[Finding];
+            defaults: S = default(S)): Check[S]</a></li>
+          </ul></dd>
+<dt><a name="analyzeFile" href="#analyzeFile"><span>analyzeFile:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="semanalysis: proc analyzeFile(path: string): SemResult" href="lint/private/semanalysis.html#analyzeFile%2Cstring">semanalysis: proc analyzeFile(path: string): SemResult</a></li>
           </ul></dd>
 <dt><a name="Check" href="#Check"><span>Check:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -107,7 +123,9 @@
           </ul></dd>
 <dt><a name="run" href="#run"><span>run:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="runner: proc run(config: Config; targets: seq[Target] = @[]; format = Format.text)" href="lint/private/runner.html#run%2CConfig%2Cseq%5BTarget%5D">runner: proc run(config: Config; targets: seq[Target] = @[]; format = Format.text)</a></li>
+          data-doc-search-tag="runner: proc run(config: Config; targets: seq[Target] = @[]; format = Format.text;
+    semantic = false)" href="lint/private/runner.html#run%2CConfig%2Cseq%5BTarget%5D">runner: proc run(config: Config; targets: seq[Target] = @[]; format = Format.text;
+    semantic = false)</a></li>
           </ul></dd>
 <dt><a name="runLint" href="#runLint"><span>runLint:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -116,6 +134,18 @@
 <dt><a name="RunReport" href="#RunReport"><span>RunReport:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
           data-doc-search-tag="runner: object RunReport" href="lint/private/runner.html#RunReport">runner: object RunReport</a></li>
+          </ul></dd>
+<dt><a name="SemCheck" href="#SemCheck"><span>SemCheck:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="types: object SemCheck" href="lint/private/types.html#SemCheck">types: object SemCheck</a></li>
+          </ul></dd>
+<dt><a name="SemDiagnostic" href="#SemDiagnostic"><span>SemDiagnostic:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="semanalysis: object SemDiagnostic" href="lint/private/semanalysis.html#SemDiagnostic">semanalysis: object SemDiagnostic</a></li>
+          </ul></dd>
+<dt><a name="SemResult" href="#SemResult"><span>SemResult:</span></a></dt><dd><ul class="simple">
+<li><a class="reference external"
+          data-doc-search-tag="semanalysis: type SemResult" href="lint/private/semanalysis.html#SemResult">semanalysis: type SemResult</a></li>
           </ul></dd>
 <dt><a name="Severity" href="#Severity"><span>Severity:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -149,7 +179,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-16 16:16:19 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-20 12:00:24 UTC</small>
       </div>
     </div>
   </div>

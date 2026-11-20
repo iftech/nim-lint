@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="writing_a_linter.html" class="current">Writing a Linter</a></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li><li><strong>---</strong></li><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul>
+  <ul class="simple simple-toc-section"><li><details><summary>User Guide</summary><ul class="simple nested-toc-section"><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li></ul></details></li><li><details open><summary>Developer Guide</summary><ul class="simple nested-toc-section"><li><a href="writing_a_linter.html" class="current">Writing a Linter</a></li><li><a href="architecture_overview.html" class="">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul></details></li><li><details><summary>References</summary><ul class="simple nested-toc-section"><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul></details></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -53,8 +53,11 @@
 
     
     <ul class="simple simple-toc" id="toc-list">
-  <li><a class="reference" id="a-minimal-linter_toc" href="#a-minimal-linter">A minimal linter</a></li>
-<ul class="simple"><li><a class="reference" id="a-minimal-linter-settings_toc" href="#a-minimal-linter-settings">Settings</a></li>
+  <li><a class="reference" id="using-an-llm-agent_toc" href="#using-an-llm-agent">Using an LLM agent</a></li>
+<li><a class="reference" id="a-minimal-linter_toc" href="#a-minimal-linter">A minimal linter</a></li>
+<ul class="simple"><li><a class="reference" id="a-minimal-linter-checking-comments_toc" href="#a-minimal-linter-checking-comments">Checking comments</a></li>
+<li><a class="reference" id="a-minimal-linter-semantic-checks_toc" href="#a-minimal-linter-semantic-checks">Semantic checks</a></li>
+<li><a class="reference" id="a-minimal-linter-settings_toc" href="#a-minimal-linter-settings">Settings</a></li>
 <li><a class="reference" id="a-minimal-linter-findings_toc" href="#a-minimal-linter-findings">Findings</a></li>
 </ul>
 </ul>
@@ -66,7 +69,23 @@
 
     <div id="tocRoot"></div>
     
-    <p class="module-desc"><p>A linter is a Nim module that declares one or more <a class="reference external" href="api/lint/private/types.html#Check">types: Check</a> and exports a <a class="reference external" href="api/lint/private/types.html#Linter">types: Linter</a> value. Like any other Nim module, it can sit next to the config that uses it in your project or be installed with Nimble.</p>
+    <p class="module-desc"><p>A linter is a Nim module that declares ordinary <a class="reference external" href="api/lint/private/types.html#Check">types: Check</a> or semantic <a class="reference external" href="api/lint/private/types.html#SemCheck">types: SemCheck</a> rules and exports a <a class="reference external" href="api/lint/private/types.html#Linter">types: Linter</a> value. Like any other Nim module, it can sit next to the config that uses it in your project or be installed with Nimble.</p>
+
+<h1><a class="toc-backref" id="using-an-llm-agent" href="#using-an-llm-agent">Using an LLM agent</a></h1><p>Lint ships an authoring skill at <tt class="docutils literal"><span class="pre">.agents/skills/writing-lint-checks/</span></tt> in its <a class="reference external" href="https://github.com/iftech/nim-lint/tree/develop/.agents/skills/writing-lint-checks">source repository</a>. Copy the entire directory, including <tt class="docutils literal"><span class="pre">references/</span></tt>, from the Lint release your project uses into the same location in your project:</p>
+<p><pre class="listing">.agents/
+  skills/
+    writing-lint-checks/
+      SKILL.md
+      references/
+        ordinary-check.md
+        semantic-check.md</pre></p>
+<p>Agents with skill discovery can load it when you ask them to write or extend a Lint check. For agents without discovery, explicitly provide <tt class="docutils literal"><span class="pre">SKILL.md</span></tt> and let the agent read the relevant reference file. For example:</p>
+<p><pre class="listing">Use .agents/skills/writing-lint-checks/SKILL.md to implement a Lint rule
+that flags trailing whitespace. Prefer an ordinary check unless resolved
+symbols or types are necessary. Add it to our existing lint config and
+compile the config and try the linter on our existing sources. Do not add
+tests unless asked.</pre></p>
+<p>The skill helps clarify the policy, choose ordinary or semantic inputs, implement against the project's API version, and smoke-check the compiled executable on existing sources. It does not add test suites or fixtures unless requested; testing custom rule logic is the project's choice. It is guidance, not an executable generator or a guarantee that generated code is correct. Review the rule and observed output before adopting it. Update the copied skill when upgrading Lint.</p>
 
 <h1><a class="toc-backref" id="a-minimal-linter" href="#a-minimal-linter">A minimal linter</a></h1><p>This is an example linter from the tests:</p>
 <pre class="listing"><span class="Keyword">import</span> <span class="Identifier">std</span><span class="Operator">/</span><span class="Identifier">strutils</span>
@@ -83,7 +102,6 @@
 
   <span class="Identifier">ConstNamesSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
     <span class="Identifier">prefix</span><span class="Operator">*:</span> <span class="Identifier">string</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
-
 <span class="Comment">#ANCHOR_END: settings</span>
 
 <span class="Keyword">proc</span> <span class="Identifier">runVarNames</span><span class="Punctuation">(</span><span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">VarNamesSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
@@ -110,7 +128,7 @@
           <span class="Punctuation">)</span>
 
 <span class="Comment">#ANCHOR: runConstNames</span>
-<span class="Keyword">proc</span> <span class="Identifier">runConstNames</span><span class="Punctuation">(</span><span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">ConstNamesSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
+<span class="Keyword">proc</span> <span class="Identifier">runConstNames</span><span class="Punctuation">(</span><span class="Identifier">source</span><span class="Punctuation">:</span> <span class="Identifier">string</span><span class="Punctuation">,</span> <span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">ConstNamesSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
   <span class="Keyword">if</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">prefix</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">==</span> <span class="DecNumber">0</span><span class="Punctuation">:</span>
     <span class="Keyword">return</span>
   <span class="Keyword">for</span> <span class="Identifier">node</span> <span class="Keyword">in</span> <span class="Identifier">ast</span><span class="Operator">.</span><span class="Identifier">sons</span><span class="Punctuation">:</span>
@@ -123,25 +141,121 @@
           <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">toFinding</span><span class="Punctuation">(</span>
             <span class="StringLit">&quot;constant `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` should start with `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">prefix</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;`&quot;</span>
           <span class="Punctuation">)</span>
-
 <span class="Comment">#ANCHOR_END: runConstNames</span>
 
 <span class="Keyword">let</span>
   <span class="Identifier">nameLinter</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">Linter</span><span class="Punctuation">(</span><span class="Punctuation">)</span>
   <span class="Identifier">varNames</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span><span class="Operator">.</span><span class="Identifier">addCheck</span><span class="Punctuation">(</span><span class="Identifier">runVarNames</span><span class="Punctuation">)</span>
   <span class="Identifier">constNames</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">nameLinter</span><span class="Operator">.</span><span class="Identifier">addCheck</span><span class="Punctuation">(</span><span class="Identifier">runConstNames</span><span class="Punctuation">)</span>
-
 </pre><p>Three things make this a linter:</p>
 <ul class="simple"><li>a settings type, which may be empty</li>
-<li>a proc taking the file's AST and the settings, returning a sequence of <a class="reference external" href="api/lint/private/types.html#Finding">types: Finding</a></li>
-<li>a <a class="reference external" href="api/lint/private/types.html#Linter">types: Linter</a> value and one <a class="reference external" href="api/lint/private/types.html#Check">types: Check</a> per rule, created with <a class="reference external" href="api/lint/private/types.html#addCheck,Linter,proc(PNode,S),S">types: addCheck</a></li>
+<li>a proc taking the original source text, the file's AST, and the settings, returning a sequence of <a class="reference external" href="api/lint/private/types.html#Finding">types: Finding</a></li>
+<li>a <a class="reference external" href="api/lint/private/types.html#Linter">types: Linter</a> value and one <a class="reference external" href="api/lint/private/types.html#Check">types: Check</a> per rule, created with <a class="reference external" href="api/lint/private/types.html#addCheck-procs-all">types: addCheck</a></li>
 </ul>
-<p>Checks receive the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced.</p>
-<p>Writing a check means importing <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> and matching on nodes. A check doesn't modify the tree: the same AST is shared by every step that runs against the file.</p>
+<p>Checks receive the original source as a <tt class="docutils literal"><span class="pre">string</span></tt> and the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced.</p>
+<p>A check can inspect the source text, match on AST nodes, or combine both. It doesn't modify its inputs: the source and AST are shared by every step that runs against the file.</p>
+<p>The old <tt class="docutils literal"><span class="pre">proc(ast: PNode, settings: S): seq[Finding]</span></tt> registration remains available but is deprecated. Add <tt class="docutils literal"><span class="pre">source: string</span></tt> as the first parameter to migrate; checks that only inspect the AST can leave it unused.</p>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
-To make <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> importable in your linter and the Lint config, you have to add the Nim compiler source path to the compiler config:<pre class="listing"><span class="Operator">--</span><span class="Identifier">path</span><span class="Punctuation">:</span><span class="StringLit">&quot;$nim/&quot;</span>
+To make <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> importable in your linter and the Lint config, you have to add the Nim compiler source path to the compiler config:<pre class="listing"><span class="Operator">--</span><span class="Identifier">path</span><span class="Punctuation">:</span>
+  <span class="StringLit">&quot;$nim/&quot;</span>
 </pre><p>Put that in a <a class="reference external" href="https://nim-lang.org/docs/nimc.html#compiler-usage-configuration-files">config file</a> affecting your linter and Lint config, e.g. <tt class="docutils literal"><span class="pre">linter.nims</span></tt> for <tt class="docutils literal"><span class="pre">linter.nim</span></tt>.</p>
 </div>
+
+<h2><a class="toc-backref" id="a-minimal-linter-checking-comments" href="#a-minimal-linter-checking-comments">Checking comments</a></h2><p>The original source preserves comments, whitespace, and line endings. This example checks standalone comment lines for TODO markers:</p>
+<pre class="listing"><span class="Keyword">import</span> <span class="Identifier">std</span><span class="Operator">/</span><span class="Identifier">strutils</span>
+
+<span class="Keyword">import</span> <span class="Identifier">compiler</span><span class="Operator">/</span><span class="Identifier">ast</span>
+
+<span class="Keyword">import</span> <span class="Identifier">lint</span>
+
+<span class="Keyword">type</span> <span class="Identifier">TodoSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
+  <span class="Identifier">marker</span><span class="Operator">*:</span> <span class="Identifier">string</span> <span class="Operator">=</span> <span class="StringLit">&quot;TODO&quot;</span>
+
+<span class="Keyword">proc</span> <span class="Identifier">runTodoComments</span><span class="Punctuation">(</span><span class="Identifier">source</span><span class="Punctuation">:</span> <span class="Identifier">string</span><span class="Punctuation">,</span> <span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">TodoSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
+  <span class="Keyword">let</span> <span class="Identifier">lines</span> <span class="Operator">=</span> <span class="Identifier">source</span><span class="Operator">.</span><span class="Identifier">splitLines</span><span class="Punctuation">(</span><span class="Punctuation">)</span>
+  <span class="Keyword">for</span> <span class="Identifier">index</span><span class="Punctuation">,</span> <span class="Identifier">line</span> <span class="Keyword">in</span> <span class="Identifier">lines</span><span class="Punctuation">:</span>
+    <span class="Keyword">if</span> <span class="Identifier">line</span><span class="Operator">.</span><span class="Identifier">strip</span><span class="Punctuation">(</span><span class="Punctuation">)</span><span class="Operator">.</span><span class="Identifier">startsWith</span><span class="Punctuation">(</span><span class="StringLit">&quot;#&quot;</span><span class="Punctuation">)</span><span class="Punctuation">:</span>
+      <span class="Keyword">let</span> <span class="Identifier">column</span> <span class="Operator">=</span> <span class="Identifier">line</span><span class="Operator">.</span><span class="Identifier">find</span><span class="Punctuation">(</span><span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">marker</span><span class="Punctuation">)</span>
+      <span class="Keyword">if</span> <span class="Identifier">column</span> <span class="Operator">&gt;=</span> <span class="DecNumber">0</span><span class="Punctuation">:</span>
+        <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">Finding</span><span class="Punctuation">(</span>
+          <span class="Identifier">line</span><span class="Punctuation">:</span> <span class="Identifier">index</span> <span class="Operator">+</span> <span class="DecNumber">1</span><span class="Punctuation">,</span> <span class="Identifier">col</span><span class="Punctuation">:</span> <span class="Identifier">column</span><span class="Punctuation">,</span> <span class="Identifier">msg</span><span class="Punctuation">:</span> <span class="StringLit">&quot;unfinished comment: &quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">marker</span>
+        <span class="Punctuation">)</span>
+
+<span class="Keyword">let</span>
+  <span class="Identifier">commentLinter</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">Linter</span><span class="Punctuation">(</span><span class="Punctuation">)</span>
+  <span class="Identifier">todoComments</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">commentLinter</span><span class="Operator">.</span><span class="Identifier">addCheck</span><span class="Punctuation">(</span><span class="Identifier">runTodoComments</span><span class="Punctuation">)</span>
+</pre>
+<h2><a class="toc-backref" id="a-minimal-linter-semantic-checks" href="#a-minimal-linter-semantic-checks">Semantic checks</a></h2><p>A semantic check receives a separate typed AST in addition to the original source and parsed AST. Its callback has the signature <tt class="docutils literal"><span class="pre">proc(source: string, ast, typed: PNode, settings: S): seq[Finding]</span></tt>, where <tt class="docutils literal"><span class="pre">S</span></tt> is the check's settings type.</p>
+<p>Register it with <a class="reference external" href="api/lint/private/types.html#addCheck-procs-all">types: addCheck</a>, just like an ordinary check. The callback's extra <tt class="docutils literal"><span class="pre">typed</span></tt> parameter selects the overload returning a <a class="reference external" href="api/lint/private/types.html#SemCheck">types: SemCheck</a>. The config declares it with <tt class="docutils literal"><span class="pre">semCheck</span></tt> rather than <tt class="docutils literal"><span class="pre">check</span></tt>; using the wrong declaration is a compile error. Settings and defaults work the same way for both.</p>
+<p>This example requires an explicit, type-specific <tt class="docutils literal"><span class="pre">$</span></tt> proc or func for every non-generic object or distinct type declared at module level. It compares resolved parameter types rather than names. Standard or user-defined generic fallbacks do not satisfy the rule. The example deliberately searches only declarations in the checked module; it does not perform overload resolution or verify the safety of the formatter's body.</p>
+<pre class="listing"><span class="Comment">## Require an intentional string representation for module-level object and</span>
+<span class="Comment">## distinct types. A generic `$` fallback does not satisfy this rule.</span>
+<span class="Comment">## This small example checks non-generic types and non-generic proc/func overloads</span>
+<span class="Comment">## declared in the same module: one parameter of the exact type, returning string.</span>
+
+<span class="Keyword">import</span> <span class="Identifier">compiler</span><span class="Operator">/</span><span class="Punctuation">[</span><span class="Identifier">ast</span><span class="Punctuation">,</span> <span class="Identifier">types</span><span class="Punctuation">]</span>
+
+<span class="Keyword">import</span> <span class="Identifier">lint</span>
+
+<span class="Keyword">type</span> <span class="Identifier">StringifySettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
+
+<span class="Keyword">proc</span> <span class="Identifier">runCustomDollar</span><span class="Punctuation">(</span>
+    <span class="Identifier">source</span><span class="Punctuation">:</span> <span class="Identifier">string</span><span class="Punctuation">,</span> <span class="Identifier">ast</span><span class="Punctuation">,</span> <span class="Identifier">typed</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">settings</span><span class="Punctuation">:</span> <span class="Identifier">StringifySettings</span>
+<span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
+  <span class="Keyword">var</span>
+    <span class="Identifier">declarations</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">PNode</span><span class="Punctuation">]</span>
+    <span class="Identifier">overloads</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">PType</span><span class="Punctuation">]</span>
+
+  <span class="Keyword">proc</span> <span class="Identifier">collect</span><span class="Punctuation">(</span><span class="Identifier">node</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">)</span> <span class="Operator">=</span>
+    <span class="Keyword">if</span> <span class="Identifier">node</span><span class="Operator">.</span><span class="Identifier">isNil</span><span class="Punctuation">:</span>
+      <span class="Keyword">return</span>
+    <span class="Keyword">case</span> <span class="Identifier">node</span><span class="Operator">.</span><span class="Identifier">kind</span>
+    <span class="Keyword">of</span> <span class="Identifier">nkStmtList</span><span class="Punctuation">:</span>
+      <span class="Keyword">for</span> <span class="Identifier">child</span> <span class="Keyword">in</span> <span class="Identifier">node</span><span class="Punctuation">:</span>
+        <span class="Identifier">collect</span><span class="Punctuation">(</span><span class="Identifier">child</span><span class="Punctuation">)</span>
+    <span class="Keyword">of</span> <span class="Identifier">nkTypeSection</span><span class="Punctuation">:</span>
+      <span class="Keyword">for</span> <span class="Identifier">definition</span> <span class="Keyword">in</span> <span class="Identifier">node</span><span class="Punctuation">:</span>
+        <span class="Keyword">if</span> <span class="Identifier">definition</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Operator">==</span> <span class="Identifier">nkTypeDef</span> <span class="Keyword">and</span> <span class="Identifier">definition</span><span class="Punctuation">[</span><span class="DecNumber">1</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Operator">==</span> <span class="Identifier">nkEmpty</span><span class="Punctuation">:</span>
+          <span class="Keyword">let</span> <span class="Identifier">name</span> <span class="Operator">=</span>
+            <span class="Keyword">if</span> <span class="Identifier">definition</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Operator">==</span> <span class="Identifier">nkPostfix</span><span class="Punctuation">:</span>
+              <span class="Identifier">definition</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Punctuation">[</span><span class="DecNumber">1</span><span class="Punctuation">]</span>
+            <span class="Keyword">else</span><span class="Punctuation">:</span>
+              <span class="Identifier">definition</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span>
+          <span class="Keyword">if</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Operator">==</span> <span class="Identifier">nkSym</span><span class="Punctuation">:</span>
+            <span class="Keyword">let</span> <span class="Identifier">typ</span> <span class="Operator">=</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">sym</span><span class="Operator">.</span><span class="Identifier">typ</span>
+            <span class="Keyword">if</span> <span class="Keyword">not</span> <span class="Identifier">typ</span><span class="Operator">.</span><span class="Identifier">isNil</span> <span class="Keyword">and</span> <span class="Identifier">typ</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Keyword">in</span> <span class="Punctuation">{</span><span class="Identifier">tyObject</span><span class="Punctuation">,</span> <span class="Identifier">tyDistinct</span><span class="Punctuation">}</span> <span class="Keyword">and</span>
+                <span class="Identifier">typ</span><span class="Operator">.</span><span class="Identifier">sym</span> <span class="Operator">==</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">sym</span><span class="Punctuation">:</span>
+              <span class="Identifier">declarations</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">name</span>
+    <span class="Keyword">of</span> <span class="Identifier">nkProcDef</span><span class="Punctuation">,</span> <span class="Identifier">nkFuncDef</span><span class="Punctuation">:</span>
+      <span class="Keyword">let</span> <span class="Identifier">name</span> <span class="Operator">=</span> <span class="Identifier">node</span><span class="Punctuation">[</span><span class="Identifier">namePos</span><span class="Punctuation">]</span>
+      <span class="Keyword">if</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Operator">==</span> <span class="Identifier">nkSym</span> <span class="Keyword">and</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">sym</span><span class="Operator">.</span><span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">s</span> <span class="Operator">==</span> <span class="StringLit">&quot;$&quot;</span> <span class="Keyword">and</span>
+          <span class="Identifier">node</span><span class="Punctuation">[</span><span class="Identifier">genericParamsPos</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Operator">==</span> <span class="Identifier">nkEmpty</span><span class="Punctuation">:</span>
+        <span class="Keyword">let</span> <span class="Identifier">signature</span> <span class="Operator">=</span> <span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">sym</span><span class="Operator">.</span><span class="Identifier">typ</span>
+        <span class="Keyword">if</span> <span class="Keyword">not</span> <span class="Identifier">signature</span><span class="Operator">.</span><span class="Identifier">isNil</span> <span class="Keyword">and</span> <span class="Identifier">signature</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">==</span> <span class="DecNumber">2</span> <span class="Keyword">and</span> <span class="Keyword">not</span> <span class="Identifier">signature</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">isNil</span> <span class="Keyword">and</span>
+            <span class="Identifier">signature</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">kind</span> <span class="Operator">==</span> <span class="Identifier">tyString</span><span class="Punctuation">:</span>
+          <span class="Identifier">overloads</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">signature</span><span class="Punctuation">[</span><span class="DecNumber">1</span><span class="Punctuation">]</span>
+    <span class="Keyword">else</span><span class="Punctuation">:</span>
+      <span class="Keyword">discard</span>
+
+  <span class="Identifier">collect</span><span class="Punctuation">(</span><span class="Identifier">typed</span><span class="Punctuation">)</span>
+  <span class="Keyword">for</span> <span class="Identifier">declaration</span> <span class="Keyword">in</span> <span class="Identifier">declarations</span><span class="Punctuation">:</span>
+    <span class="Keyword">var</span> <span class="Identifier">hasCustomDollar</span> <span class="Operator">=</span> <span class="Identifier">false</span>
+    <span class="Keyword">for</span> <span class="Identifier">parameter</span> <span class="Keyword">in</span> <span class="Identifier">overloads</span><span class="Punctuation">:</span>
+      <span class="Keyword">if</span> <span class="Keyword">not</span> <span class="Identifier">parameter</span><span class="Operator">.</span><span class="Identifier">isNil</span> <span class="Keyword">and</span> <span class="Identifier">sameType</span><span class="Punctuation">(</span><span class="Identifier">declaration</span><span class="Operator">.</span><span class="Identifier">sym</span><span class="Operator">.</span><span class="Identifier">typ</span><span class="Punctuation">,</span> <span class="Identifier">parameter</span><span class="Punctuation">)</span><span class="Punctuation">:</span>
+        <span class="Identifier">hasCustomDollar</span> <span class="Operator">=</span> <span class="Identifier">true</span>
+        <span class="Keyword">break</span>
+    <span class="Keyword">if</span> <span class="Keyword">not</span> <span class="Identifier">hasCustomDollar</span><span class="Punctuation">:</span>
+      <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">declaration</span><span class="Operator">.</span><span class="Identifier">toFinding</span><span class="Punctuation">(</span>
+        <span class="StringLit">&quot;type `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">declaration</span><span class="Operator">.</span><span class="Identifier">sym</span><span class="Operator">.</span><span class="Identifier">name</span><span class="Operator">.</span><span class="Identifier">s</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` has no custom `$` overload&quot;</span>
+      <span class="Punctuation">)</span>
+
+<span class="Keyword">let</span>
+  <span class="Identifier">stringifyLinter</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">Linter</span><span class="Punctuation">(</span><span class="Punctuation">)</span>
+  <span class="Identifier">customDollar</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Identifier">stringifyLinter</span><span class="Operator">.</span><span class="Identifier">addCheck</span><span class="Punctuation">(</span><span class="Identifier">runCustomDollar</span><span class="Punctuation">)</span>
+</pre><p>The parsed and typed trees both use <tt class="docutils literal"><span class="pre">PNode</span></tt>, but they are separate inputs. Semantic analysis resolves identifiers into symbols and can expand or transform code; it does not preserve every syntactic distinction. A semantic check can still consult the parsed tree or original source when it needs those distinctions.</p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
+Semantic checks also run on partial trees after compiler errors. Nodes can have missing types, error types, or incomplete children. Check the information needed by a rule before using it, and do not infer a result from unavailable information. Nodes originating in imported macros or templates can refer to another file; findings refer only to the file being checked.</div>
+<p>Semantic checks run only with <tt class="docutils literal"><span class="pre">--semantic</span></tt>. See <a class="reference external" href="./cli.html#semantic-checks">the CLI guide</a> for the matching Nim installation requirement, compiler configuration, and analysis limitations.</p>
 
 <h2><a class="toc-backref" id="a-minimal-linter-settings" href="#a-minimal-linter-settings">Settings</a></h2><p>Settings are a plain object. Give the fields a default value in the type definition.</p>
 <pre class="listing">
@@ -152,14 +266,14 @@ To make <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> 
 
   <span class="Identifier">ConstNamesSettings</span><span class="Operator">*</span> <span class="Operator">=</span> <span class="Keyword">object</span>
     <span class="Identifier">prefix</span><span class="Operator">*:</span> <span class="Identifier">string</span> <span class="Operator">=</span> <span class="StringLit">&quot;k&quot;</span>
-
 </pre><p>A config that provides settings has its keys checked against this type, so a misspelled key is a compile error.</p>
 
 <h2><a class="toc-backref" id="a-minimal-linter-findings" href="#a-minimal-linter-findings">Findings</a></h2><p>A <a class="reference external" href="api/lint/private/types.html#Finding">types: Finding</a> carries a position and a message, and nothing else.</p>
 <p>A check does not know the file it runs against, the linter it belongs to, or the severity its findings are reported with. The runner attaches all of that when it collects findings, which is what lets the same check run at different severities in different steps.</p>
+<p>For findings in source text, construct a <a class="reference external" href="api/lint/private/types.html#Finding">types: Finding</a> with a 1-based line, a 0-based column, and a message, as in the comment check above.</p>
 <p>Use <a class="reference external" href="api/lint/private/types.html#toFinding,PNode,string">types: toFinding</a> to build one from an AST node; it extracts the position from the node:</p>
 <pre class="listing">
-<span class="Keyword">proc</span> <span class="Identifier">runConstNames</span><span class="Punctuation">(</span><span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">ConstNamesSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
+<span class="Keyword">proc</span> <span class="Identifier">runConstNames</span><span class="Punctuation">(</span><span class="Identifier">source</span><span class="Punctuation">:</span> <span class="Identifier">string</span><span class="Punctuation">,</span> <span class="Identifier">ast</span><span class="Punctuation">:</span> <span class="Identifier">PNode</span><span class="Punctuation">,</span> <span class="Identifier">s</span><span class="Punctuation">:</span> <span class="Identifier">ConstNamesSettings</span><span class="Punctuation">)</span><span class="Punctuation">:</span> <span class="Identifier">seq</span><span class="Punctuation">[</span><span class="Identifier">Finding</span><span class="Punctuation">]</span> <span class="Operator">=</span>
   <span class="Keyword">if</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">prefix</span><span class="Operator">.</span><span class="Identifier">len</span> <span class="Operator">==</span> <span class="DecNumber">0</span><span class="Punctuation">:</span>
     <span class="Keyword">return</span>
   <span class="Keyword">for</span> <span class="Identifier">node</span> <span class="Keyword">in</span> <span class="Identifier">ast</span><span class="Operator">.</span><span class="Identifier">sons</span><span class="Punctuation">:</span>
@@ -172,7 +286,6 @@ To make <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> 
           <span class="Identifier">result</span><span class="Operator">.</span><span class="Identifier">add</span> <span class="Identifier">def</span><span class="Punctuation">[</span><span class="DecNumber">0</span><span class="Punctuation">]</span><span class="Operator">.</span><span class="Identifier">toFinding</span><span class="Punctuation">(</span>
             <span class="StringLit">&quot;constant `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">name</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;` should start with `&quot;</span> <span class="Operator">&amp;</span> <span class="Identifier">s</span><span class="Operator">.</span><span class="Identifier">prefix</span> <span class="Operator">&amp;</span> <span class="StringLit">&quot;`&quot;</span>
           <span class="Punctuation">)</span>
-
 </pre></p>
     
   </div>
@@ -181,7 +294,7 @@ To make <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> 
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-16 16:16:21 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-20 12:00:25 UTC</small>
       </div>
     </div>
   </div>

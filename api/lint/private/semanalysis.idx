@@ -1,0 +1,4 @@
+nimTitle	semanalysis	lint/private/semanalysis.html	module src/lint/private/semanalysis		0
+nim	SemDiagnostic	lint/private/semanalysis.html#SemDiagnostic	object SemDiagnostic		24
+nim	SemResult	lint/private/semanalysis.html#SemResult	type SemResult		35
+nim	analyzeFile	lint/private/semanalysis.html#analyzeFile,string	proc analyzeFile(path: string): SemResult		44

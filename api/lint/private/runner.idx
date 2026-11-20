@@ -1,10 +1,10 @@
 nimTitle	runner	lint/private/runner.html	module src/lint/private/runner		0
-nim	ExitMode	lint/private/runner.html#ExitMode	enum ExitMode		22
-nim	FindingTag	lint/private/runner.html#FindingTag	object FindingTag		29
-nim	StepReport	lint/private/runner.html#StepReport	object StepReport		36
-nim	FileReport	lint/private/runner.html#FileReport	object FileReport		40
-nim	RunReport	lint/private/runner.html#RunReport	object RunReport		44
-nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		47
-nim	`$`	lint/private/runner.html#$,RunReport	proc `$`(report: RunReport; format = Format.text): string		128
-nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		149
-nim	run	lint/private/runner.html#run,Config,seq[Target]	proc run(config: Config; targets: seq[Target] = @[]; format = Format.text)		158
+nim	ExitMode	lint/private/runner.html#ExitMode	enum ExitMode		23
+nim	FindingTag	lint/private/runner.html#FindingTag	object FindingTag		30
+nim	StepReport	lint/private/runner.html#StepReport	object StepReport		37
+nim	FileReport	lint/private/runner.html#FileReport	object FileReport		41
+nim	RunReport	lint/private/runner.html#RunReport	object RunReport		45
+nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		48
+nim	`$`	lint/private/runner.html#$,RunReport	proc `$`(report: RunReport; format = Format.text): string		127
+nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		150
+nim	run	lint/private/runner.html#run,Config,seq[Target]	proc run(config: Config; targets: seq[Target] = @[]; format = Format.text;\n    semantic = false)		161

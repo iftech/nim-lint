@@ -40,7 +40,7 @@
 </div>
 
     <div id="global-links">
-  <ul class="simple simple-toc-section"><li><strong>User Guide</strong></li><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li><li><strong>Developer Guide</strong></li><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="architecture_overview.html" class="current">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li><li><strong>---</strong></li><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul>
+  <ul class="simple simple-toc-section"><li><details><summary>User Guide</summary><ul class="simple nested-toc-section"><li><a href="intro.html" class="">Intro</a></li><li><a href="config.html" class="">Config File</a></li><li><a href="cli.html" class="">CLI</a></li><li><a href="suppression.html" class="">Suppressing Findings</a></li><li><a href="github_action.html" class="">GitHub Action</a></li></ul></details></li><li><details open><summary>Developer Guide</summary><ul class="simple nested-toc-section"><li><a href="writing_a_linter.html" class="">Writing a Linter</a></li><li><a href="architecture_overview.html" class="current">Architecture Overview</a></li><li><a href="updating_the_docs.html" class="">Updating the Docs</a></li></ul></details></li><li><details><summary>References</summary><ul class="simple nested-toc-section"><li><a href="changelog.html" class="">Changelog</a></li><li><a href="/api/theindex.html" class="">API Index</a></li></ul></details></li></ul>
   <ul class="simple">
   <li><a id="indexLink" href="theindex.html">Index</a></li>
 </ul>
@@ -58,11 +58,16 @@
 <li><a class="reference" id="concepts-config-file_toc" href="#concepts-config-file">Config file</a></li>
 <li><a class="reference" id="concepts-linter_toc" href="#concepts-linter">Linter</a></li>
 <li><a class="reference" id="concepts-check_toc" href="#concepts-check">Check</a></li>
-<li><a class="reference" id="concepts-settings_toc" href="#concepts-settings">Settings</a></li>
+<ul class="simple"><li><a class="reference" id="check-check-inputs_toc" href="#check-check-inputs">Check inputs</a></li>
+</ul><li><a class="reference" id="concepts-settings_toc" href="#concepts-settings">Settings</a></li>
 <li><a class="reference" id="concepts-step_toc" href="#concepts-step">Step</a></li>
 <li><a class="reference" id="concepts-finding_toc" href="#concepts-finding">Finding</a></li>
 <li><a class="reference" id="concepts-severity_toc" href="#concepts-severity">Severity</a></li>
 <li><a class="reference" id="concepts-reports_toc" href="#concepts-reports">Reports</a></li>
+</ul><li><a class="reference" id="semantic-mode_toc" href="#semantic-mode">Semantic Mode</a></li>
+<ul class="simple"><li><a class="reference" id="semantic-mode-compiler-configuration_toc" href="#semantic-mode-compiler-configuration">Compiler configuration</a></li>
+<li><a class="reference" id="semantic-mode-entry-points-and-dependencies_toc" href="#semantic-mode-entry-points-and-dependencies">Entry points and dependencies</a></li>
+<li><a class="reference" id="semantic-mode-errors-and-partial-trees_toc" href="#semantic-mode-errors-and-partial-trees">Errors and partial trees</a></li>
 </ul><li><a class="reference" id="execution-flow_toc" href="#execution-flow">Execution Flow</a></li>
 <li><a class="reference" id="library-surface_toc" href="#library-surface">Library Surface</a></li>
 <li><a class="reference" id="exit-modes_toc" href="#exit-modes">Exit Modes</a></li>
@@ -80,75 +85,120 @@
 
 <h1><a class="toc-backref" id="concepts" href="#concepts">Concepts</a></h1>
 <h2><a class="toc-backref" id="concepts-lint" href="#concepts-lint">Lint</a></h2><p><em>Lint</em> is a library for building linters for Nim projects.</p>
-<p>A project uses Lint by writing a <em>config file</em> — a Nim source file that imports Lint and declares the linters to run and the checks to run in them. Compiling this file produces the project's lint executable, whose <em>CLI</em> processes the command-line arguments. Lint itself ships no executable: it ships the library that the config file is compiled against. The config file is the only way to run Lint.</p>
+<p>A project uses Lint by writing a <em>config file</em> — a Nim source file that imports Lint and the linters it needs, and declares the checks to run. Compiling this file produces the project's lint executable. Lint itself ships no executable: it ships the library that the config file is compiled against.</p>
 
-<h2><a class="toc-backref" id="concepts-config-file" href="#concepts-config-file">Config file</a></h2><p><em>Config file</em> describes a <em>config</em>, which defines:</p>
-<ul class="simple"><li>which paths must be checked (the <em>sources</em>)</li>
-<li>which patterns must be ignored during the run</li>
-<li>which <em>steps</em> must be run on each source file, in order<ul class="simple"><li>one linter can be invoked in many steps</li>
+<h2><a class="toc-backref" id="concepts-config-file" href="#concepts-config-file">Config file</a></h2><p>The <em>config file</em> describes a <em>config</em>, which defines:</p>
+<ul class="simple"><li>which paths are checked (the <em>sources</em>)</li>
+<li>which patterns are ignored during the run</li>
+<li>which <em>steps</em> run on each source file, in order</li>
+<li>for each step, which additional patterns are ignored</li>
+<li>for each step, which <em>checks</em> run</li>
+<li>for each check, the <em>severity</em> its <em>findings</em> are reported with: <em>error</em> or <em>hint</em></li>
+<li>for each check, the <em>settings</em> it runs with</li>
 </ul>
-</li>
-<li>for each step, which patterns must be ignored for this step</li>
-<li>for each step, which <em>checks</em> must be used when this step runs</li>
-<li>for each check, the <em>severity</em> its <em>findings</em> must be reported with: <em>error</em> or <em>hint</em></li>
-<li>for each check, the <em>settings</em> it must be run with</li>
+<p>Source paths and ignored patterns are resolved relative to the current working directory (CWD). Ignored patterns declared on a step extend the top-level ones; they do not replace them.</p>
+<p>The executable accepts optional positional arguments that override <tt class="docutils literal"><span class="pre">sources</span></tt> and every <tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt>, including step-level ones, for that run. Each argument is a file path, a directory, a glob pattern, or a file path followed by line ranges. With no targets, the config's sources are used.</p>
+<p>The config declares which checks are available. The command line determines whether semantic checks participate in this invocation; declaring a semantic check does not itself enable semantic analysis.</p>
+
+<h2><a class="toc-backref" id="concepts-linter" href="#concepts-linter">Linter</a></h2><p>A <em>linter</em> is a group of checks provided by a Nim module. A config imports the linters it needs and selects their checks. One linter's checks may be used in many steps, and a step may combine checks from different linters.</p>
+
+<h2><a class="toc-backref" id="concepts-check" href="#concepts-check">Check</a></h2><p>A <em>check</em> is a rule evaluated against one file. It reads the supplied representations of that file and its settings, and returns zero or more <em>findings</em>.</p>
+<p>Checks do not modify their inputs or depend on other checks' results. They are not supplied with reporting metadata such as the step label or configured severity. File attribution and reporting are the runner's responsibility.</p>
+
+<h3><a class="toc-backref" id="check-check-inputs" href="#check-check-inputs">Check inputs</a></h3><p>Lint uses three representations of a file:</p>
+<table border="1" class="docutils"><tr><th>Input</th><th>Purpose</th><th>Examples</th></tr>
+<tr><td>Source text</td><td>Examine the file exactly as written, including comments, whitespace, and line endings</td><td>TODO comments, trailing whitespace, blank lines</td></tr>
+<tr><td>Parsed AST</td><td>Examine syntax without resolving its meaning</td><td>Distinguish <tt class="docutils literal"><span class="pre">foo(123)</span></tt> from <tt class="docutils literal"><span class="pre">123.foo</span></tt>, or a call with parentheses from one without them</td></tr>
+<tr><td>Typed AST</td><td>Examine the result of semantic analysis, including resolved symbols and types</td><td>Identify which procedure a call invokes, inspect argument types</td></tr>
+</table><p>The typed AST does not replace the parsed AST. Semantic analysis resolves meaning but also expands or transforms code, losing some distinctions in how it was written. For an ordinary procedure call, <tt class="docutils literal"><span class="pre">foo(123)</span></tt> and <tt class="docutils literal"><span class="pre">123.foo</span></tt> resolve to the same call structure, although source locations may differ.</p>
+<p>Source text is the authoritative input for comment and formatting checks. A parser may retain documentation comments or other comment metadata; neither tree is a lossless representation of source text.</p>
+<p>The inputs are bundled into two tiers:</p>
+<ul class="simple"><li>An <em>ordinary check</em>, declared as <tt class="docutils literal"><span class="pre">check</span></tt> in the config, receives source text and the parsed AST.</li>
+<li>A <em>semantic check</em>, declared as <tt class="docutils literal"><span class="pre">semCheck</span></tt> in the config, additionally receives the typed AST.</li>
 </ul>
-<p>Source paths, the config file, and ignored patterns are resolved relative to the current working directory (CWD). Ignored patterns declared on a step extend the top-level ones; they do not replace them.</p>
-<p>The config file determines the run. The executable accepts optional positional arguments that override <tt class="docutils literal"><span class="pre">sources</span></tt> and every <tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt>, including step-level ones, for that run; each argument is a file path, a glob pattern, or a file path followed by <tt class="docutils literal"><span class="pre">:line</span></tt> or <tt class="docutils literal"><span class="pre">:start-end</span></tt> ranges. With no arguments, the config's sources are used.</p>
+<p>Checks can combine the representations they receive. For example, enforcing blank lines between procedure definitions uses source text and the parsed AST. A semantic check can additionally use resolved symbols and types.</p>
+<p>Reading source and parsing it are relatively inexpensive compared with semantic analysis of the file and its dependencies. Providing both inputs to every check keeps the common interface simple. The source is the original text, not text reconstructed from an AST, and the parsed tree remains independent of semantic transformations.</p>
 
-<h2><a class="toc-backref" id="concepts-linter" href="#concepts-linter">Linter</a></h2><p><em>Linter</em> is a sub-program that analyzes the abstract syntax tree (AST) of a single Nim file by running a set of <em>checks</em> against its nodes.</p>
+<h2><a class="toc-backref" id="concepts-settings" href="#concepts-settings">Settings</a></h2><p><em>Settings</em> are key-value pairs that adjust a check's behavior. Each check defines its own settings and defaults. A config may override them for each use of that check.</p>
 
-<h2><a class="toc-backref" id="concepts-check" href="#concepts-check">Check</a></h2><p><em>Check</em> is a rule that a node can satisfy or not satisfy. If a node does not satisfy a check, the check returns a <em>finding</em>. A check has no side-effects: it reads the AST and its settings and returns findings. It does not know the file it is run against, the linter it belongs to, or the severity its findings are reported with.</p>
+<h2><a class="toc-backref" id="concepts-step" href="#concepts-step">Step</a></h2><p>A <em>step</em> is an ordered selection of checks, each with its own settings and severity. A step may combine ordinary and semantic checks. Steps are declared in order in the config and run in that order for each selected file.</p>
+<p>Each step carries a <em>label</em> that identifies it in the report. A label is for the reader, not an identifier: nothing is looked up by it, and two steps may share one.</p>
+<p>Steps are independent: checks receive the same applicable file representations and do not see other steps' results. A step denotes ordering, not a transformation pipeline. The same check may be used in several steps, for example with stricter settings for package sources than for tests.</p>
 
-<h2><a class="toc-backref" id="concepts-settings" href="#concepts-settings">Settings</a></h2><p><em>Settings</em> are key-value pairs that a check can use during its execution to adjust its behavior. Each check defines its own settings.</p>
-
-<h2><a class="toc-backref" id="concepts-step" href="#concepts-step">Step</a></h2><p><em>Step</em> is one invocation of a linter with one set of checks and settings. Steps are declared in order in the config file and are run in that order. A linter may be used by more than one step — for example, to run the same checks strictly against the package sources and relaxed against its tests. Each step carries a <em>label</em> that identifies it in the report. A label is for the reader, not an identifier: nothing is looked up by it, and two steps may share one. Steps are independent: each step receives the same AST and does not see other steps' results, so &quot;step&quot; denotes ordering, not a pipeline.</p>
-
-<h2><a class="toc-backref" id="concepts-finding" href="#concepts-finding">Finding</a></h2><p><em>Finding</em> contains:</p>
-<ul class="simple"><li>the line at which the checked node is in the source file</li>
-<li>the column at which the checked node is in the source file</li>
-<li>a message explaining why the node does not satisfy the check</li>
+<h2><a class="toc-backref" id="concepts-finding" href="#concepts-finding">Finding</a></h2><p>A <em>finding</em> is an observation a check reports about the source. It contains:</p>
+<ul class="simple"><li>a line and column in the checked source file</li>
+<li>a message describing the observation</li>
 </ul>
-<p>Findings produced by a check carry no severity, no linter label, and no file path. Those are attached by the runner when it collects findings.</p>
+<p>A finding may refer to a syntax node, a comment, whitespace, or any other location in the source. It need not correspond to an AST node.</p>
+<p>Findings returned by checks carry no severity, step label, check name, or file path. The runner attaches these when collecting findings. Checks report locations in the selected file, not arbitrary locations in its dependencies.</p>
+<p>Semantic transformations may produce nodes whose locations refer to an imported template or macro, or have no useful source location. A semantic check establishes that a location belongs to the selected file before using it in a finding.</p>
 
-<h2><a class="toc-backref" id="concepts-severity" href="#concepts-severity">Severity</a></h2><p><em>Severity</em> is an enum that defines how findings are reported: as a <em>hint</em> or as an <em>error</em>. Severity is declared in the config file per check, and is applied by the runner. A check cannot influence the severity of the findings it produces.</p>
-<p><em>Hints</em> are purely informational; a run with only hints is still considered successful. <em>Errors</em> indicate a failed run; a run with at least one error is considered failed.</p>
+<h2><a class="toc-backref" id="concepts-severity" href="#concepts-severity">Severity</a></h2><p><em>Severity</em> determines how a check's findings are reported: as a <em>hint</em> or as an <em>error</em>. Severity is declared in the config per use of a check and applied by the runner. A check cannot choose its findings' severity.</p>
+<p>Hints are informational; a run with only hints succeeds. A run with at least one error finding fails.</p>
+<p>Compiler diagnostics and notices about checks that could not run are distinct from check findings. Their behavior is described under <a class="reference external" href="#semantic-mode">Semantic Mode</a>.</p>
 
-<h2><a class="toc-backref" id="concepts-reports" href="#concepts-reports">Reports</a></h2><p><em>Step report</em> is the outcome of one step run against one file: the findings that step produced for that file, stamped with severity, step label, and file path. A <em>file report</em> collects the step reports of every step run against one file, in step order. A <em>run report</em> collects the file reports of every checked file.</p>
-<p>Ordering is deterministic: files are processed in ascending path order, and steps run in the order they are declared. Two runs of the same executable against the same sources produce the same run report.</p>
+<h2><a class="toc-backref" id="concepts-reports" href="#concepts-reports">Reports</a></h2><p>A <em>step report</em> contains the findings produced by one step for one file, stamped with severity, step label, check name, and file path. A <em>file report</em> collects that file's step reports. A <em>run report</em> collects the file reports.</p>
+<p>Files are reported in ascending path order, and steps and checks in declaration order. Findings from one check retain the order returned by that check. Checks produce deterministic results for the same inputs and settings.</p>
+<p>Reproducibility also depends on the compiler version, configuration, dependency sources, and any environment inputs used by compiler configuration scripts or compile-time code. Identical selected files alone do not guarantee identical semantic results.</p>
 
-<h1><a class="toc-backref" id="execution-flow" href="#execution-flow">Execution Flow</a></h1><ol class="simple"><li>The config file is compiled into the project's lint executable.</li>
-<li>The executable starts. It takes no run parameters: everything the run needs is fixed at compile time.</li>
-<li>The runner asks the source manager for the files to check.</li>
-<li>The source manager walks the source paths, filters the files by extension and by the ignored patterns, and yields the matching files in ascending path order.</li>
-<li>The runner parses each file into an AST exactly once. The AST is reused by every step run against that file.</li>
-<li>For each file, the runner runs every step against the AST in the order the steps are declared.</li>
-<li>For each step, the checks run in the order they are declared. Each check receives the AST and its settings and returns findings.</li>
-<li>The runner stamps each finding with the step's label, the file path, and the severity declared for the check that produced it.</li>
-<li>The runner assembles the file report and continues with the next file.</li>
-<li>When all files are checked, the runner assembles the run report and presents it.</li>
+<h1><a class="toc-backref" id="semantic-mode" href="#semantic-mode">Semantic Mode</a></h1><p>Semantic checks are off by default. Passing <tt class="docutils literal"><span class="pre">--semantic</span></tt> (or <tt class="docutils literal"><span class="pre">-s</span></tt>) enables them in addition to ordinary checks. It does not replace the parsed AST with the typed AST or disable ordinary checks.</p>
+<p>When the flag is absent and the config declares semantic checks, Lint warns that they were skipped, names the checks, and explains how to enable them. The warning does not itself fail the run. There is no config-level switch enabling semantic analysis implicitly.</p>
+<p>When the flag is present, semantic analysis is needed only for files with applicable semantic checks after target selection and step-level exclusions. Import dependencies may still require analysis even if they are not themselves selected for linting.</p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
+Semantic mode can be substantially more expensive than a run with only ordinary checks. It also evaluates compiler configuration scripts, macros, and compile-time code. It is not a passive or sandboxed inspection of source files.</div>
+
+<h2><a class="toc-backref" id="semantic-mode-compiler-configuration" href="#semantic-mode-compiler-configuration">Compiler configuration</a></h2><p>Lint delegates compiler configuration discovery and evaluation to the Nim compiler. It does not reproduce Nim's configuration search rules. Applicable system, user, parent-directory, project, and file-specific configuration is resolved by the compiler, including NimScript configuration that computes paths or defines dynamically.</p>
+<p>The reference context is a direct <tt class="docutils literal"><span class="pre">nim check</span></tt> of the selected file using the corresponding compiler version and environment. Settings used to compile the lint executable do not automatically become settings for the files being linted.</p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
+Compiler configuration discovery does not reconstruct an arbitrary build command. Defines, dependency paths, backend options, or other arguments supplied only by a Nimble task or custom build script cannot be inferred from a <tt class="docutils literal"><span class="pre">.nim</span></tt> file alone. Semantic results match that build only when the analysis context includes those settings.</div>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Important:</b></span>
+Compile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> with the Nim version your project uses, and keep that same Nim installation on <tt class="docutils literal"><span class="pre">PATH</span></tt> when running <tt class="docutils literal"><span class="pre">./linter --semantic</span></tt>. Recompile the lint executable when you change the project's Nim version.</div>
+<p>The compiler front end is built into the lint executable, but standard-library sources are read from disk during semantic analysis. Changing <tt class="docutils literal"><span class="pre">PATH</span></tt> cannot change the embedded compiler. For example, a lint executable built with Nim 2.4.0 does not become a Nim 2.2.12 analyzer by putting Nim 2.2.12 on <tt class="docutils literal"><span class="pre">PATH</span></tt>; rebuild it with Nim 2.2.12 instead. See <a class="reference external" href="./cli.html#run-options-semantic-checks">CLI: Semantic checks</a> for the build and run instructions.</p>
+<p>Lint supports a defined set of Nim versions rather than assuming compatibility with every release, because the compiler's internal APIs can change between versions.</p>
+
+<h2><a class="toc-backref" id="semantic-mode-entry-points-and-dependencies" href="#semantic-mode-entry-points-and-dependencies">Entry points and dependencies</a></h2><p>Each selected file requiring semantic analysis is treated as an entry point, with its imports resolved recursively. Finding a package's main module or querying Nimble for an entry point is not required.</p>
+<p>Dependencies are analyzed to establish context, but checks run only on selected files to which they apply. Ignoring a dependency for linting does not remove it from the compiler's import closure.</p>
+<div class="admonition admonition-info"><span class="admonition-info-text"><b>Note:</b></span>
+Standalone analysis may differ from a full project build. For example, <tt class="docutils literal"><span class="pre">isMainModule</span></tt> differs when a file is an entry point rather than an import, and file-specific compiler configuration may differ from the main project's configuration. This design does not provide whole-project checks or select a single project entry point automatically.</div>
+<p>Each selected entry file has an independent compiler context. Dependencies are reused within that context, but overlapping import closures are analyzed again for other entry files. This keeps file-specific configuration and entry-point conditions isolated.</p>
+<p>JavaScript semantic analysis is unsupported. When configuration selects the JS backend, Lint reports it and skips the affected semantic checks rather than analyzing the file under native assumptions.</p>
+
+<h2><a class="toc-backref" id="semantic-mode-errors-and-partial-trees" href="#semantic-mode-errors-and-partial-trees">Errors and partial trees</a></h2><p>Semantic analysis is best-effort. Lint requests compiler error recovery so that recoverable errors do not prevent analysis of the rest of a file or other selected files. Recovery cannot guarantee that every error will be reported or that every file will have a usable typed tree. Unexpected raised exceptions are reported as analysis failures without exposing the interrupted tree; compiler failures that terminate the process directly are outside this recovery boundary.</p>
+<p>When the compiler reports semantic errors:</p>
+<ul class="simple"><li>ordinary checks still run on the source and parsed AST;</li>
+<li>semantic checks run on the retained typed tree when one is available, even if that tree is partial;</li>
+<li>compiler errors are surfaced as analysis warnings, preserving their messages and source locations where available; compiler warnings and hints are omitted;</li>
+<li>if no typed tree is available, Lint explicitly warns which semantic checks could not run for that file.</li>
+</ul>
+<p>Compiler diagnostics may refer to dependencies or compile-time execution locations rather than the selected file. They retain that attribution and are not relabeled as check findings in the selected file. Requested line ranges and <tt class="docutils literal"><span class="pre">#nolint</span></tt> suppression apply to check findings, not to compiler diagnostics or incomplete-analysis warnings.</p>
+<div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
+A retained typed tree after errors is not a fully validated tree. Semantic checks handle missing type information, error placeholders, and incomplete subtrees without drawing conclusions that depend on information the compiler did not establish. A successful exit status does not certify that all code compiled or all semantic checks could run: review the analysis warnings as well.</div>
+<p>Semantic diagnostics and unavailable-tree warnings do not themselves change the exit status. Check findings still use their configured severities, and a check that raises an exception is still a check error.</p>
+
+<h1><a class="toc-backref" id="execution-flow" href="#execution-flow">Execution Flow</a></h1><ol class="simple"><li>The config file is compiled into the project's lint executable, validating check references and settings types.</li>
+<li>The executable reads command-line targets, output options, and the explicit semantic-mode flag.</li>
+<li>The runner selects Nim files from targets or configured sources, applies the applicable exclusions, and orders files by path.</li>
+<li>Without semantic mode, the runner warns about configured semantic checks that will not run.</li>
+<li>For each selected file, the runner obtains its original source and parsed AST. These inputs are reused by its checks rather than prepared separately for each step. If parsing fails, the runner reports it and continues with the remaining files.</li>
+<li>When semantic mode is enabled and a file has applicable semantic checks, the compiler resolves the file's configuration and analyzes its import closure. The resulting typed tree is reused by all semantic checks for that file. Diagnostics are reported without disabling the file's ordinary checks.</li>
+<li>The runner runs applicable steps and checks in declaration order, supplying each check's inputs and settings. Semantic checks use the available full or partial typed tree; unavailable inputs are reported explicitly.</li>
+<li>The runner attributes findings to their file, step, and check, and applies the configured severity. It filters findings by requested line ranges and <tt class="docutils literal"><span class="pre">#nolint</span></tt> suppression.</li>
+<li>The runner assembles the reports, presents the results and any analysis warnings, and exits with the appropriate status.</li>
 </ol>
+<p>The compiler may read and parse files as part of semantic analysis. Reusing the runner's parsed AST across checks does not imply that the compiler can reuse that same tree or avoid its own parsing.</p>
 
-<h1><a class="toc-backref" id="library-surface" href="#library-surface">Library Surface</a></h1><p>The config file is a Nim source file that imports Lint and declares a config. The library exposes the types and templates the config file needs:</p>
-<ul class="simple"><li>the <tt class="docutils literal"><span class="pre">Linter</span></tt> and <tt class="docutils literal"><span class="pre">Check</span></tt> types, and helpers for declaring them</li>
-<li>the templates for declaring a config: sources, ignored patterns, linter steps, checks with settings and severity</li>
-<li>the runner</li>
-<li>the CLI</li>
-</ul>
-<p>The library does not expose:</p>
-<ul class="simple"><li>the report types beyond what a custom presenter needs</li>
-<li>any way to discover linters at runtime; the set of linters is fixed at compile time by what the config file imports</li>
-</ul>
-<p>A check receives the parsed file as a <tt class="docutils literal"><span class="pre">PNode</span></tt> from Nim's own compiler AST module (<tt class="docutils literal"><span class="pre">compiler/ast</span></tt>). Lint neither converts the tree nor provides a tree type of its own: the node a check walks is exactly the node the parser produced. Writing a check therefore means importing <tt class="docutils literal"><span class="pre">compiler/ast</span></tt> and matching on node kinds, so a linter module depends on that module directly.</p>
-<p>Because of that dependency, the compiler sources must be on the search path for anything that imports <tt class="docutils literal"><span class="pre">lint</span></tt> — the library itself, every linter, and every config. Each of them needs a <tt class="docutils literal"><span class="pre">.nims</span></tt> file containing <tt class="docutils literal"><span class="pre">--path:&quot;$nim/&quot;</span></tt>; see <a class="reference external" href="./writing_a_linter.html#the-compiler-sources-on-the-search-path">Writing a Linter</a>.</p>
-<p>Compilation is the config's validation step for everything the type system can express: a misspelled linter or check name and a wrong settings type are compile errors.</p>
+<h1><a class="toc-backref" id="library-surface" href="#library-surface">Library Surface</a></h1><p>The library exposes the concepts needed to declare linters, checks, settings, configurations, and findings, together with the runner and CLI. The set of linters and checks is fixed by imports when the config is compiled; there is no runtime linter discovery.</p>
+<p>Checks receive the original source text and compiler-native syntax trees. Semantic checks receive a separate compiler-native typed tree as well. Lint does not replace those trees with its own syntax model. Inputs are shared for read-only use.</p>
+<p>Linter authors therefore depend on Nim's compiler tree definitions. Compiling the lint executable uses those compiler sources; setup details are described in <a class="reference external" href="./writing_a_linter.html">Writing a Linter</a>.</p>
+<p>Compilation validates everything the type system can express, including misspelled check names, wrong settings types, and a check interface incompatible with its config declaration. Runtime analysis availability is reported during the run, not validated when the config is compiled.</p>
 
-<h1><a class="toc-backref" id="exit-modes" href="#exit-modes">Exit Modes</a></h1><p>The run ends in exactly one of the following outcomes.</p>
-<p><em>Clean run</em> — every file parsed, every step completed, and no finding carries the <em>error</em> severity. The run report contains only hints, or is empty. The process exits with code 0.</p>
-<p><em>Errors found</em> — every file parsed and every step completed, and at least one finding carries the <em>error</em> severity. The process exits with code 1.</p>
-<p><em>Parse error</em> — a source file could not be parsed, so no AST exists and no step can be run against it. The file report holds a single finding attributed to the runner (not to a step) describing the parse failure. A parse error always fails the run, regardless of configured severities, because no check was able to evaluate the file. Remaining files are still checked, so one unparseable file does not hide findings in the rest. The process exits with code 2.</p>
-<p><em>No sources</em> — the run selected no files: nothing matched the config's <tt class="docutils literal"><span class="pre">sources</span></tt>, or nothing matched the arguments given on the command line. This is reported before any file is read, because there is nothing to report on. The process exits with code 3.</p>
-<p><em>Check error</em> — a check raised an exception. A check is library code, so an exception is a defect in the tool, not a property of the checked code. The run stops, the exception is reported with the step label, check name, and file path, and the process exits with code 4. Continuing past a raising check would report a file as checked when it was not. </p>
+<h1><a class="toc-backref" id="exit-modes" href="#exit-modes">Exit Modes</a></h1><p>The run ends in one of the following outcomes:</p>
+<p><em>Clean run</em> — all selected files parsed, checks that could run completed, and no check finding carries error severity. Analysis warnings may still be present. The process exits with code 0.</p>
+<p><em>Errors found</em> — no selected file failed to parse, no check raised an exception, and at least one check finding carries error severity. The process exits with code 1.</p>
+<p><em>Parse error</em> — a selected file could not be parsed, so checks requiring its parsed AST cannot run. The runner reports the failure and continues checking the remaining files. A parse failure takes precedence over error findings. The process exits with code 2.</p>
+<p><em>No sources</em> — no file matched the configured sources or command-line targets after selection. The process exits with code 3.</p>
+<p><em>Check error</em> — a check raised an exception. The run stops and reports the exception with the step label, check name, and file path. This is a tool failure rather than a finding about the source, and takes precedence over previously collected findings or parse failures. The process exits with code 4.</p>
+<p>Semantic checks intentionally disabled by omitting <tt class="docutils literal"><span class="pre">--semantic</span></tt>, compiler diagnostics during best-effort analysis, and warnings about unavailable typed trees do not create additional exit modes. </p>
 </p>
     
   </div>
@@ -157,7 +207,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-16 16:16:21 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-20 12:00:25 UTC</small>
       </div>
     </div>
   </div>

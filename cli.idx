@@ -1,5 +1,6 @@
 markupTitle	CLI	cli.html	CLI		0
 heading	Run options	cli.html#run-options	 Run options		0
+heading	Semantic checks	cli.html#run-options-semantic-checks	  Semantic checks		0
 heading	Linting a subset	cli.html#run-options-linting-a-subset	  Linting a subset		0
 heading	Linting specific lines	cli.html#run-options-linting-specific-lines	  Linting specific lines		0
 heading	GitHub Actions output	cli.html#run-options-github-actions-output	  GitHub Actions output		0
