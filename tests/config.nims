@@ -1,1 +1,2 @@
---"path":"$projectDir/../src"
+--"path":
+  "$projectDir/../src"

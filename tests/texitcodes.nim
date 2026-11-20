@@ -38,5 +38,10 @@ suite "Exit codes":
     let (_, exitCode) = runLinter("src/skip2/bug2.nim")
     check exitCode == 4
 
-  removeLinterExecutable()
+  test "Compiler diagnostics alone do not fail the run":
+    let (output, exitCode) = runLinter("--semantic src/skip2/broken_stringify.nim:7")
+    check exitCode == 0
+    check "type mismatch" in output
+    check "hints: 0, errors: 0" in output
 
+  removeLinterExecutable()

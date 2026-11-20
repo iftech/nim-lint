@@ -17,9 +17,10 @@ import compiler/[ast, parser, idents, options]
 import compiler/lineinfos except Severity
 
 import ./[cli, suppress, types]
+import ./semanalysis
 
 type
-  ExitMode* {.pure.} = enum
+  ExitMode* {.pure.} = enum ## Process exit codes for completed or interrupted runs.
     emClean = 0
     emErrorsFound = 1
     emParseError = 2
@@ -33,18 +34,18 @@ type
     file*: string
     finding*: Finding
 
-  StepReport* = object
+  StepReport* = object ## Findings produced by one step for one file.
     label*: string
     findings*: seq[FindingTag]
 
-  FileReport* = object
+  FileReport* = object ## Ordered step reports for a selected file.
     file*: string
     stepReports*: seq[StepReport]
 
-  RunReport* = object
+  RunReport* = object ## Ordered file reports collected during a run.
     fileReports*: seq[FileReport]
 
-  ParseFailure* = object of CatchableError
+  ParseFailure* = object of CatchableError ## A parser error the runner can report.
 
 proc normalize(path: string): string =
   ## The glob library matches against patterns without a leading `./`.
@@ -66,7 +67,7 @@ proc nimFiles(pattern: string): seq[string] =
 
   for path in walkGlob(pattern, options = {Files, FileLinks, DirLinks, Hidden}):
     if splitFile(path).ext == ".nim":
-      result.add normalize(path)
+      result.add(normalize(path))
 
 proc collectFiles(config: Config, targets: seq[Target]): seq[string] =
   ## Returns the files to lint in ascending path order.
@@ -101,14 +102,14 @@ proc raiseParseError(conf: ConfigRef, info: TLineInfo, msg: TMsgKind, arg: strin
 
   raise newException(ParseFailure, "(" & $info.line & ", " & $info.col & ") " & arg)
 
-proc parseFile(path: string): tuple[ast: PNode, lines: seq[string]] =
+proc parseFile(path: string): tuple[ast: PNode, source: string] =
   let
     src = readFile(path)
     cache = newIdentCache()
     conf = newPartialConfigRef()
 
   result.ast = parseString(src, cache, conf, path, errorHandler = raiseParseError)
-  result.lines = src.splitLines()
+  result.source = src
 
 proc renderFinding(tag: FindingTag): string =
   fmt"[{tag.stepLabel}][{tag.checkName}][{tag.severity}][{tag.file}:{tag.finding.line}:{tag.finding.col}] {tag.finding.msg}"
@@ -118,14 +119,14 @@ proc renderGithub(tag: FindingTag): string =
   ## annotation on the pull request.
 
   let
-    kind =
-      if tag.severity == Severity.error: "error"
-      else: "warning"
+    kind = if tag.severity == Severity.error: "error" else: "warning"
     title = tag.stepLabel & "/" & tag.checkName
 
   fmt"::{kind} file={tag.file},line={tag.finding.line},col={tag.finding.col},title={title}::{tag.finding.msg}"
 
 proc `$`*(report: RunReport, format = Format.text): string =
+  ## Renders findings in the selected format, with a summary for text output.
+
   var hints, errors = 0
 
   for fileReport in report.fileReports:
@@ -139,14 +140,16 @@ proc `$`*(report: RunReport, format = Format.text): string =
 
         case format
         of Format.github:
-          result.add renderGithub(tag) & "\n"
+          result.add(renderGithub(tag) & "\n")
         of Format.text:
-          result.add renderFinding(tag) & "\n"
+          result.add(renderFinding(tag) & "\n")
 
   if format != Format.github:
-    result.add &"hints: {hints}, errors: {errors}\n"
+    result.add(&"hints: {hints}, errors: {errors}\n")
 
 proc exitMode*(report: RunReport): ExitMode =
+  ## Returns errors-found if a finding has error severity, otherwise clean.
+
   for fileReport in report.fileReports:
     for stepReport in fileReport.stepReports:
       for tag in stepReport.findings:
@@ -155,7 +158,9 @@ proc exitMode*(report: RunReport): ExitMode =
 
   ExitMode.emClean
 
-proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
+proc run*(
+    config: Config, targets: seq[Target] = @[], format = Format.text, semantic = false
+) =
   ## Runs the config and exits with the code for the resulting exit mode.
   ##
   ## `targets` come from the command line and override the config's sources.
@@ -163,30 +168,42 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
   var exitCode = ExitMode.emClean
 
   let files = collectFiles(config, targets)
-  if files.len == 0:
-    stderr.writeLine "no sources to lint"
+  if len(files) == 0:
+    stderr.writeLine("no sources to lint")
     quit(ord(ExitMode.emNoSources))
+
+  if not semantic:
+    var skipped: seq[string]
+    for step in config.steps:
+      for check in step.checks:
+        if check.isSemantic:
+          skipped.addUnique(check.name)
+    if len(skipped) > 0:
+      stderr.writeLine("warning: semantic checks skipped (" & skipped.join(", ") &
+        "); pass --semantic to run them")
 
   var report = RunReport()
 
   # Line ranges requested on the command line, keyed by path.
   var rangesByPath: Table[string, seq[tuple[first, last: int]]]
   for target in targets:
-    if target.lines.len > 0:
+    if len(target.lines) > 0:
       rangesByPath[target.path] = target.lines
 
   for file in files:
     var
       fileReport = FileReport(file: file)
       ast: PNode
+      source: string
       sourceLines: seq[string]
       parseFailed = false
 
     try:
-      (ast, sourceLines) = parseFile(file)
+      (ast, source) = parseFile(file)
+      sourceLines = source.splitLines()
     except CatchableError as e:
       parseFailed = true
-      fileReport.stepReports.add StepReport(
+      fileReport.stepReports.add(StepReport(
         label: "runner",
         findings: @[
           FindingTag(
@@ -197,41 +214,68 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
             finding: Finding(line: 0, col: 0, msg: "parse error: " & e.msg),
           )
         ],
-      )
+      ))
       exitCode = ExitMode.emParseError
 
     if not parseFailed:
+      var
+        analyzed: semanalysis.SemResult
+        analysisAttempted = false
+
       for step in config.steps:
         # Explicit targets override every ignore, including step-level ones: a
         # named file is a request to lint it.
-        if targets.len == 0 and isIgnored(file, step.ignoredPatterns):
+        if len(targets) == 0 and isIgnored(file, step.ignoredPatterns):
           continue
 
         var stepReport = StepReport(label: step.label)
         for check in step.checks:
+          if check.isSemantic:
+            if not semantic:
+              continue
+            if not analysisAttempted:
+              analysisAttempted = true
+              analyzed = semanalysis.analyzeFile(file)
+              for diagnostic in analyzed.diagnostics:
+                let location =
+                  if len(diagnostic.file) == 0:
+                    ""
+                  elif diagnostic.line > 0:
+                    &"{diagnostic.file}:{diagnostic.line}:{diagnostic.col}: "
+                  else:
+                    diagnostic.file & ": "
+                stderr.writeLine("warning: " & location & diagnostic.message)
+            if analyzed.tree.isNil:
+              stderr.writeLine(&"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available")
+              continue
+
           var findings: seq[Finding]
           try:
-            findings = check.run(ast)
+            findings =
+              if check.isSemantic:
+                check.semRun(source, ast, analyzed.tree)
+              else:
+                check.run(source, ast)
           except Exception as e:
-            stderr.writeLine &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
+            stderr.writeLine(&"check error: [{step.label}][{check.name}] {file}: {e.msg}")
             quit(ord(ExitMode.emCheckError))
           for f in findings:
             if rangesByPath.hasKey(file) and not inRanges(f.line, rangesByPath[file]):
               continue
             if isSuppressed(sourceLines, f.line):
               continue
-            stepReport.findings.add FindingTag(
+            stepReport.findings.add(FindingTag(
               severity: check.severity,
               stepLabel: step.label,
               checkName: check.name,
               file: file,
               finding: f,
-            )
-        fileReport.stepReports.add stepReport
+            ))
+        fileReport.stepReports.add(stepReport)
 
     report.fileReports.add(fileReport)
 
-  stdout.write report.`$`(format)
+  stdout.write(report.`$`(format))
 
   let mode = report.exitMode
 
@@ -239,4 +283,3 @@ proc run*(config: Config, targets: seq[Target] = @[], format = Format.text) =
     exitCode = mode
 
   quit(ord(exitCode))
-

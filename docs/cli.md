@@ -35,6 +35,32 @@ With no arguments, the executable lints the config's `sources`:
 ./linter
 ```
 
+## Semantic checks
+
+Pass `--semantic` (or `-s`) to run semantic checks in addition to ordinary checks:
+
+```shell
+nim --version                      # verify this is the project's Nim version
+nim c -d:release linter.nim
+./linter --semantic
+```
+
+.. important::
+  Compile `linter.nim` with the Nim version your project uses, and keep that same Nim installation on `PATH` when running `./linter --semantic`. Recompile `linter.nim` whenever you change the project's Nim version.
+
+The lint executable embeds the compiler front end it was built with, while semantic analysis reads standard-library sources from disk. Changing the Nim on `PATH` does not switch the executable's embedded compiler. For example, if your project uses Nim 2.2.12 but `linter.nim` was compiled with Nim 2.4.0, select Nim 2.2.12 and recompile `linter.nim` before running semantic checks.
+
+Without `--semantic`, ordinary checks still run and Lint warns about configured semantic checks that were skipped.
+
+Each file with applicable semantic checks is analyzed as an entry point, including its recursive imports. The compiler loads the applicable Nim configuration files; Lint does not infer arguments supplied only by a Nimble task or custom build command. Analysis uses an independent compiler context per selected file, so overlapping dependencies can be analyzed again.
+
+.. warning::
+  Semantic analysis evaluates configuration scripts, macros, and compile-time code. Run it only on code you trust. It is more expensive than ordinary checking and is not sandboxed.
+
+Compiler errors are reported as analysis warnings, with locations when available. Compiler warnings and hints are not printed; they are not lint findings. Semantic checks still run on partial typed trees after recoverable errors. If no tree is available, Lint names the checks that could not run and continues with ordinary checks and other files. These warnings alone do not fail the run; error findings and check exceptions retain the exit codes above. Some fatal compiler failures can terminate the process before recovery.
+
+Line ranges and `#nolint` filter check findings, not compiler diagnostics or notices about unavailable analysis. JavaScript semantic analysis is not supported; a JS-configured file produces a warning and its semantic checks do not run.
+
 ## Linting a subset
 
 Arguments override `sources` and every `ignoredPatterns`, including step-level ones. An explicit argument is a request to lint exactly that, so nothing in the config can silently exclude it.
@@ -61,7 +87,7 @@ This is useful when you want to check a change without being told about everythi
 
 ## GitHub Actions output
 
-`--format=github` emits GitHub Actions workflow commands instead of the human-readable report, so findings appear as inline annotations on a pull request:
+`--format=github` (or `-f:github`) emits GitHub Actions workflow commands instead of the human-readable report, so findings appear as inline annotations on a pull request:
 
 ```shell
 ./linter --format=github src/foo.nim

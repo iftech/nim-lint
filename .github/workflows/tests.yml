@@ -10,4 +10,4 @@ on:
 
 jobs:
   tests:
-    uses: status-im/nimbus-common-workflow/.github/workflows/common.yml@cache-compiler
+    uses: status-im/nimbus-common-workflow/.github/workflows/common.yml@main

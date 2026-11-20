@@ -15,7 +15,7 @@
 import compiler/ast
 
 type
-  Severity* {.pure.} = enum
+  Severity* {.pure.} = enum ## Reporting level assigned by the config to a check.
     hint
     error
 
@@ -27,31 +27,39 @@ type
     msg*: string
 
   Check*[S] = object ## One check declared by a linter, bound to its settings type.
-    run*: proc(ast: PNode, settings: S): seq[Finding]
+    run*: proc(source: string, ast: PNode, settings: S): seq[Finding]
     defaults*: S ## Used when a config declares the check without settings.
+
+  SemCheck*[S] = object ## A check that additionally reads the typed AST.
+    run*: proc(source: string, ast: PNode, typed: PNode, settings: S): seq[Finding]
+    defaults*: S
 
   Linter* = object ## A group of checks. A linter module exports one `Linter` value.
 
   StepSetting* = object
-    ## Runtime form of one `check` entry: the check plus its settings,
+    ## Runtime form of one `check` or `semCheck` entry, with its settings,
     ## type-erased at the last moment.
     name*: string
     severity*: Severity
-    run*: proc(ast: PNode): seq[Finding]
+    case isSemantic*: bool
+    of false:
+      run*: proc(source: string, ast: PNode): seq[Finding]
+    of true:
+      semRun*: proc(source: string, ast: PNode, typed: PNode): seq[Finding]
 
   Step* = object ## One declared `step` block.
     label*: string
     ignoredPatterns*: seq[string]
     checks*: seq[StepSetting]
 
-  Config* = object
+  Config* = object ## Source selection and ordered checking steps for a run.
     sources*: seq[string]
     ignoredPatterns*: seq[string]
     steps*: seq[Step]
 
 proc addCheck*[S](
     linter: Linter,
-    run: proc(ast: PNode, settings: S): seq[Finding],
+    run: proc(source: string, ast: PNode, settings: S): seq[Finding],
     defaults: S = default(S),
 ): Check[S] =
   ## Used by linter modules to declare one check, its settings type, and the
@@ -62,8 +70,31 @@ proc addCheck*[S](
 
   Check[S](run: run, defaults: defaults)
 
+proc addCheck*[S](
+    linter: Linter,
+    run: proc(ast: PNode, settings: S): seq[Finding],
+    defaults: S = default(S),
+): Check[S] {.
+    deprecated:
+      "Use addCheck with proc(source: string, ast: PNode, settings: S) to receive the original source text."
+.} =
+  ## Adapts a legacy AST-only callback; new checks also receive source text.
+  addCheck(
+    linter,
+    proc(source: string, ast: PNode, settings: S): seq[Finding] =
+      run(ast, settings),
+    defaults,
+  )
+
+proc addCheck*[S](
+    linter: Linter,
+    run: proc(source: string, ast: PNode, typed: PNode, settings: S): seq[Finding],
+    defaults: S = default(S),
+): SemCheck[S] =
+  ## Declares a semantic check, with the same settings rules as an ordinary check.
+  SemCheck[S](run: run, defaults: defaults)
+
 proc toFinding*(node: PNode, msg: string): Finding =
   ## Builds a finding located at a node.
 
   Finding(line: int(node.info.line), col: int(node.info.col), msg: msg)
-

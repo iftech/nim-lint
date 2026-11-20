@@ -20,6 +20,7 @@
 
 import std/[parseopt, strutils]
 
+## Command-line usage, supported options, and exit codes.
 const helpText* = """Usage: linter [options] [target...]
 
 Lint the files selected by the config's `sources`, or the targets given on the
@@ -38,9 +39,10 @@ Targets:
   on Windows.
 
 Options:
-  --format=text           human-readable report (default)
-  --format=github         GitHub Actions workflow commands, for inline
+  -f, --format=text       human-readable report (default)
+  -f, --format=github     GitHub Actions workflow commands, for inline
                           annotations on a pull request
+  -s, --semantic          run semantic checks in addition to ordinary checks
   -h, --help              show this message and exit
 
 Exit codes:
@@ -56,7 +58,7 @@ type
     path*: string ## A file or a glob pattern.
     lines*: seq[tuple[first, last: int]] ## Empty means the whole file.
 
-  Format* {.pure.} = enum
+  Format* {.pure.} = enum ## Output encoding for findings and run summaries.
     text
     github
 
@@ -64,6 +66,7 @@ type
     targets*: seq[Target]
     format*: Format ## `text` or `github`.
     help*: bool ## `--help` or `-h` was given.
+    semantic*: bool ## Enable semantic checks for this run.
 
 proc parseRanges(s: string): seq[tuple[first, last: int]] =
   ## Parses `10-12,40` into ranges. Returns an empty seq when `s` is not a
@@ -72,7 +75,7 @@ proc parseRanges(s: string): seq[tuple[first, last: int]] =
   for part in s.split(','):
     let bounds = part.split('-')
 
-    if bounds.len > 2:
+    if len(bounds) > 2:
       return
 
     var first, last: int
@@ -80,7 +83,7 @@ proc parseRanges(s: string): seq[tuple[first, last: int]] =
     try:
       first = parseInt(bounds[0])
       last =
-        if bounds.len == 2:
+        if len(bounds) == 2:
           parseInt(bounds[1])
         else:
           first
@@ -90,7 +93,7 @@ proc parseRanges(s: string): seq[tuple[first, last: int]] =
     if first < 1 or last < first:
       return
 
-    result.add (first, last)
+    result.add((first, last))
 
 proc parseTarget*(arg: string): Target =
   ## Splits an argument into a path and optional line ranges.
@@ -117,11 +120,13 @@ proc parseOptions*(args: seq[string]): Options =
     of cmdEnd:
       break
     of cmdArgument:
-      result.targets.add parseTarget(key)
+      result.targets.add(parseTarget(key))
     of cmdShortOption, cmdLongOption:
       case key
       of "format", "f":
         result.format = parseEnum[Format](val)
+      of "semantic", "s":
+        result.semantic = true
       of "help", "h":
         result.help = true
       else:
@@ -131,10 +136,9 @@ proc parseOptions*(args: seq[string]): Options =
 proc inRanges*(line: int, ranges: seq[tuple[first, last: int]]): bool =
   ## True when `line` falls in any of `ranges`. An empty list matches everything.
 
-  if ranges.len == 0:
+  if len(ranges) == 0:
     return true
 
   for r in ranges:
     if line >= r.first and line <= r.last:
       return true
-

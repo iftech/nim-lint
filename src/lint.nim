@@ -17,8 +17,11 @@ import ./lint/private/types
 import ./lint/private/config
 
 # What a linter author needs: the types and helpers for declaring checks.
-export types.Linter, types.Check, types.Finding
-export types.addCheck, types.toFinding
+export types.Linter, types.Check, types.SemCheck, types.Finding
+{.push warning[Deprecated]: off.}
+export types.addCheck
+{.pop.}
+export types.toFinding
 
 # What a config file needs: `runLint`.
 export config

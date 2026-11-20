@@ -1,0 +1,16 @@
+name: Lint
+
+on:
+  pull_request:
+  merge_group:
+
+jobs:
+  Lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+      - name: Run Lint
+        uses: iftech/nim-lint@feature/semantic_checks

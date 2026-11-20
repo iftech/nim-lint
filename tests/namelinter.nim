@@ -12,7 +12,6 @@ type
 
   ConstNamesSettings* = object
     prefix*: string = "k"
-
 #ANCHOR_END: settings
 
 proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
@@ -39,7 +38,7 @@ proc runVarNames(ast: PNode, s: VarNamesSettings): seq[Finding] =
           )
 
 #ANCHOR: runConstNames
-proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
+proc runConstNames(source: string, ast: PNode, s: ConstNamesSettings): seq[Finding] =
   if s.prefix.len == 0:
     return
   for node in ast.sons:
@@ -52,11 +51,9 @@ proc runConstNames(ast: PNode, s: ConstNamesSettings): seq[Finding] =
           result.add def[0].toFinding(
             "constant `" & name & "` should start with `" & s.prefix & "`"
           )
-
 #ANCHOR_END: runConstNames
 
 let
   nameLinter* = Linter()
   varNames* = nameLinter.addCheck(runVarNames)
   constNames* = nameLinter.addCheck(runConstNames)
-

@@ -14,7 +14,7 @@ on:
   merge_group:
 
 jobs:
-  lint:
+  Lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -31,6 +31,22 @@ Possible inputs:
 | ------------- | ------------ | ------------------------------------- |
 | `config`      | `linter.nim` | Path to the config file.              |
 | `nim-version` | `stable`     | Nim version used to build the config. |
+| `semantic`    | `false`      | Enable semantic checks (`--semantic`). |
+
+Enable semantic checks explicitly and select the Nim version your project uses:
+
+```yaml
+- name: Run Lint with semantic checks
+  uses: iftech/nim-lint@develop
+  with:
+    nim-version: '2.2.14'
+    semantic: 'true'
+```
+
+Pin the action to a release or commit that includes semantic-check support when using it in production. The `semantic` input affects the run, not compilation, so both modes reuse the same cached executable.
+
+.. warning::
+  Semantic checks analyze import dependencies and execute compiler configuration scripts, macros, and compile-time code. They can be substantially more expensive than ordinary checks. Enable them only for code you trust and ensure the analysis configuration contains the project's dependency paths and build settings.
 
 What the action does:
 

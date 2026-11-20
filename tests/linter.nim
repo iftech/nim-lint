@@ -1,13 +1,16 @@
 import lint
+
 import namelinter
+import commentlinter
+import stringifylinter
 
 runLint:
-#ANCHOR: globalConfig
+  #ANCHOR: globalConfig
   sources = ["./src"]
   ignoredPatterns = ["./src/skip/skipped.nim", "./src/skip2/**/*"]
-#ANCHOR_END: globalConfig
+  #ANCHOR_END: globalConfig
 
-#ANCHOR: stepConfig
+  #ANCHOR: stepConfig
   step "Check naming":
     ignoredPatterns = ["./src/skip/skipped2.nim"]
     check varNames:
@@ -19,4 +22,11 @@ runLint:
       severity = error
       settings:
         prefix = "k"
-#ANCHOR_END: stepConfig
+  #ANCHOR_END: stepConfig
+  step "Check comments":
+    check todoComments:
+      severity = hint
+
+  step "Check string representations":
+    semCheck customDollar:
+      severity = error

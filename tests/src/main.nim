@@ -16,4 +16,5 @@ var
 proc strings() =
   echo "#nolint"
   echo "a #nolint b"
+
 #endNoSuppressionInStrings
