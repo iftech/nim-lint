@@ -89,12 +89,21 @@
 <tr><td><tt class="docutils literal"><span class="pre">config</span></tt></td><td><tt class="docutils literal"><span class="pre">linter.nim</span></tt></td><td>Path to the config file.</td></tr>
 <tr><td><tt class="docutils literal"><span class="pre">nim-version</span></tt></td><td><tt class="docutils literal"><span class="pre">stable</span></tt></td><td>Nim version used to build the config.</td></tr>
 <tr><td><tt class="docutils literal"><span class="pre">semantic</span></tt></td><td><tt class="docutils literal"><span class="pre">false</span></tt></td><td>Enable semantic checks (<tt class="docutils literal"><span class="pre">--semantic</span></tt>).</td></tr>
+<tr><td><tt class="docutils literal"><span class="pre">setup</span></tt></td><td><tt class="docutils literal"><span class="pre">nimble setup -y</span></tt></td><td>Dependency setup command; runs only with <tt class="docutils literal"><span class="pre">semantic: 'true'</span></tt>. Empty to skip.</td></tr>
 </table><p>Enable semantic checks explicitly and select the Nim version your project uses:</p>
 <p><pre class="listing"><span class="Punctuation">-</span> <span class="StringLit">name</span><span class="Punctuation">:</span> <span class="StringLit">Run Lint with semantic checks</span>
   <span class="StringLit">uses</span><span class="Punctuation">:</span> <span class="StringLit">iftech/nim-lint@develop</span>
   <span class="StringLit">with</span><span class="Punctuation">:</span>
     <span class="StringLit">nim-version</span><span class="Punctuation">:</span> <span class="StringLit">'2.2.14'</span>
     <span class="StringLit">semantic</span><span class="Punctuation">:</span> <span class="StringLit">'true'</span></pre></p>
+<p>With semantic checks enabled, the action runs <tt class="docutils literal"><span class="pre">nimble setup -y</span></tt> in the project workspace after setting up Nim and before restoring or building the linter. This also runs when the compiled linter is cached: semantic analysis needs the project's dependencies at runtime. A setup failure stops the action.</p>
+<p>Override <tt class="docutils literal"><span class="pre">setup</span></tt> when your project needs a different dependency policy:</p>
+<p><pre class="listing"><span class="Punctuation">-</span> <span class="StringLit">name</span><span class="Punctuation">:</span> <span class="StringLit">Run Lint with semantic checks</span>
+  <span class="StringLit">uses</span><span class="Punctuation">:</span> <span class="StringLit">iftech/nim-lint@develop</span>
+  <span class="StringLit">with</span><span class="Punctuation">:</span>
+    <span class="StringLit">semantic</span><span class="Punctuation">:</span> <span class="StringLit">'true'</span>
+    <span class="StringLit">setup</span><span class="Punctuation">:</span> <span class="StringLit">nimble --noLockfile --resolver:minver -l setup -y</span></pre></p>
+<p>Use <tt class="docutils literal"><span class="pre">setup: ''</span></tt> if dependencies and their compiler paths are already prepared, or if the project has no dependencies to set up. The setup command is not run when semantic checks are disabled.</p>
 <p>Pin the action to a release or commit that includes semantic-check support when using it in production. The <tt class="docutils literal"><span class="pre">semantic</span></tt> input affects the run, not compilation, so both modes reuse the same cached executable.</p>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
 Semantic checks analyze import dependencies and execute compiler configuration scripts, macros, and compile-time code. They can be substantially more expensive than ordinary checks. Enable them only for code you trust and ensure the analysis configuration contains the project's dependency paths and build settings.</div>
@@ -118,7 +127,7 @@ Your project does not need <tt class="docutils literal"><span class="pre">lint</
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-20 12:07:03 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-20 12:33:19 UTC</small>
       </div>
     </div>
   </div>
