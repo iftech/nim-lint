@@ -7,7 +7,7 @@
 - `[t]`—test suite improvement
 - `[d]`—docs improvement
 
-## 1.1.0 (WIP)
+## 1.1.0 (November 23, 2026)
 
 - `[f]` Resolve `$nim` and installation configuration from Nim on `PATH` during semantic analysis, rather than from the linter executable's location.
 - `[f]` Flush semantic analysis errors as they arrive and identify each analysis target, preserving diagnostic context when the compiler terminates directly.
