@@ -53,7 +53,9 @@
           </ul></dd>
 <dt><a name="analyzeFile" href="#analyzeFile"><span>analyzeFile:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
-          data-doc-search-tag="semanalysis: proc analyzeFile(path: string): SemResult" href="lint/private/semanalysis.html#analyzeFile%2Cstring">semanalysis: proc analyzeFile(path: string): SemResult</a></li>
+          data-doc-search-tag="semanalysis: proc analyzeFile(path: string; onDiagnostic: proc (diagnostic: SemDiagnostic) {.
+    closure, gcsafe.} = nil): SemResult" href="lint/private/semanalysis.html#analyzeFile%2Cstring%2Cproc%28SemDiagnostic%29">semanalysis: proc analyzeFile(path: string; onDiagnostic: proc (diagnostic: SemDiagnostic) {.
+    closure, gcsafe.} = nil): SemResult</a></li>
           </ul></dd>
 <dt><a name="Check" href="#Check"><span>Check:</span></a></dt><dd><ul class="simple">
 <li><a class="reference external"
@@ -179,7 +181,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-23 09:18:29 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-23 12:33:21 UTC</small>
       </div>
     </div>
   </div>

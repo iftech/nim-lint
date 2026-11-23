@@ -98,7 +98,7 @@ Compile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> wi
 <p>Each file with applicable semantic checks is analyzed as an entry point, including its recursive imports. The compiler loads the applicable Nim configuration files; Lint does not infer arguments supplied only by a Nimble task or custom build command. Analysis uses an independent compiler context per selected file, so overlapping dependencies can be analyzed again.</p>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
 Semantic analysis evaluates configuration scripts, macros, and compile-time code. Run it only on code you trust. It is more expensive than ordinary checking and is not sandboxed.</div>
-<p>Compiler errors are reported as analysis warnings, with locations when available. Compiler warnings and hints are not printed; they are not lint findings. Semantic checks still run on partial typed trees after recoverable errors. If no tree is available, Lint names the checks that could not run and continues with ordinary checks and other files. These warnings alone do not fail the run; error findings and check exceptions retain the exit codes above. Some fatal compiler failures can terminate the process before recovery.</p>
+<p>Compiler errors are reported as analysis warnings, with locations when available. Compiler warnings and hints are not printed; they are not lint findings. Semantic checks still run on partial typed trees after recoverable errors. If no tree is available, Lint names the checks that could not run and continues with ordinary checks and other files. These warnings alone do not fail the run; error findings and check exceptions retain the exit codes above. Each analyzed target is identified by a <tt class="docutils literal"><span class="pre">Semantic analysis: &lt;file&gt;</span></tt> marker on stderr. Compiler errors are reported immediately and flushed, so diagnostics already received remain visible if analysis terminates directly. Some fatal compiler failures can terminate the process before recovery.</p>
 <p>Line ranges and <tt class="docutils literal"><span class="pre">#nolint</span></tt> filter check findings, not compiler diagnostics or notices about unavailable analysis. JavaScript semantic analysis is not supported; a JS-configured file produces a warning and its semantic checks do not run.</p>
 
 <h2><a class="toc-backref" id="run-options-linting-a-subset" href="#run-options-linting-a-subset">Linting a subset</a></h2><p>Arguments override <tt class="docutils literal"><span class="pre">sources</span></tt> and every <tt class="docutils literal"><span class="pre">ignoredPatterns</span></tt>, including step-level ones. An explicit argument is a request to lint exactly that, so nothing in the config can silently exclude it.</p>
@@ -123,7 +123,7 @@ Semantic analysis evaluates configuration scripts, macros, and compile-time code
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-23 09:18:30 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-23 12:33:22 UTC</small>
       </div>
     </div>
   </div>
