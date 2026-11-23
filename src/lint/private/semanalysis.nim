@@ -50,8 +50,7 @@ proc analyzeFile*(
   ## Calls `onDiagnostic` as errors arrive, before any direct compiler termination.
 
   var diagnostics: seq[SemDiagnostic]
-  template recordDiagnostic(value: SemDiagnostic) =
-    let diagnostic = value
+  proc recordDiagnostic(diagnostic: SemDiagnostic) {.gcsafe.} =
     diagnostics.add(diagnostic)
     if not onDiagnostic.isNil:
       onDiagnostic(diagnostic)
