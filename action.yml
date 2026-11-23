@@ -109,7 +109,9 @@ runs:
         # queue's base, or the previous commit on a push. Without the merge
         # queue case the diff is empty and the job passes without linting.
         BASE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before }}
-        HEAD: ${{ github.sha }}
+        # A PR checkout is a synthetic merge that may include newer base-branch
+        # changes. Select files from the PR head, not that merge commit.
+        HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         SEMANTIC: ${{ inputs.semantic }}
       run: |
         if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then

@@ -9,6 +9,7 @@
 
 ## 1.1.0 (WIP)
 
+- `[f]` Select GitHub Action PR targets from the PR head instead of the synthetic merge, excluding unrelated newer base-branch changes.
 - `[+]` Set up project dependencies in the GitHub Action when semantic checks are enabled. Override the `setup` command or set it to empty to skip.
 - `[t]` Use Lint to lint Lint.
 - `[d]` Add an LLM skill to generate linters.

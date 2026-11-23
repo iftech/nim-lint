@@ -77,6 +77,8 @@ The compiled binary is cached under a key derived from the config file, the lint
 
 The action detects linters imported by the config with a simple pattern: `import a` and `import a/b/c`. Relative imports (`import ./a`, `import ../a`), bracket groups (`import a/[b, c]`), `from x import y`, and `include` are not detected. If your config imports a linter that way, changes to it will not invalidate the cache; write the import as a plain `import a/b` line instead.
 
+For pull requests, file selection compares the recorded PR base with the PR head, not GitHub's synthetic merge commit. This excludes unrelated changes from a newer base branch. Files are still analyzed in the checked-out workspace (normally the synthetic merge), so checks see the integrated code.
+
 ## Merge queues
 
 The action also works on `merge_group` events, which GitHub fires when a pull request enters a merge queue. The diff is then taken against the queue's base commit, so findings may include code from pull requests merged ahead of yours. That is intentional: the merge queue tests the combined result.
