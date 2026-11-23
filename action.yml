@@ -19,7 +19,7 @@ inputs:
   setup:
     description: "Command to prepare project dependencies for semantic analysis; empty to skip."
     required: false
-    default: "nimble setup -y"
+    default: "nimble install -y"
 
 runs:
   using: composite
