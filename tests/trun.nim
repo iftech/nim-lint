@@ -1,4 +1,4 @@
-import std/[unittest, os, osproc, strutils, sequtils]
+import std/[unittest, os, osproc, strutils, sequtils, tempfiles]
 
 const
   config = "linter.nim"
@@ -180,6 +180,26 @@ suite "Run options":
     check "[Conf]" notin output
     check "compiler warnings are not lint findings" notin output
     check "implemented in the vmops" notin output
+
+  test "Semantic configuration termination keeps diagnostics and target context":
+    let directory = createTempDir("lint-semantic-", "")
+    let target = directory / "input.nim"
+    try:
+      writeFile(target, "discard\n")
+      for script in [
+        "quit(1)\n",
+        "switch(\"errorMax\", \"1\")\nswitch(\"invalidSemanticOption\", \"\")\n",
+      ]:
+        writeFile(directory / "config.nims", script)
+        let (output, exitCode) = runLinter("--semantic --format=github " & quoteShell(target))
+        check exitCode == 1
+        check output.count("Semantic analysis: " & target) == 1
+        if "invalidSemanticOption" in script:
+          check output.count("invalidSemanticOption") == 1
+          check "config.nims:" in output
+          check "warning:" in output
+    finally:
+      removeDir(directory)
 
   test "Semantic findings respect line ranges and output format":
     let (output, exitCode) = runLinter("--semantic --format=github src/stringify.nim:11")

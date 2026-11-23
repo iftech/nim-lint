@@ -235,8 +235,11 @@ proc run*(
               continue
             if not analysisAttempted:
               analysisAttempted = true
-              analyzed = semanalysis.analyzeFile(file)
-              for diagnostic in analyzed.diagnostics:
+              stderr.writeLine("Semantic analysis: " & file)
+              stderr.flushFile()
+              analyzed = semanalysis.analyzeFile(file, proc(
+                  diagnostic: SemDiagnostic
+              ) {.gcsafe.} =
                 let location =
                   if len(diagnostic.file) == 0:
                     ""
@@ -245,6 +248,8 @@ proc run*(
                   else:
                     diagnostic.file & ": "
                 stderr.writeLine("warning: " & location & diagnostic.message)
+                stderr.flushFile()
+              )
             if analyzed.tree.isNil:
               stderr.writeLine(&"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available")
               continue

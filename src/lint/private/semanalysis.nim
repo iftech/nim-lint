@@ -41,20 +41,28 @@ type
     diagnostics*: seq[SemDiagnostic]
     graph: ModuleGraph # Keep symbols, types, and compiler state alive with the tree.
 
-proc analyzeFile*(path: string): SemResult =
+proc analyzeFile*(
+    path: string,
+    onDiagnostic: proc(diagnostic: SemDiagnostic) {.closure, gcsafe.} = nil,
+): SemResult =
   ## Analyzes an entry file with Nim's configuration and recursive imports.
   ## Returns diagnostics and any retained typed tree, including partial results.
+  ## Calls `onDiagnostic` as errors arrive, before any direct compiler termination.
+
+  var diagnostics: seq[SemDiagnostic]
+  template recordDiagnostic(value: SemDiagnostic) =
+    let diagnostic = value
+    diagnostics.add(diagnostic)
+    if not onDiagnostic.isNil:
+      onDiagnostic(diagnostic)
 
   if not fileExists(path):
-    return SemResult(
-      diagnostics: @[
-        SemDiagnostic(
-          file: absolutePath(path),
-          message: "cannot open file: " & path,
-          severity: lineinfos.Severity.Error,
-        )
-      ]
-    )
+    recordDiagnostic(SemDiagnostic(
+      file: absolutePath(path),
+      message: "cannot open file: " & path,
+      severity: lineinfos.Severity.Error,
+    ))
+    return SemResult(diagnostics: diagnostics)
 
   let
     conf = newConfigRef()
@@ -71,7 +79,6 @@ proc analyzeFile*(path: string): SemResult =
   conf.writelnHook = proc(output: string) {.gcsafe.} =
     discard
 
-  var diagnostics: seq[SemDiagnostic]
   conf.structuredErrorHook = proc(
       config: ConfigRef, info: TLineInfo, message: string, severity: lineinfos.Severity
   ) {.gcsafe.} =
@@ -87,12 +94,12 @@ proc analyzeFile*(path: string): SemResult =
         message: message,
         severity: severity,
       )
-      diagnostics.add(diagnostic)
+      recordDiagnostic(diagnostic)
 
   try:
     loadConfigs(DefaultConfig, cache, conf, graph.idgen)
     if conf.backend == backendJs:
-      diagnostics.add(SemDiagnostic(
+      recordDiagnostic(SemDiagnostic(
         file: absolutePath(path),
         message: "JavaScript backend is not supported for semantic analysis",
         severity: lineinfos.Severity.Error,
@@ -123,7 +130,7 @@ proc analyzeFile*(path: string): SemResult =
     compilePipelineProject(graph)
 
   except Exception as error:
-    diagnostics.add(SemDiagnostic(
+    recordDiagnostic(SemDiagnostic(
       message: "compiler analysis failed: " & error.msg,
       severity: lineinfos.Severity.Error,
     ))
