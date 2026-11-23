@@ -181,6 +181,28 @@ suite "Run options":
     check "compiler warnings are not lint findings" notin output
     check "implemented in the vmops" notin output
 
+  test "Semantic configuration resolves the Nim installation prefix":
+    let directory = createTempDir("lint-nim-prefix-", "")
+    let target = directory / "input.nim"
+    try:
+      writeFile(directory / "input.nims", "switch(\"path\", \"$nim\")\n")
+      writeFile(target, """import std/[compilesettings, os]
+import compiler/ast
+static:
+  doAssert PNode(nil).isNil
+  var foundPrefix = false
+  for path in querySettingSeq(searchPaths):
+    if normalizedPath(path) == normalizedPath(querySetting(libPath).parentDir):
+      foundPrefix = true
+  doAssert foundPrefix, "$nim must refer to the Nim installation"
+""")
+      let (output, exitCode) = runLinter("--semantic " & quoteShell(target))
+      check exitCode == 0
+      check "Semantic analysis: " & target in output
+      check "warning:" notin output
+    finally:
+      removeDir(directory)
+
   test "Semantic configuration termination keeps diagnostics and target context":
     let directory = createTempDir("lint-semantic-", "")
     let target = directory / "input.nim"

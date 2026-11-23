@@ -9,7 +9,7 @@
 
 ## Per-file semantic analysis. Each result owns an independent compiler context.
 
-import std/os
+import std/[json, os, osproc]
 
 # Compile the stdlib VM callbacks used by configuration scripts and macros.
 {.define: nimcore.}
@@ -17,7 +17,7 @@ import std/os
 import
   compiler/[
     ast, commands, condsyms, extccomp, idents, lineinfos, modulegraphs, msgs, nimconf,
-    options, pipelines,
+    options, pathutils, pipelines,
   ]
 
 type
@@ -96,6 +96,21 @@ proc analyzeFile*(
       recordDiagnostic(diagnostic)
 
   try:
+    # Ask Nim itself: deriving its prefix from this executable breaks `$nim`,
+    # while deriving it from a PATH entry assumes an installation layout.
+    let nimExecutable = findExe("nim")
+    if len(nimExecutable) == 0:
+      raise newException(IOError, "cannot find nim on PATH")
+    let (output, exitCode) = execCmdEx(
+      quoteShell(nimExecutable) & " dump --dump.format:json --hints:off" &
+      " --skipCfg --skipUserCfg --skipParentCfg --skipProjCfg ."
+    )
+    if exitCode != 0:
+      raise newException(IOError, "cannot query Nim installation: " & output)
+    let installation = parseJson(output)
+    conf.prefixDir = AbsoluteDir(installation["prefixdir"].getStr())
+    conf.libpath = AbsoluteDir(installation["libpath"].getStr())
+
     loadConfigs(DefaultConfig, cache, conf, graph.idgen)
     if conf.backend == backendJs:
       recordDiagnostic(SemDiagnostic(

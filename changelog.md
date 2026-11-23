@@ -9,6 +9,7 @@
 
 ## 1.1.0 (WIP)
 
+- `[f]` Resolve `$nim` and installation configuration from Nim on `PATH` during semantic analysis, rather than from the linter executable's location.
 - `[f]` Flush semantic analysis errors as they arrive and identify each analysis target, preserving diagnostic context when the compiler terminates directly.
 - `[f]` Select GitHub Action PR targets from the PR head instead of the synthetic merge, excluding unrelated newer base-branch changes.
 - `[+]` Set up project dependencies in the GitHub Action when semantic checks are enabled. Override the `setup` command or set it to empty to skip.
