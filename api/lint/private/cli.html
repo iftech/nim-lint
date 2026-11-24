@@ -70,7 +70,8 @@
   targets*: seq[Target]
   format*: Format            ## `text` or `github`.
   help*: bool                ## `--help` or `-h` was given.
-  semantic*: bool            ## Enable semantic checks for this run.">Options</a></li>
+  semantic*: bool            ## Enable semantic checks for this run.
+  verbose*: bool             ## Report per-file progress as it happens.">Options</a></li>
 <li><a class="reference" href="#Target" title="Target = object
   path*: string              ## A file or a glob pattern.
   lines*: seq[tuple[first, last: int]] ## Empty means the whole file.">Target</a></li>
@@ -104,6 +105,7 @@ Options:
   -f, --format=github     GitHub Actions workflow commands, for inline
                           annotations on a pull request
   -s, --semantic          run semantic checks in addition to ordinary checks
+  -v, --verbose           report analysis and checking progress per file
   -h, --help              show this message and exit
 
 Exit codes:
@@ -161,8 +163,8 @@ Command-line usage, supported options, and exit codes.</p>
   <dd>
     
     Output encoding for findings and run summaries.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L61" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L61" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L62" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L62" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -171,12 +173,13 @@ Command-line usage, supported options, and exit codes.</p>
   <span class="Identifier">targets</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="#Target"><span class="Identifier">Target</span></a><span class="Other">]</span>
   <span class="Identifier">format</span><span class="Operator">*</span><span class="Other">:</span> <a href="#Format"><span class="Identifier">Format</span></a>            <span class="Comment">## `text` or `github`.</span>
   <span class="Identifier">help</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>                <span class="Comment">## `--help` or `-h` was given.</span>
-  <span class="Identifier">semantic</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Enable semantic checks for this run.</span></pre></dt>
+  <span class="Identifier">semantic</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>            <span class="Comment">## Enable semantic checks for this run.</span>
+  <span class="Identifier">verbose</span><span class="Operator">*</span><span class="Other">:</span> <span class="Identifier">bool</span>             <span class="Comment">## Report per-file progress as it happens.</span></pre></dt>
   <dd>
     
     Everything the command line can say.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L65" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L65" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L66" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L66" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -187,8 +190,8 @@ Command-line usage, supported options, and exit codes.</p>
   <dd>
     
     One thing to lint.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L57" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L57" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L58" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L58" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -221,6 +224,7 @@ Options:
   -f, --format=github     GitHub Actions workflow commands, for inline
                           annotations on a pull request
   -s, --semantic          run semantic checks in addition to ordinary checks
+  -v, --verbose           report analysis and checking progress per file
   -h, --help              show this message and exit
 
 Exit codes:
@@ -251,8 +255,8 @@ Exit codes:
   <dd>
     
     True when <tt class="docutils literal"><span class="pre"><span class="Identifier">line</span></span></tt> falls in any of <tt class="docutils literal"><span class="pre"><span class="Identifier">ranges</span></span></tt>. An empty list matches everything.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L136" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L136" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L140" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L140" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -265,8 +269,8 @@ Exit codes:
   <dd>
     
     Parses the command line. Accepts <tt class="docutils literal"><span class="pre"><span class="Operator">--</span><span class="Identifier">format</span><span class="Operator">=</span><span class="Identifier">github</span></span></tt> and <tt class="docutils literal"><span class="pre"><span class="Operator">--</span><span class="Identifier">format</span><span class="Punctuation">:</span><span class="Identifier">github</span></span></tt>.
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L115" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L115" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L117" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L117" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -280,8 +284,8 @@ Exit codes:
     <p>Splits an argument into a path and optional line ranges.</p>
 <p>The split is on the last <tt class="docutils literal"><span class="pre"><span class="Punctuation">:</span></span></tt>, and only when the suffix parses as ranges, so paths containing colons (Windows drive letters) are left alone.</p>
 
-    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L98" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
-<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L98" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
+    <a href="https://github.com/iftech/nim-lint/tree/develop/src/lint/private/cli.nim#L100" class="link-seesrc" target="_blank">Source</a>&nbsp;&nbsp;
+<a href="https://github.com/iftech/nim-lint/edit/devel/src/lint/private/cli.nim#L100" class="link-seesrc" target="_blank" >Edit</a>&nbsp;&nbsp;
 
   </dd>
 </div>
@@ -297,7 +301,7 @@ Exit codes:
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-23 14:06:13 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-24 12:47:50 UTC</small>
       </div>
     </div>
   </div>

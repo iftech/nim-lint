@@ -7,4 +7,4 @@ nim	RunReport	lint/private/runner.html#RunReport	object RunReport		45
 nim	ParseFailure	lint/private/runner.html#ParseFailure	object ParseFailure		48
 nim	`$`	lint/private/runner.html#$,RunReport	proc `$`(report: RunReport; format = Format.text): string		127
 nim	exitMode	lint/private/runner.html#exitMode,RunReport	proc exitMode(report: RunReport): ExitMode		150
-nim	run	lint/private/runner.html#run,Config,seq[Target]	proc run(config: Config; targets: seq[Target] = @[]; format = Format.text;\n    semantic = false)		161
+nim	run	lint/private/runner.html#run,Config,seq[Target]	proc run(config: Config; targets: seq[Target] = @[]; format = Format.text;\n    semantic = false; verbose = false)		161

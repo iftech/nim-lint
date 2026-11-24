@@ -103,8 +103,8 @@
 </ul>
 <ul class="simple nested-toc-section">run
   <li><a class="reference" href="#run%2CConfig%2Cseq%5BTarget%5D" title="run(config: Config; targets: seq[Target] = @[]; format = Format.text;
-    semantic = false)">run(config: Config; targets: seq[Target] = @[]; format = Format.text;
-    semantic = false)</a></li>
+    semantic = false; verbose = false)">run(config: Config; targets: seq[Target] = @[]; format = Format.text;
+    semantic = false; verbose = false)</a></li>
 
 </ul>
 
@@ -239,11 +239,11 @@
 <div id="run-procs-all">
   <div id="run,Config,seq[Target]">
   <dt><pre><span class="Keyword">proc</span> <a href="#run%2CConfig%2Cseq%5BTarget%5D"><span class="Identifier">run</span></a><span class="Other">(</span><span class="Identifier">config</span><span class="Other">:</span> <a href="types.html#Config"><span class="Identifier">Config</span></a><span class="Other">;</span> <span class="Identifier">targets</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><a href="cli.html#Target"><span class="Identifier">Target</span></a><span class="Other">]</span> <span class="Other">=</span> <span class="Operator">@</span><span class="Other">[</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">format</span> <span class="Other">=</span> <a href="cli.html#Format"><span class="Identifier">Format</span></a><span class="Other">.</span><span class="Identifier">text</span><span class="Other">;</span>
-         <span class="Identifier">semantic</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">GlobSyntaxError</span><span class="Other">,</span> <span class="Identifier">RegexError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span>
-                                      <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span>
-                                      <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
-    <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span>
-    <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
+         <span class="Identifier">semantic</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">verbose</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">)</span> {.<span><span class="Other pragmadots">...</span></span><span class="pragmawrap"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">GlobSyntaxError</span><span class="Other">,</span>
+    <span class="Identifier">RegexError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span>
+    <span class="Identifier">IOError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span>
+                     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
+                     <span class="Identifier">WriteEnvEffect</span><span class="Other">,</span> <span class="Identifier">TimeEffect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">forbids</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span>.}</pre></dt>
   <dd>
     
     <p>Runs the config and exits with the code for the resulting exit mode.</p>
@@ -266,7 +266,7 @@
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-23 14:06:19 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-24 12:47:56 UTC</small>
       </div>
     </div>
   </div>
