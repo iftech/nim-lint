@@ -20,7 +20,8 @@
 
 import std/strutils
 
-const suppressionMarker* = "#nolint" ## Trailing marker that suppresses a line's findings.
+const suppressionMarker* = "#nolint"
+  ## Trailing marker that suppresses a line's findings.
 
 proc isSuppressed*(line: string): bool =
   ## True when `line` ends with a `#nolint` comment.

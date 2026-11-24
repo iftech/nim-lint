@@ -32,7 +32,8 @@ type
     message*: string
     severity*: lineinfos.Severity
 
-  SemResult* = ref object ## Retained compiler context and best-effort typed tree.
+  SemResult* = ref object
+    ## Retained compiler context and best-effort typed tree.
     ## The outcome of analyzing one entry file and its import dependencies.
     ## Retains compiler state so the tree's symbols and types remain usable.
     ## Diagnostics do not imply the tree is absent: it may be partial after errors,
@@ -56,11 +57,13 @@ proc analyzeFile*(
       onDiagnostic(diagnostic)
 
   if not fileExists(path):
-    recordDiagnostic(SemDiagnostic(
-      file: absolutePath(path),
-      message: "cannot open file: " & path,
-      severity: lineinfos.Severity.Error,
-    ))
+    recordDiagnostic(
+      SemDiagnostic(
+        file: absolutePath(path),
+        message: "cannot open file: " & path,
+        severity: lineinfos.Severity.Error,
+      )
+    )
     return SemResult(diagnostics: diagnostics)
 
   let
@@ -103,7 +106,7 @@ proc analyzeFile*(
       raise newException(IOError, "cannot find nim on PATH")
     let (output, exitCode) = execCmdEx(
       quoteShell(nimExecutable) & " dump --dump.format:json --hints:off" &
-      " --skipCfg --skipUserCfg --skipParentCfg --skipProjCfg ."
+        " --skipCfg --skipUserCfg --skipParentCfg --skipProjCfg ."
     )
     if exitCode != 0:
       raise newException(IOError, "cannot query Nim installation: " & output)
@@ -113,11 +116,13 @@ proc analyzeFile*(
 
     loadConfigs(DefaultConfig, cache, conf, graph.idgen)
     if conf.backend == backendJs:
-      recordDiagnostic(SemDiagnostic(
-        file: absolutePath(path),
-        message: "JavaScript backend is not supported for semantic analysis",
-        severity: lineinfos.Severity.Error,
-      ))
+      recordDiagnostic(
+        SemDiagnostic(
+          file: absolutePath(path),
+          message: "JavaScript backend is not supported for semantic analysis",
+          severity: lineinfos.Severity.Error,
+        )
+      )
       result.diagnostics = diagnostics
       return
 
@@ -142,12 +147,13 @@ proc analyzeFile*(
 
     setPipeLinePass(graph, SemPass)
     compilePipelineProject(graph)
-
   except Exception as error:
-    recordDiagnostic(SemDiagnostic(
-      message: "compiler analysis failed: " & error.msg,
-      severity: lineinfos.Severity.Error,
-    ))
+    recordDiagnostic(
+      SemDiagnostic(
+        message: "compiler analysis failed: " & error.msg,
+        severity: lineinfos.Severity.Error,
+      )
+    )
     result.diagnostics = diagnostics
     return
 

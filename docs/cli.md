@@ -35,6 +35,17 @@ With no arguments, the executable lints the config's `sources`:
 ./linter
 ```
 
+## Verbose progress
+
+Pass `--verbose` (or `-v`) to report per-file progress in real time:
+
+```shell
+./linter -v foo.nim       # Checking: foo.nim
+./linter -s -v foo.nim    # Semantic analysis: foo.nim, then Checking: foo.nim
+```
+
+Progress messages go to stderr and are flushed immediately. Semantic analysis is reported only for files with applicable semantic checks. Without `-v`, neither progress message is printed. Findings, summaries, skipped-check warnings, and analysis errors are unaffected by verbosity.
+
 ## Semantic checks
 
 Pass `--semantic` (or `-s`) to run semantic checks in addition to ordinary checks:
@@ -57,7 +68,7 @@ Each file with applicable semantic checks is analyzed as an entry point, includi
 .. warning::
   Semantic analysis evaluates configuration scripts, macros, and compile-time code. Run it only on code you trust. It is more expensive than ordinary checking and is not sandboxed.
 
-Compiler errors are reported as analysis warnings, with locations when available. Compiler warnings and hints are not printed; they are not lint findings. Semantic checks still run on partial typed trees after recoverable errors. If no tree is available, Lint names the checks that could not run and continues with ordinary checks and other files. These warnings alone do not fail the run; error findings and check exceptions retain the exit codes above. Each analyzed target is identified by a `Semantic analysis: <file>` marker on stderr. Compiler errors are reported immediately and flushed, so diagnostics already received remain visible if analysis terminates directly. Some fatal compiler failures can terminate the process before recovery.
+Compiler errors are reported as analysis warnings, with locations when available. Compiler warnings and hints are not printed; they are not lint findings. Semantic checks still run on partial typed trees after recoverable errors. If no tree is available, Lint names the checks that could not run and continues with ordinary checks and other files. These warnings alone do not fail the run; error findings and check exceptions retain the exit codes above. With `--verbose`, each analyzed target is identified by a `Semantic analysis: <file>` marker on stderr. Compiler errors are reported immediately and flushed, so diagnostics already received remain visible if analysis terminates directly. Some fatal compiler failures can terminate the process before recovery.
 
 Line ranges and `#nolint` filter check findings, not compiler diagnostics or notices about unavailable analysis. JavaScript semantic analysis is not supported; a JS-configured file produces a warning and its semantic checks do not run.
 

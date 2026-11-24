@@ -159,7 +159,11 @@ proc exitMode*(report: RunReport): ExitMode =
   ExitMode.emClean
 
 proc run*(
-    config: Config, targets: seq[Target] = @[], format = Format.text, semantic = false
+    config: Config,
+    targets: seq[Target] = @[],
+    format = Format.text,
+    semantic = false,
+    verbose = false,
 ) =
   ## Runs the config and exits with the code for the resulting exit mode.
   ##
@@ -179,8 +183,10 @@ proc run*(
         if check.isSemantic:
           skipped.addUnique(check.name)
     if len(skipped) > 0:
-      stderr.writeLine("warning: semantic checks skipped (" & skipped.join(", ") &
-        "); pass --semantic to run them")
+      stderr.writeLine(
+        "warning: semantic checks skipped (" & skipped.join(", ") &
+          "); pass --semantic to run them"
+      )
 
   var report = RunReport()
 
@@ -203,24 +209,52 @@ proc run*(
       sourceLines = source.splitLines()
     except CatchableError as e:
       parseFailed = true
-      fileReport.stepReports.add(StepReport(
-        label: "runner",
-        findings: @[
-          FindingTag(
-            severity: Severity.error,
-            stepLabel: "runner",
-            checkName: "",
-            file: file,
-            finding: Finding(line: 0, col: 0, msg: "parse error: " & e.msg),
-          )
-        ],
-      ))
+      fileReport.stepReports.add(
+        StepReport(
+          label: "runner",
+          findings: @[
+            FindingTag(
+              severity: Severity.error,
+              stepLabel: "runner",
+              checkName: "",
+              file: file,
+              finding: Finding(line: 0, col: 0, msg: "parse error: " & e.msg),
+            )
+          ],
+        )
+      )
       exitCode = ExitMode.emParseError
 
     if not parseFailed:
-      var
-        analyzed: semanalysis.SemResult
-        analysisAttempted = false
+      var analyzed: semanalysis.SemResult
+      if semantic:
+        block analyze:
+          for step in config.steps:
+            if len(targets) == 0 and isIgnored(file, step.ignoredPatterns):
+              continue
+            for check in step.checks:
+              if check.isSemantic:
+                if verbose:
+                  stderr.writeLine("Semantic analysis: " & file)
+                  stderr.flushFile()
+                analyzed = semanalysis.analyzeFile(
+                  file,
+                  proc(diagnostic: SemDiagnostic) {.gcsafe.} =
+                    let location =
+                      if len(diagnostic.file) == 0:
+                        ""
+                      elif diagnostic.line > 0:
+                        &"{diagnostic.file}:{diagnostic.line}:{diagnostic.col}: "
+                      else:
+                        diagnostic.file & ": "
+                    stderr.writeLine("warning: " & location & diagnostic.message)
+                    stderr.flushFile(),
+                )
+                break analyze
+
+      if verbose:
+        stderr.writeLine("Checking: " & file)
+        stderr.flushFile()
 
       for step in config.steps:
         # Explicit targets override every ignore, including step-level ones: a
@@ -233,25 +267,10 @@ proc run*(
           if check.isSemantic:
             if not semantic:
               continue
-            if not analysisAttempted:
-              analysisAttempted = true
-              stderr.writeLine("Semantic analysis: " & file)
-              stderr.flushFile()
-              analyzed = semanalysis.analyzeFile(file, proc(
-                  diagnostic: SemDiagnostic
-              ) {.gcsafe.} =
-                let location =
-                  if len(diagnostic.file) == 0:
-                    ""
-                  elif diagnostic.line > 0:
-                    &"{diagnostic.file}:{diagnostic.line}:{diagnostic.col}: "
-                  else:
-                    diagnostic.file & ": "
-                stderr.writeLine("warning: " & location & diagnostic.message)
-                stderr.flushFile()
-              )
             if analyzed.tree.isNil:
-              stderr.writeLine(&"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available")
+              stderr.writeLine(
+                &"warning: [{step.label}][{check.name}] {file}: semantic check could not run; no typed tree available"
+              )
               continue
 
           var findings: seq[Finding]
@@ -262,20 +281,24 @@ proc run*(
               else:
                 check.run(source, ast)
           except Exception as e:
-            stderr.writeLine(&"check error: [{step.label}][{check.name}] {file}: {e.msg}")
+            stderr.writeLine(
+              &"check error: [{step.label}][{check.name}] {file}: {e.msg}"
+            )
             quit(ord(ExitMode.emCheckError))
           for f in findings:
             if rangesByPath.hasKey(file) and not inRanges(f.line, rangesByPath[file]):
               continue
             if isSuppressed(sourceLines, f.line):
               continue
-            stepReport.findings.add(FindingTag(
-              severity: check.severity,
-              stepLabel: step.label,
-              checkName: check.name,
-              file: file,
-              finding: f,
-            ))
+            stepReport.findings.add(
+              FindingTag(
+                severity: check.severity,
+                stepLabel: step.label,
+                checkName: check.name,
+                file: file,
+                finding: f,
+              )
+            )
         fileReport.stepReports.add(stepReport)
 
     report.fileReports.add(fileReport)

@@ -7,6 +7,10 @@
 - `[t]`—test suite improvement
 - `[d]`—docs improvement
 
+## 1.1.1 (WIP)
+
+- `[+]` Add `--verbose` / `-v` for real-time per-file analysis and checking progress. Semantic progress is now opt-in; warnings and errors remain visible by default.
+
 ## 1.1.0 (November 23, 2026)
 
 - `[f]` Resolve `$nim` and installation configuration from Nim on `PATH` during semantic analysis, rather than from the linter executable's location.

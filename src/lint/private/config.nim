@@ -243,4 +243,6 @@ macro runLint*(body: untyped): untyped =
         stdout.write helpText
         quit(0)
 
-      run(`configId`, options.targets, options.format, options.semantic)
+      run(
+        `configId`, options.targets, options.format, options.semantic, options.verbose
+      )

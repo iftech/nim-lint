@@ -181,12 +181,37 @@ suite "Run options":
     check "compiler warnings are not lint findings" notin output
     check "implemented in the vmops" notin output
 
+  test "Help documents verbose aliases":
+    let (output, exitCode) = runLinter("--help")
+    check exitCode == 0
+    check "-v, --verbose" in output
+
+  test "Verbose progress is opt-in for ordinary and semantic runs":
+    let target = "src/skip2/comments.nim"
+    for enabled in [false, true]:
+      for flag in ["", "-v", "--verbose"]:
+        let args = (if enabled: "-s " else: "") & flag & " " & target
+        let (output, exitCode) = runLinter(args)
+        check exitCode == 0
+        check "hints: 2, errors: 0" in output
+        check "unfinished comment: TODO" in output
+        check ("semantic checks skipped" in output) == not enabled
+        check output.count("Checking: " & target) == ord(flag != "")
+        check output.count("Semantic analysis: " & target) == ord(
+          enabled and flag != ""
+        )
+        if enabled and flag != "":
+          check output.find("Semantic analysis:") < output.find("Checking:")
+          check output.find("Checking:") < output.find("hints:")
+
   test "Semantic configuration resolves the Nim installation prefix":
     let directory = createTempDir("lint-nim-prefix-", "")
     let target = directory / "input.nim"
     try:
       writeFile(directory / "input.nims", "switch(\"path\", \"$nim\")\n")
-      writeFile(target, """import std/[compilesettings, os]
+      writeFile(
+        target,
+        """import std/[compilesettings, os]
 import compiler/ast
 static:
   doAssert PNode(nil).isNil
@@ -195,8 +220,9 @@ static:
     if normalizedPath(path) == normalizedPath(querySetting(libPath).parentDir):
       foundPrefix = true
   doAssert foundPrefix, "$nim must refer to the Nim installation"
-""")
-      let (output, exitCode) = runLinter("--semantic " & quoteShell(target))
+""",
+      )
+      let (output, exitCode) = runLinter("--semantic --verbose " & quoteShell(target))
       check exitCode == 0
       check "Semantic analysis: " & target in output
       check "warning:" notin output
@@ -213,7 +239,8 @@ static:
         "switch(\"errorMax\", \"1\")\nswitch(\"invalidSemanticOption\", \"\")\n",
       ]:
         writeFile(directory / "config.nims", script)
-        let (output, exitCode) = runLinter("--semantic --format=github " & quoteShell(target))
+        let (output, exitCode) =
+          runLinter("--semantic --verbose --format=github " & quoteShell(target))
         check exitCode == 1
         check output.count("Semantic analysis: " & target) == 1
         if "invalidSemanticOption" in script:
@@ -224,7 +251,8 @@ static:
       removeDir(directory)
 
   test "Semantic findings respect line ranges and output format":
-    let (output, exitCode) = runLinter("--semantic --format=github src/stringify.nim:11")
+    let (output, exitCode) =
+      runLinter("--semantic --format=github src/stringify.nim:11")
     check exitCode == 1
     check "::error file=" in output
     check ",line=11," in output
@@ -249,6 +277,8 @@ static:
     check "warning:" in output
     check "type mismatch" in output
     check "broken_stringify.nim:4:" in output
+    check "Semantic analysis:" notin output
+    check "Checking:" notin output
     check "has no custom `$` overload" notin output
     check "::error" notin output
 
