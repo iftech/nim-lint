@@ -101,6 +101,14 @@ nim c -d:release linter.nim
 Compile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> with the Nim version your project uses, and keep that same Nim installation on <tt class="docutils literal"><span class="pre">PATH</span></tt> when running <tt class="docutils literal"><span class="pre">./linter --semantic</span></tt>. Recompile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> whenever you change the project's Nim version.</div>
 <p>The lint executable embeds the compiler front end it was built with, while semantic analysis reads standard-library sources from disk. Changing the Nim on <tt class="docutils literal"><span class="pre">PATH</span></tt> does not switch the executable's embedded compiler. For example, if your project uses Nim 2.2.12 but <tt class="docutils literal"><span class="pre">linter.nim</span></tt> was compiled with Nim 2.4.0, select Nim 2.2.12 and recompile <tt class="docutils literal"><span class="pre">linter.nim</span></tt> before running semantic checks.</p>
 <p>Without <tt class="docutils literal"><span class="pre">--semantic</span></tt>, ordinary checks still run and Lint warns about configured semantic checks that were skipped.</p>
+<div class="admonition admonition-info"><span class="admonition-info-text"><b>Tip:</b></span>
+<p>Semantic checks can be much slower than ordinary checks. To reserve them for manual runs on explicit targets, put them in a separate step that ignores all default sources:</p>
+<p><pre class="listing"><span class="Identifier">step</span> <span class="StringLit">&quot;Semantic checks&quot;</span><span class="Punctuation">:</span>
+  <span class="Identifier">ignoredPatterns</span> <span class="Operator">=</span> <span class="Punctuation">[</span><span class="StringLit">&quot;**/*&quot;</span><span class="Punctuation">]</span>
+  <span class="Identifier">semCheck</span> <span class="Identifier">customDollar</span><span class="Punctuation">:</span>
+    <span class="Identifier">severity</span> <span class="Operator">=</span> <span class="Identifier">error</span></pre></p>
+<p>Use your own registered semantic rule in place of <tt class="docutils literal"><span class="pre">customDollar</span></tt>. A normal run still performs ordinary checks, while even <tt class="docutils literal"><span class="pre">./linter -s</span></tt> skips this step for the config's default sources. To run it on a specific file or directory, use <tt class="docutils literal"><span class="pre">./linter -s path/to/source</span></tt>. Explicit targets override all ignore patterns, including step-level ones, so this runs both ordinary and semantic checks on the selected path. This keeps expensive semantic analysis out of default whole-project runs; workflows that supply explicit targets with <tt class="docutils literal"><span class="pre">-s</span></tt> will still run it.</p>
+</div>
 <p>Each file with applicable semantic checks is analyzed as an entry point, including its recursive imports. The compiler loads the applicable Nim configuration files; Lint does not infer arguments supplied only by a Nimble task or custom build command. Analysis uses an independent compiler context per selected file, so overlapping dependencies can be analyzed again.</p>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
 Semantic analysis evaluates configuration scripts, macros, and compile-time code. Run it only on code you trust. It is more expensive than ordinary checking and is not sandboxed.</div>
@@ -129,7 +137,7 @@ Semantic analysis evaluates configuration scripts, macros, and compile-time code
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-24 12:47:57 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-24 13:20:23 UTC</small>
       </div>
     </div>
   </div>
