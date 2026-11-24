@@ -63,6 +63,18 @@ The lint executable embeds the compiler front end it was built with, while seman
 
 Without `--semantic`, ordinary checks still run and Lint warns about configured semantic checks that were skipped.
 
+.. tip::
+  Semantic checks can be much slower than ordinary checks. To reserve them for manual runs on explicit targets, put them in a separate step that ignores all default sources:
+
+  ```nim
+  step "Semantic checks":
+    ignoredPatterns = ["**/*"]
+    semCheck customDollar:
+      severity = error
+  ```
+
+  Use your own registered semantic rule in place of `customDollar`. A normal run still performs ordinary checks, while even `./linter -s` skips this step for the config's default sources. To run it on a specific file or directory, use `./linter -s path/to/source`. Explicit targets override all ignore patterns, including step-level ones, so this runs both ordinary and semantic checks on the selected path. This keeps expensive semantic analysis out of default whole-project runs; workflows that supply explicit targets with `-s` will still run it.
+
 Each file with applicable semantic checks is analyzed as an entry point, including its recursive imports. The compiler loads the applicable Nim configuration files; Lint does not infer arguments supplied only by a Nimble task or custom build command. Analysis uses an independent compiler context per selected file, so overlapping dependencies can be analyzed again.
 
 .. warning::
