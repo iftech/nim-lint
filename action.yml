@@ -17,9 +17,9 @@ inputs:
     required: false
     default: "false"
   setup:
-    description: "Command to prepare project dependencies for semantic analysis; empty to skip."
+    description: "Command to prepare project dependencies for semantic analysis; LINT_ROOT points to this action's checkout. Empty to skip."
     required: false
-    default: "nimble install -y"
+    default: 'nimble setup --requires:"file://$LINT_ROOT" -y'
 
 runs:
   using: composite
@@ -34,6 +34,7 @@ runs:
       shell: bash
       env:
         SETUP: ${{ inputs.setup }}
+        LINT_ROOT: ${{ github.action_path }}
       run: bash -eo pipefail -c "$SETUP"
 
     - name: Find local linters
