@@ -9,6 +9,7 @@
 
 ## 1.1.1 (WIP)
 
+- `[f]` Preserve Windows drive-letter paths when parsing CLI targets instead of truncating them at the drive colon.
 - `[+]` Expose `LINT_ROOT` to the GitHub Action's setup command and default to `nimble setup --requires:"file://$LINT_ROOT" -y`, resolving the exact action checkout alongside project dependencies without a duplicate version pin or global project installation.
 - `[+]` Add `--verbose` / `-v` for real-time per-file analysis and checking progress. Semantic progress is now opt-in; warnings and errors remain visible by default.
 

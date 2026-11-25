@@ -112,7 +112,10 @@ proc parseTarget*(arg: string): Target =
       path = arg[0 ..< colonPosition]
       ranges = parseRanges(arg[colonPosition + 1 .. ^1])
 
-    Target(path: path, lines: ranges)
+    if len(ranges) == 0:
+      Target(path: arg)
+    else:
+      Target(path: path, lines: ranges)
 
 proc parseOptions*(args: seq[string]): Options =
   ## Parses the command line. Accepts `--format=github` and `--format:github`.
