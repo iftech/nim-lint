@@ -1,6 +1,6 @@
 # Package
 
-version = "1.1.0"
+version = "1.1.1"
 author = "Constantine Molchanov"
 description = "Linting toolkit for Nim projects."
 license = "MIT or Apache License 2.0"

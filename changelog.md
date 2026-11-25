@@ -7,7 +7,7 @@
 - `[t]`—test suite improvement
 - `[d]`—docs improvement
 
-## 1.1.1 (WIP)
+## 1.1.1 (November 25, 2026)
 
 - `[f]` Preserve Windows drive-letter paths when parsing CLI targets instead of truncating them at the drive colon.
 - `[+]` Expose `LINT_ROOT` to the GitHub Action's setup command and default to `nimble setup --requires:"file://$LINT_ROOT" -y`, resolving the exact action checkout alongside project dependencies without a duplicate version pin or global project installation.
