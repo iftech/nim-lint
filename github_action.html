@@ -89,20 +89,28 @@
 <tr><td><tt class="docutils literal"><span class="pre">config</span></tt></td><td><tt class="docutils literal"><span class="pre">linter.nim</span></tt></td><td>Path to the config file.</td></tr>
 <tr><td><tt class="docutils literal"><span class="pre">nim-version</span></tt></td><td><tt class="docutils literal"><span class="pre">stable</span></tt></td><td>Nim version used to build the config.</td></tr>
 <tr><td><tt class="docutils literal"><span class="pre">semantic</span></tt></td><td><tt class="docutils literal"><span class="pre">false</span></tt></td><td>Enable semantic checks (<tt class="docutils literal"><span class="pre">--semantic</span></tt>).</td></tr>
-<tr><td><tt class="docutils literal"><span class="pre">setup</span></tt></td><td><tt class="docutils literal"><span class="pre">nimble setup -y</span></tt></td><td>Dependency setup command; runs only with <tt class="docutils literal"><span class="pre">semantic: 'true'</span></tt>. Empty to skip.</td></tr>
+<tr><td><tt class="docutils literal"><span class="pre">setup</span></tt></td><td><tt class="docutils literal"><span class="pre">nimble setup --requires:&quot;file://$LINT_ROOT&quot; -y</span></tt></td><td>Dependency setup command; runs only with <tt class="docutils literal"><span class="pre">semantic: 'true'</span></tt>. <tt class="docutils literal"><span class="pre">LINT_ROOT</span></tt> points to the action checkout. Empty to skip.</td></tr>
 </table><p>Enable semantic checks explicitly and select the Nim version your project uses:</p>
 <p><pre class="listing"><span class="Punctuation">-</span> <span class="StringLit">name</span><span class="Punctuation">:</span> <span class="StringLit">Run Lint with semantic checks</span>
   <span class="StringLit">uses</span><span class="Punctuation">:</span> <span class="StringLit">iftech/nim-lint@develop</span>
   <span class="StringLit">with</span><span class="Punctuation">:</span>
     <span class="StringLit">nim-version</span><span class="Punctuation">:</span> <span class="StringLit">'2.2.14'</span>
     <span class="StringLit">semantic</span><span class="Punctuation">:</span> <span class="StringLit">'true'</span></pre></p>
-<p>With semantic checks enabled, the action runs <tt class="docutils literal"><span class="pre">nimble setup -y</span></tt> in the project workspace after setting up Nim and before restoring or building the linter. This also runs when the compiled linter is cached: semantic analysis needs the project's dependencies at runtime. A setup failure stops the action.</p>
+<p>With semantic checks enabled, the action runs <tt class="docutils literal"><span class="pre">nimble setup --requires:&quot;file://$LINT_ROOT&quot; -y</span></tt> in the project workspace after setting up Nim and before restoring or building the linter. This also runs when the compiled linter is cached: semantic analysis needs the project's dependencies at runtime. A setup failure stops the action.</p>
 <p>Override <tt class="docutils literal"><span class="pre">setup</span></tt> when your project needs a different dependency policy:</p>
 <p><pre class="listing"><span class="Punctuation">-</span> <span class="StringLit">name</span><span class="Punctuation">:</span> <span class="StringLit">Run Lint with semantic checks</span>
   <span class="StringLit">uses</span><span class="Punctuation">:</span> <span class="StringLit">iftech/nim-lint@develop</span>
   <span class="StringLit">with</span><span class="Punctuation">:</span>
     <span class="StringLit">semantic</span><span class="Punctuation">:</span> <span class="StringLit">'true'</span>
-    <span class="StringLit">setup</span><span class="Punctuation">:</span> <span class="StringLit">nimble --noLockfile --resolver:minver -l setup -y</span></pre></p>
+    <span class="StringLit">setup</span><span class="Punctuation">:</span> <span class="StringLit">nimble --noLockfile --resolver:minver -l setup --requires:&quot;file://$LINT_ROOT&quot; -y</span></pre></p>
+<p>The setup command receives <tt class="docutils literal"><span class="pre">LINT_ROOT</span></tt>, the absolute path to the action's own checkout at the selected ref. The default requires that checkout directly, resolving Lint and its dependencies alongside your project's dependencies without installing the target package globally, editing its <tt class="docutils literal"><span class="pre">.nimble</span></tt> file, or repeating the action version. No explicit <tt class="docutils literal"><span class="pre">setup</span></tt> input is needed for this behavior:</p>
+<p><pre class="listing"><span class="Punctuation">-</span> <span class="StringLit">name</span><span class="Punctuation">:</span> <span class="StringLit">Run Lint with local dependencies</span>
+  <span class="StringLit">uses</span><span class="Punctuation">:</span> <span class="StringLit">iftech/nim-lint@develop</span>
+  <span class="StringLit">with</span><span class="Punctuation">:</span>
+    <span class="StringLit">semantic</span><span class="Punctuation">:</span> <span class="StringLit">'true'</span></pre></p>
+<p>Pin the action to a release or commit that includes this default (1.1.1 or later). When overriding <tt class="docutils literal"><span class="pre">setup</span></tt>, keep <tt class="docutils literal"><span class="pre">--requires:&quot;file://$LINT_ROOT&quot;</span></tt> if Lint needs to be available in the project's dependency environment. Keep <tt class="docutils literal"><span class="pre">$LINT_ROOT</span></tt> inside the quoted requirement so paths containing spaces remain a single argument.</p>
+<div class="admonition admonition-info"><span class="admonition-info-text"><b>Note:</b></span>
+<tt class="docutils literal"><span class="pre">nimble setup</span></tt> updates generated environment files such as <tt class="docutils literal"><span class="pre">nimble.paths</span></tt> and may update the lockfile. The default does not impose <tt class="docutils literal"><span class="pre">--noLockfile</span></tt>, <tt class="docutils literal"><span class="pre">--resolver:minver</span></tt>, or <tt class="docutils literal"><span class="pre">--localdeps</span></tt>; add these only if required by your project's dependency policy.</div>
 <p>Use <tt class="docutils literal"><span class="pre">setup: ''</span></tt> if dependencies and their compiler paths are already prepared, or if the project has no dependencies to set up. The setup command is not run when semantic checks are disabled.</p>
 <p>Pin the action to a release or commit that includes semantic-check support when using it in production. The <tt class="docutils literal"><span class="pre">semantic</span></tt> input affects the run, not compilation, so both modes reuse the same cached executable.</p>
 <div class="admonition admonition-warning"><span class="admonition-warning-text"><b>Warning:</b></span>
@@ -128,7 +136,7 @@ Your project does not need <tt class="docutils literal"><span class="pre">lint</
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br>
-        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-24 13:20:23 UTC</small>
+        <small style="color: var(--hint);">Made with Nim. Generated: 2026-11-25 14:01:28 UTC</small>
       </div>
     </div>
   </div>
