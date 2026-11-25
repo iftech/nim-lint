@@ -4,5 +4,5 @@ nim	Target	lint/private/cli.html#Target	object Target		58
 nim	Format	lint/private/cli.html#Format	enum Format		62
 nim	Options	lint/private/cli.html#Options	object Options		66
 nim	parseTarget	lint/private/cli.html#parseTarget,string	proc parseTarget(arg: string): Target		100
-nim	parseOptions	lint/private/cli.html#parseOptions,seq[string]	proc parseOptions(args: seq[string]): Options		117
-nim	inRanges	lint/private/cli.html#inRanges,int,seq[tuple[int,int]]	proc inRanges(line: int; ranges: seq[tuple[first, last: int]]): bool		140
+nim	parseOptions	lint/private/cli.html#parseOptions,seq[string]	proc parseOptions(args: seq[string]): Options		120
+nim	inRanges	lint/private/cli.html#inRanges,int,seq[tuple[int,int]]	proc inRanges(line: int; ranges: seq[tuple[first, last: int]]): bool		143
