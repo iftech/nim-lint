@@ -32,7 +32,7 @@ Possible inputs:
 | `config`      | `linter.nim` | Path to the config file.              |
 | `nim-version` | `stable`     | Nim version used to build the config. |
 | `semantic`    | `false`      | Enable semantic checks (`--semantic`). |
-| `setup`       | `nimble setup -y` | Dependency setup command; runs only with `semantic: 'true'`. Empty to skip. |
+| `setup`       | `nimble setup --requires:"file://$LINT_ROOT" -y` | Dependency setup command; runs only with `semantic: 'true'`. `LINT_ROOT` points to the action checkout. Empty to skip. |
 
 Enable semantic checks explicitly and select the Nim version your project uses:
 
@@ -44,7 +44,7 @@ Enable semantic checks explicitly and select the Nim version your project uses:
     semantic: 'true'
 ```
 
-With semantic checks enabled, the action runs `nimble setup -y` in the project workspace after setting up Nim and before restoring or building the linter. This also runs when the compiled linter is cached: semantic analysis needs the project's dependencies at runtime. A setup failure stops the action.
+With semantic checks enabled, the action runs `nimble setup --requires:"file://$LINT_ROOT" -y` in the project workspace after setting up Nim and before restoring or building the linter. This also runs when the compiled linter is cached: semantic analysis needs the project's dependencies at runtime. A setup failure stops the action.
 
 Override `setup` when your project needs a different dependency policy:
 
@@ -53,8 +53,22 @@ Override `setup` when your project needs a different dependency policy:
   uses: iftech/nim-lint@develop
   with:
     semantic: 'true'
-    setup: nimble --noLockfile --resolver:minver -l setup -y
+    setup: nimble --noLockfile --resolver:minver -l setup --requires:"file://$LINT_ROOT" -y
 ```
+
+The setup command receives `LINT_ROOT`, the absolute path to the action's own checkout at the selected ref. The default requires that checkout directly, resolving Lint and its dependencies alongside your project's dependencies without installing the target package globally, editing its `.nimble` file, or repeating the action version. No explicit `setup` input is needed for this behavior:
+
+```yaml
+- name: Run Lint with local dependencies
+  uses: iftech/nim-lint@develop
+  with:
+    semantic: 'true'
+```
+
+Pin the action to a release or commit that includes this default (1.1.1 or later). When overriding `setup`, keep `--requires:"file://$LINT_ROOT"` if Lint needs to be available in the project's dependency environment. Keep `$LINT_ROOT` inside the quoted requirement so paths containing spaces remain a single argument.
+
+.. note::
+  `nimble setup` updates generated environment files such as `nimble.paths` and may update the lockfile. The default does not impose `--noLockfile`, `--resolver:minver`, or `--localdeps`; add these only if required by your project's dependency policy.
 
 Use `setup: ''` if dependencies and their compiler paths are already prepared, or if the project has no dependencies to set up. The setup command is not run when semantic checks are disabled.
 
