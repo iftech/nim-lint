@@ -115,7 +115,9 @@ proc documented(node: PNode): bool =
   case node.kind
   of nkTypeDef:
     return documented(node[2])
-  of nkObjectTy, nkRefTy, nkPtrTy, nkDistinctTy, nkEnumTy:
+  of nkRefTy, nkPtrTy, nkDistinctTy:
+    return documented(node[0])
+  of nkObjectTy, nkEnumTy:
     # Documentation may be attached to the type's opening record list.
     for child in node:
       if len(child.comment.strip()) > 0:
