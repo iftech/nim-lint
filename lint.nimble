@@ -30,5 +30,4 @@ task docs, "Generate the documentation":
   exec "nimble book"
 
 task lint, "Run the code checks":
-  exec "nim c -d:release linter.nim"
-  exec "./bin/linter"
+  exec "nim r -d:release linter.nim"
